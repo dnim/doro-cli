@@ -1,0 +1,42 @@
+{
+  "name": "papadoro",
+  "version": "0.1.0",
+  "description": "Minimal terminal pomodoro timer with keyboard shortcuts and chiptune cues",
+  "main": "dist/cli.js",
+  "bin": {
+    "papadoro": "dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsx src/cli.ts",
+    "lint": "eslint . --ext .ts",
+    "lint:local": "eslint . --ext .ts --cache",
+    "typecheck": "tsc --noEmit",
+    "test:unit": "jest --runInBand"
+  },
+  "keywords": [
+    "pomodoro",
+    "cli",
+    "timer"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "blessed": "^0.1.81"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.24.0",
+    "@types/blessed": "^0.1.25",
+    "@types/jest": "^29.5.14",
+    "@types/node": "^22.14.0",
+    "eslint": "^9.24.0",
+    "globals": "^16.0.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.2.6",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.29.0"
+  }
+}
