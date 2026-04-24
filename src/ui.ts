@@ -75,6 +75,46 @@ function getHelpText(cols: number): string {
  * across `cols` columns; everything left of `fillWidth` gets `fillBg` and
  * everything to the right gets `baseBg`.
  */
+/**
+ * Returns a responsive transition status line that fits within `cols`.
+ * Falls back to shorter variants as width shrinks.
+ */
+function getRunningStatusText(status: TimerStatus, isLocked: boolean, isMuted: boolean, cols: number): string {
+  const s = statusLabel(status);
+  const lock = isLocked ? 'LOCK' : 'OPEN';
+  const mute = isMuted ? 'MUTE' : 'SND';
+  const lockIcon = isLocked ? 'L' : '-';
+  const candidates = [
+    `${s} | ${isLocked ? 'LOCKED' : 'OPEN'} | ${isMuted ? 'MUTED' : 'SOUND'}`,
+    `${s} | ${lock} | ${mute}`,
+    `${s} | ${lock}`,
+    `${s} ${lockIcon}`,
+    lockIcon,
+  ];
+  for (const c of candidates) {
+    if (c.length <= cols) return c;
+  }
+  return lockIcon.slice(0, cols);
+}
+
+function getTransitionStatusText(nextMode: TimerMode, autoSec: number, cols: number): string {
+  const full = MODE_LABELS[nextMode];
+  const short = MODE_LABELS_SHORT[nextMode];
+  const candidates = [
+    `Next: ${full}  |  any key to start  |  auto in ${autoSec}s`,
+    `Next: ${full}  |  auto in ${autoSec}s`,
+    `Next: ${full}  ${autoSec}s`,
+    `→ ${full}  ${autoSec}s`,
+    `→ ${short}  ${autoSec}s`,
+    `→${short} ${autoSec}s`,
+    `${autoSec}s`,
+  ];
+  for (const c of candidates) {
+    if (c.length <= cols) return c;
+  }
+  return '';
+}
+
 function buildProgressRow(
   visibleText: string,
   cols: number,
@@ -323,60 +363,11 @@ export class PapadoroUi {
       content: ''
     });
 
-    this.promptOverlay = blessed.box({
-      parent: this.root,
-      hidden: true,
-      top: 'center-4',
-      left: 'center-26',
-      width: 52,
-      height: 8,
-      border: 'line',
-      align: 'center',
-      valign: 'middle',
-      style: {
-        border: {
-          fg: initialStyle.promptFg
-        },
-        bg: initialStyle.promptBg
-      }
-    });
-
-    this.promptText = blessed.box({
-      parent: this.promptOverlay,
-      top: 1,
-      left: 1,
-      width: '100%-2',
-      height: '100%-4',
-      align: 'center',
-      valign: 'middle',
-      tags: true,
-      style: {
-        bg: initialStyle.promptBg,
-        fg: initialStyle.promptFg
-      }
-    });
-
-    this.promptBarTrack = blessed.box({
-      parent: this.promptOverlay,
-      bottom: 1,
-      left: 2,
-      width: '100%-4',
-      height: 1,
-      style: {
-        bg: initialStyle.statusBg
-      }
-    });
-
-    this.promptBarFill = blessed.box({
-      parent: this.promptBarTrack,
-      top: 0,
-      left: 0,
-      width: 0,
-      height: 1,
-      style: {
-        bg: initialStyle.promptFg
-      }
-    });
+    // Prompt overlay removed — transition state is shown inline via banner/status rows.
+    this.promptOverlay = blessed.box({ parent: this.root, hidden: true, top: 0, left: 0, width: 0, height: 0 });
+    this.promptText = blessed.box({ parent: this.promptOverlay, hidden: true, top: 0, left: 0, width: 0, height: 0 });
+    this.promptBarTrack = blessed.box({ parent: this.promptOverlay, hidden: true, top: 0, left: 0, width: 0, height: 0 });
+    this.promptBarFill = blessed.box({ parent: this.promptBarTrack, hidden: true, top: 0, left: 0, width: 0, height: 0 });
 
     enableMouse(() => {
       handlers.onAnyClick();
@@ -395,24 +386,34 @@ export class PapadoroUi {
     const rows = this.screen.rows;
     const isPaused = state.status === 'paused';
     const palette = PALETTES[this.colorScheme];
-    const style = isPaused ? palette.pause : palette.modes[state.mode];
-    const progressRatio = state.durationSeconds <= 0
+    const isTransition = state.hasPrompt;
+    const style = isPaused
+      ? palette.pause
+      : isTransition && state.promptNextMode
+        ? palette.modes[state.promptNextMode]
+        : palette.modes[state.mode];
+    const progressRatio = isTransition || state.durationSeconds <= 0
       ? 0
       : clamp((state.durationSeconds - state.remainingSeconds) / state.durationSeconds, 0, 1);
     const progressWidth = Math.round(cols * progressRatio);
     const compactHeight = rows < 10;
 
-    const bannerText = isPaused
-      ? 'PAUSED'
-      : state.mode === 'work'
-        ? 'WORK'
-        : state.mode === 'short'
-          ? 'SHORT BREAK'
-          : 'LONG BREAK';
-    const statusBaseText = state.hasPrompt
-      ? 'SWITCH NOW'
-      : statusLabel(state.status);
-    const statusText = `${statusBaseText} | ${state.isLocked ? 'LOCKED' : 'OPEN'} | ${state.isMuted ? 'MUTED' : 'SOUND'}`;
+    const bannerText = state.hasPrompt
+      ? 'Done'
+      : isPaused
+        ? 'PAUSED'
+        : state.mode === 'work'
+          ? 'WORK'
+          : state.mode === 'short'
+            ? 'SHORT BREAK'
+            : 'LONG BREAK';
+
+    let statusText: string;
+    if (state.hasPrompt && state.promptNextMode) {
+      statusText = getTransitionStatusText(state.promptNextMode, state.promptCountdownSeconds, cols);
+    } else {
+      statusText = getRunningStatusText(state.status, state.isLocked, state.isMuted, cols);
+    }
 
     this.root.style.bg = style.base;
     this.progressFill.style.bg = style.fill;
@@ -435,7 +436,12 @@ export class PapadoroUi {
     this.helpBox.style.bg = style.statusBg;
     this.helpBox.style.fg = style.statusFg;
 
-    this.screen.title = `papadoro ${formatTime(state.remainingSeconds)}`;
+    const time = formatTime(state.remainingSeconds);
+    this.screen.title = state.hasPrompt && state.promptNextMode
+      ? (cols < 10 ? `→${MODE_LABELS_SHORT[state.promptNextMode]}` : `doro Done → ${MODE_LABELS_SHORT[state.promptNextMode]}`)
+      : cols >= 15 ? `doro ${time}`
+      : cols >= 10 ? `d ${time}`
+      : time;
     this.modeBannerBox.setContent(
       buildProgressRow(bannerText, cols, progressWidth, style.fill, style.bannerBg, style.bannerFg, true)
     );
@@ -446,52 +452,8 @@ export class PapadoroUi {
       buildProgressRow(getHelpText(cols), cols, progressWidth, style.fill, style.statusBg, style.statusFg)
     );
 
-    if (state.hasPrompt && state.promptNextMode) {
-      const ultraSmall = cols < 40 || rows < 10;
-      const promptWidth = ultraSmall
-        ? clamp(cols - 2, 20, cols - 2)
-        : clamp(cols - 8, 34, 72);
-      const promptHeight = ultraSmall ? 5 : clamp(rows < 14 ? 7 : 8, 6, 8);
-      const compactPrompt = ultraSmall || promptWidth < 48 || promptHeight < 8;
-      this.promptOverlay.width = promptWidth;
-      this.promptOverlay.height = promptHeight;
-      this.promptOverlay.left = Math.max(0, Math.floor((cols - promptWidth) / 2));
-      this.promptOverlay.top = Math.max(0, Math.floor((rows - promptHeight) / 2));
-      this.promptOverlay.style.bg = style.promptBg;
-      this.promptOverlay.style.border.fg = style.promptFg;
-      this.promptText.style.bg = style.promptBg;
-      this.promptText.style.fg = style.promptFg;
-      this.promptText.height = promptHeight - 4;
-      this.promptBarTrack.style.bg = style.statusBg;
-      this.promptBarFill.style.bg = style.promptFg;
-      this.promptOverlay.show();
-
-      const nextLabel = ultraSmall
-        ? MODE_LABELS_SHORT[state.promptNextMode]
-        : MODE_LABELS[state.promptNextMode];
-      this.promptText.setContent(
-        compactPrompt
-          ? `{bold}Done{/bold}\nNext: {bold}${nextLabel}{/bold}\nkey/click`
-          : '{bold}Time done{/bold}\n' +
-            `Next: {bold}${nextLabel}{/bold}\n` +
-            'Press any key/click to confirm\n' +
-            'q exits immediately'
-      );
-
-      const trackWidth = Math.max(1, promptWidth - 4);
-      const ratio = state.promptTotalSeconds > 0
-        ? clamp(state.promptCountdownSeconds / state.promptTotalSeconds, 0, 1)
-        : 0;
-      const fillWidth = Math.max(0, Math.round(trackWidth * ratio));
-      if (fillWidth > 0) {
-        this.promptBarFill.show();
-        this.promptBarFill.width = fillWidth;
-      } else {
-        this.promptBarFill.hide();
-      }
-    } else {
-      this.promptOverlay.hide();
-    }
+    // Transition state is now rendered inline — overlay always hidden.
+    this.promptOverlay.hide();
 
     this.screen.render();
   }
