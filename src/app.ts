@@ -108,7 +108,6 @@ export class DoroApp {
     } else {
       this.lastTickTs = now;
       const result = this.machine.tick(now);
-      state = result.state;
 
       if (result.switchedRunning && result.switchedToMode) {
         this.playModeClip(result.switchedToMode);
