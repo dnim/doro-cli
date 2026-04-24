@@ -4,10 +4,18 @@ updates:
   - package-ecosystem: 'npm'
     directory: '/'
     schedule:
-      interval: 'weekly' # Options: daily, weekly, monthly
+      interval: 'weekly'
+    groups:
+      dependencies:
+        patterns:
+          - '*'
 
   # Check for GitHub Actions updates
   - package-ecosystem: 'github-actions'
     directory: '/'
     schedule:
       interval: 'weekly'
+    groups:
+      actions:
+        patterns:
+          - '*'
