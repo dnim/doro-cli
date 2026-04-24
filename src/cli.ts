@@ -11,6 +11,7 @@ function main(): void {
     return;
   }
   if (args.includes('--help') || args.includes('-h')) {
+    /* eslint-disable no-console */
     console.log('doro - minimal terminal pomodoro timer');
     console.log('');
     console.log('Usage: doro [options]');
@@ -18,7 +19,8 @@ function main(): void {
     console.log('Options:');
     console.log('  -v, --version  Show version');
     console.log('  -h, --help     Show help');
-    return;
+    /* eslint-enable no-console */
+    process.exit(0);
   }
 
   const app = new DoroApp();
