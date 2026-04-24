@@ -1,0 +1,13 @@
+# Node.js
+node_modules/
+dist/
+coverage/
+
+# Logs
+*.log
+
+# Caches
+.eslintcache
+
+# macOS
+.DS_Store
