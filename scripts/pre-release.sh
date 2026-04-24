@@ -25,4 +25,12 @@ if [ "$LOCAL" != "$REMOTE" ]; then
   exit 1
 fi
 
+# 4. Quality Checks
+echo "Running Lint..."
+npm run lint
+echo "Running Typecheck..."
+npm run typecheck
+echo "Running Tests..."
+npm run test:unit
+
 echo "✅ Pre-release checks passed!"

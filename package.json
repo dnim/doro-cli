@@ -29,10 +29,7 @@
     "lint:local": "eslint . --cache",
     "typecheck": "tsc --noEmit",
     "test:unit": "jest --runInBand",
-    "preversion": "bash scripts/pre-release.sh && npm run lint && npm run typecheck && npm run test:unit",
-    "postversion": "npm publish --access public --tag latest && git push origin main --follow-tags",
-    "release:patch": "npm version patch",
-    "release:minor": "npm version minor"
+    "release": "bash scripts/release.sh"
   },
   "keywords": [
     "pomodoro",
