@@ -1,12 +1,21 @@
 {
   "name": "doro-cli",
-  "version": "1.0.0-rc.1",
+  "version": "1.0.0-rc.2",
   "description": "Minimal terminal pomodoro timer with keyboard shortcuts and chiptune cues",
   "files": [
     "dist",
     "!dist/__tests__",
-    "CHANGELOG.md"
+    "CHANGELOG.md",
+    "assets"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dnim/doro-cli.git"
+  },
+  "homepage": "https://github.com/dnim/doro-cli#readme",
+  "bugs": {
+    "url": "https://github.com/dnim/doro-cli/issues"
+  },
   "main": "dist/cli.js",
   "bin": {
     "doro": "dist/cli.js"
