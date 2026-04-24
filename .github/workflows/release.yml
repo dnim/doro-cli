@@ -28,7 +28,8 @@ jobs:
         uses: softprops/action-gh-release@v3
         with:
           draft: false
-          prerelease: false
+          prerelease: true
+          generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
