@@ -41,10 +41,15 @@ This document outlines the process for releasing a new version of `doro-cli`.
 
 ## Automation
 
-The GitHub Actions workflow [release.yml](.github/workflows/release.yml) handles the rest once a tag starting with `v*` is pushed:
+The GitHub Actions workflow [release.yml](.github/workflows/release.yml) uses **Trusted Publishing (OIDC)**:
+-   **Security**: No `NPM_TOKEN` secret is required. GitHub authenticates directly with npm using OpenID Connect.
+-   **Provenance**: The package is published with a verifiable link back to the GitHub Action that built it (`--provenance`).
+-   **Setup**: Ensure you have added "GitHub Actions" as a Trusted Publisher in your npm package settings.
+
+The workflow handles:
 -   **Tests & Linting**: Runs the full verification suite.
--   **GitHub Release**: Creates a new release with **automatically generated release notes** based on merged PRs and commits.
--   **NPM Publish**: Automatically publishes the new version to the npm registry.
+-   **GitHub Release**: Creates a new release with **automatically generated release notes**.
+-   **NPM Publish**: Automatically publishes to npm.
 
 ## Prereleases
 
