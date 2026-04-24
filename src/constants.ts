@@ -24,6 +24,12 @@ export const MODE_LABELS: Record<TimerMode, string> = {
   long: 'Long Rest'
 };
 
+export const MODE_LABELS_SHORT: Record<TimerMode, string> = {
+  work: 'Work',
+  short: 'Short',
+  long: 'Long'
+};
+
 export function getDurationForMode(config: TimerConfig, mode: TimerMode): number {
   if (mode === 'work') {
     return config.workSeconds;

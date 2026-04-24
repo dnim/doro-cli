@@ -1,3 +1,4 @@
+import { appendFile } from 'node:fs/promises';
 import type blessed from 'blessed';
 import { createCompletionBeepClip, createResetBeepClip, createRestStartClip, createWorkStartClip } from './audio/synth';
 import { playClip, stopPlayback } from './audio/player';
@@ -7,6 +8,8 @@ import { TimerStateMachine } from './stateMachine';
 import { PapadoroUi } from './ui';
 
 export class PapadoroApp {
+  private readonly debugInputEnabled: boolean;
+
   private readonly machine: TimerStateMachine;
 
   private readonly ui: PapadoroUi;
@@ -28,6 +31,7 @@ export class PapadoroApp {
   private lastTickTs = Date.now();
 
   public constructor() {
+    this.debugInputEnabled = process.env.PAPADORO_DEBUG_INPUT === '1';
     this.machine = new TimerStateMachine();
     this.workStartClip = createWorkStartClip();
     this.restStartClip = createRestStartClip();
@@ -46,7 +50,13 @@ export class PapadoroApp {
         });
       },
       onMouse: () => {
-        this.handleInput({ type: 'mouse' });
+        this.handleInput({ type: 'mouse', source: 'mouse' });
+      },
+      onClick: () => {
+        this.handleInput({ type: 'mouse', source: 'click' });
+      },
+      onMouseDown: () => {
+        this.handleInput({ type: 'mouse', source: 'mousedown' });
       },
       onResize: () => {
         this.handleInput({ type: 'resize' });
@@ -86,7 +96,7 @@ export class PapadoroApp {
             this.playCompletionBeep();
           }
 
-          if (result.autoSwitchedPaused && result.switchedToMode) {
+          if (result.switchedRunning && result.switchedToMode) {
             this.playModeClip(result.switchedToMode);
           }
 
@@ -100,7 +110,7 @@ export class PapadoroApp {
       const result = this.machine.tick(now);
       state = result.state;
 
-      if (result.autoSwitchedPaused && result.switchedToMode) {
+      if (result.switchedRunning && result.switchedToMode) {
         this.playModeClip(result.switchedToMode);
       }
     }
@@ -119,6 +129,7 @@ export class PapadoroApp {
     }
 
     const command = resolveControlCommand(event);
+    this.debugInput(event, command, 'received');
 
     if (command === 'quit') {
       this.shutdown();
@@ -128,6 +139,12 @@ export class PapadoroApp {
     const state = this.machine.getState();
 
     if (state.status === 'switchPrompt') {
+      this.debugInput(event, command, 'switchPrompt');
+      if (command === 'debugNearEnd') {
+        this.machine.debugJumpToNearEnd(3);
+        this.render();
+        return;
+      }
       if (isPromptConfirmEvent(event, command)) {
         const result = this.machine.confirmPromptAndSwitch();
         if (result.switchedToMode) {
@@ -172,6 +189,12 @@ export class PapadoroApp {
       return;
     }
 
+    if (command === 'debugNearEnd') {
+      this.machine.debugJumpToNearEnd(3);
+      this.render();
+      return;
+    }
+
     if (command === 'resetRun') {
       const result = this.machine.resetCurrentAndRun();
       if (result.switchedToMode) {
@@ -209,6 +232,17 @@ export class PapadoroApp {
     this.render();
   }
 
+  private debugInput(event: InputEvent, command: string, stage: string): void {
+    if (!this.debugInputEnabled) {
+      return;
+    }
+
+    const state = this.machine.getState();
+    const eventLabel = event.type === 'mouse' ? `mouse:${event.source ?? 'unknown'}` : event.type;
+    const line = `${new Date().toISOString()} stage=${stage} event=${eventLabel} command=${command} status=${state.status} prompt=${state.switchPrompt ? 'on' : 'off'}\n`;
+    void appendFile('/tmp/papadoro-input.log', line, { encoding: 'utf8' });
+  }
+
   private playModeClip(mode: 'work' | 'short' | 'long'): void {
     if (this.isMuted) {
       return;
@@ -240,9 +274,11 @@ export class PapadoroApp {
     const duration = getDurationForMode(config, state.mode);
 
     let promptCountdownSeconds = 0;
+    let promptTotalSeconds = 0;
     let promptNextMode: 'work' | 'short' | 'long' | null = null;
     if (state.switchPrompt) {
       promptCountdownSeconds = Math.max(0, Math.ceil((state.switchPrompt.deadlineTs - Date.now()) / 1000));
+      promptTotalSeconds = this.machine.getConfig().switchConfirmSeconds;
       promptNextMode = state.switchPrompt.nextMode;
     }
 
@@ -255,6 +291,7 @@ export class PapadoroApp {
       isMuted: this.isMuted,
       hasPrompt: Boolean(state.switchPrompt),
       promptCountdownSeconds,
+      promptTotalSeconds,
       promptNextMode
     });
   }

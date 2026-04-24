@@ -101,7 +101,7 @@ describe('TimerStateMachine', () => {
     expect(result.state.remainingSeconds).toBe(3);
   });
 
-  it('auto-switches and pauses after prompt timeout', () => {
+  it('auto-switches and starts next mode after prompt timeout', () => {
     const machine = new TimerStateMachine({
       workSeconds: 1,
       shortRestSeconds: 3,
@@ -114,9 +114,65 @@ describe('TimerStateMachine', () => {
     machine.tick(1000);
     const result = machine.tick(3000);
 
-    expect(result.autoSwitchedPaused).toBe(true);
+    expect(result.switchedRunning).toBe(true);
+    expect(result.switchedToMode).toBe('short');
     expect(result.state.mode).toBe('short');
-    expect(result.state.status).toBe('paused');
+    expect(result.state.status).toBe('running');
     expect(result.state.remainingSeconds).toBe(3);
+  });
+
+  it('debug jump pushes running timer to 3 seconds', () => {
+    const machine = new TimerStateMachine({
+      workSeconds: 10,
+      shortRestSeconds: 3,
+      longRestSeconds: 6,
+      longRestEveryWorkSessions: 3,
+      switchConfirmSeconds: 5
+    });
+
+    machine.startMode('work');
+    const state = machine.debugJumpToNearEnd(3);
+
+    expect(state.status).toBe('running');
+    expect(state.remainingSeconds).toBe(3);
+  });
+
+  it('debug jump does nothing while paused', () => {
+    const machine = new TimerStateMachine({
+      workSeconds: 10,
+      shortRestSeconds: 3,
+      longRestSeconds: 6,
+      longRestEveryWorkSessions: 3,
+      switchConfirmSeconds: 5
+    });
+
+    const before = machine.getState();
+    const after = machine.debugJumpToNearEnd(3);
+
+    expect(after.status).toBe('paused');
+    expect(after.remainingSeconds).toBe(before.remainingSeconds);
+  });
+
+  it('debug jump during switch prompt shortens confirm window', () => {
+    const machine = new TimerStateMachine({
+      workSeconds: 2,
+      shortRestSeconds: 3,
+      longRestSeconds: 6,
+      longRestEveryWorkSessions: 3,
+      switchConfirmSeconds: 60
+    });
+
+    machine.startMode('work');
+    machine.tick(1000);
+    machine.tick(2000);
+    const before = machine.getState();
+    expect(before.status).toBe('switchPrompt');
+
+    const after = machine.debugJumpToNearEnd(3);
+    expect(after.status).toBe('switchPrompt');
+    expect(after.switchPrompt).not.toBeNull();
+    const remainingMs = (after.switchPrompt as { deadlineTs: number }).deadlineTs - Date.now();
+    expect(remainingMs).toBeLessThanOrEqual(3000);
+    expect(remainingMs).toBeGreaterThan(0);
   });
 });

@@ -45,6 +45,7 @@ papadoro
 - `r` reset current timer and run (short beep)
 - `c` toggle color scheme (`modern` <-> `calm`)
 - `m` mute/unmute all sounds
+- `Shift+D` debug: jump current running timer to 3s left
 - `w` start work (22 min default)
 - `s` start short rest (5 min default)
 - `l` start long rest (12 min default)
@@ -55,7 +56,7 @@ papadoro
 - long rest every `3` completed work sessions
 - at `00:00`: completion beep + 60s switch prompt
 - in prompt: `q` exits, any other key or mouse click confirms next mode
-- if no confirm in 60s: auto-switch happens and timer stays paused
+- if no confirm in 60s: app auto-switches and starts next mode
 
 ## Contributing
 
@@ -68,3 +69,13 @@ npm run test:unit
 ```
 
 If changing colors/audio/controls, add or adjust tests in `src/__tests__`.
+
+## Debug input logging
+
+To debug key/mouse events and prompt confirmation flow:
+
+```bash
+PAPADORO_DEBUG_INPUT=1 npm run dev
+```
+
+Logs are appended to `/tmp/papadoro-input.log`.

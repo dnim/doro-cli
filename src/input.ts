@@ -9,6 +9,7 @@ export type InputEvent =
     }
   | {
       type: 'mouse';
+      source?: 'mouse' | 'click' | 'mousedown';
     }
   | {
       type: 'resize';
@@ -19,6 +20,7 @@ export type ControlCommand =
   | 'toggleLock'
   | 'toggleColorScheme'
   | 'toggleMute'
+  | 'debugNearEnd'
   | 'pauseResume'
   | 'resetRun'
   | 'startWork'
@@ -56,6 +58,10 @@ export function resolveControlCommand(event: InputEvent): ControlCommand {
     return 'toggleMute';
   }
 
+  if (event.keyName === 'd' && (event.shift || event.ch === 'D' || event.keyFull === 'S-d')) {
+    return 'debugNearEnd';
+  }
+
   if (event.keyName === 'r' || lowerChar === 'r') {
     return 'resetRun';
   }
@@ -81,6 +87,10 @@ export function isAllowedWhenLocked(command: ControlCommand): boolean {
 
 export function isPromptConfirmEvent(event: InputEvent, command: ControlCommand): boolean {
   if (command === 'quit') {
+    return false;
+  }
+
+  if (command === 'debugNearEnd') {
     return false;
   }
 

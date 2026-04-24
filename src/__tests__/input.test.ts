@@ -18,6 +18,8 @@ describe('input mapping', () => {
     expect(resolveControlCommand(keyEvent('p', 'p'))).toBe('pauseResume');
     expect(resolveControlCommand(keyEvent('c', 'c'))).toBe('toggleColorScheme');
     expect(resolveControlCommand(keyEvent('m', 'm'))).toBe('toggleMute');
+    expect(resolveControlCommand(keyEvent('D', 'd', 'S-d', true))).toBe('debugNearEnd');
+    expect(resolveControlCommand(keyEvent('d', 'd'))).toBe('none');
     expect(resolveControlCommand(keyEvent('r', 'r'))).toBe('resetRun');
     expect(resolveControlCommand(keyEvent('w', 'w'))).toBe('startWork');
     expect(resolveControlCommand(keyEvent('s', 's'))).toBe('startShort');
@@ -38,5 +40,6 @@ describe('input mapping', () => {
     expect(isPromptConfirmEvent(keyEvent('q', 'q'), 'quit')).toBe(false);
     expect(isPromptConfirmEvent(keyEvent('p', 'p'), 'pauseResume')).toBe(true);
     expect(isPromptConfirmEvent({ type: 'mouse' }, 'none')).toBe(true);
+    expect(isPromptConfirmEvent(keyEvent('D', 'd', 'S-d', true), 'debugNearEnd')).toBe(false);
   });
 });

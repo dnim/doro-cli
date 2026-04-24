@@ -1,5 +1,5 @@
 import blessed from 'blessed';
-import { MODE_LABELS, type TimerMode, type TimerStatus } from './constants';
+import { MODE_LABELS, MODE_LABELS_SHORT, type TimerMode, type TimerStatus } from './constants';
 
 type UiRenderState = {
   mode: TimerMode;
@@ -9,6 +9,7 @@ type UiRenderState = {
   isLocked: boolean;
   isMuted: boolean;
   promptCountdownSeconds: number;
+  promptTotalSeconds: number;
   hasPrompt: boolean;
   promptNextMode: TimerMode | null;
 };
@@ -16,6 +17,8 @@ type UiRenderState = {
 type UiHandlers = {
   onKey: (ch: string, key: blessed.Widgets.Events.IKeyEventArg) => void;
   onMouse: () => void;
+  onClick: () => void;
+  onMouseDown: () => void;
   onResize: () => void;
 };
 
@@ -37,6 +40,10 @@ type Palette = {
   modes: Record<TimerMode, ModeStyle>;
   pause: ModeStyle;
 };
+
+const HELP_TEXT_WIDE = 'q quit  p pause  r reset  c colors  m mute  w work  s short  l long  L lock';
+const HELP_TEXT_NARROW = 'q:✕  p:⏸  r:↺  c:✦  m:♪  w/s/l  L:⊟';
+const HELP_TEXT_ULTRA = 'q p r c m w s l L';
 
 const MODERN_MODE_STYLES: Record<TimerMode, ModeStyle> = {
   work: {
@@ -173,6 +180,10 @@ export class PapadoroUi {
 
   private readonly promptText: blessed.Widgets.BoxElement;
 
+  private readonly promptBarTrack: blessed.Widgets.BoxElement;
+
+  private readonly promptBarFill: blessed.Widgets.BoxElement;
+
   private colorScheme: ColorScheme = 'modern';
 
   public constructor(handlers: UiHandlers) {
@@ -181,7 +192,7 @@ export class PapadoroUi {
     this.screen = blessed.screen({
       smartCSR: false,
       fastCSR: false,
-      fullUnicode: false,
+      fullUnicode: true,
       autoPadding: false,
       title: 'papadoro',
       mouse: true,
@@ -195,6 +206,7 @@ export class PapadoroUi {
       left: 0,
       width: '100%',
       height: '100%',
+      mouse: true,
       style: {
         bg: initialStyle.base
       }
@@ -206,6 +218,7 @@ export class PapadoroUi {
       left: 0,
       width: 0,
       height: '100%',
+      mouse: true,
       style: {
         bg: initialStyle.fill
       }
@@ -217,6 +230,7 @@ export class PapadoroUi {
       left: 0,
       width: '100%',
       height: 1,
+      mouse: true,
       align: 'center',
       tags: true,
       style: {
@@ -232,6 +246,7 @@ export class PapadoroUi {
       left: 0,
       width: '100%',
       height: 1,
+      mouse: true,
       align: 'center',
       tags: true,
       style: {
@@ -247,13 +262,14 @@ export class PapadoroUi {
       left: 0,
       width: '100%',
       height: 1,
+      mouse: true,
       align: 'center',
       tags: true,
       style: {
         bg: initialStyle.statusBg,
         fg: initialStyle.statusFg
       },
-      content: 'q quit  p pause  r reset  c colors  m mute  w/s/l mode  L lock'
+      content: HELP_TEXT_WIDE
     });
 
     this.promptOverlay = blessed.box({
@@ -263,6 +279,7 @@ export class PapadoroUi {
       left: 'center-26',
       width: 52,
       height: 8,
+      mouse: true,
       border: 'line',
       align: 'center',
       valign: 'middle',
@@ -279,7 +296,8 @@ export class PapadoroUi {
       top: 1,
       left: 1,
       width: '100%-2',
-      height: '100%-2',
+      height: '100%-4',
+      mouse: true,
       align: 'center',
       valign: 'middle',
       tags: true,
@@ -289,8 +307,34 @@ export class PapadoroUi {
       }
     });
 
+    this.promptBarTrack = blessed.box({
+      parent: this.promptOverlay,
+      bottom: 1,
+      left: 2,
+      width: '100%-4',
+      height: 1,
+      mouse: true,
+      style: {
+        bg: initialStyle.statusBg
+      }
+    });
+
+    this.promptBarFill = blessed.box({
+      parent: this.promptBarTrack,
+      top: 0,
+      left: 0,
+      width: 0,
+      height: 1,
+      mouse: true,
+      style: {
+        bg: initialStyle.promptFg
+      }
+    });
+
     this.screen.on('keypress', handlers.onKey);
     this.screen.on('mouse', handlers.onMouse);
+    this.screen.on('click', handlers.onClick);
+    this.screen.on('mousedown', handlers.onMouseDown);
     this.screen.on('resize', handlers.onResize);
   }
 
@@ -308,6 +352,10 @@ export class PapadoroUi {
       ? 0
       : clamp((state.durationSeconds - state.remainingSeconds) / state.durationSeconds, 0, 1);
     const progressWidth = Math.round(cols * progressRatio);
+    const compactHeight = rows < 10;
+    const narrowWidth = cols < 72;
+    const ultraNarrow = cols < 40;
+
     const modeText = isPaused
       ? '{bold}PAUSED{/bold}'
       : state.mode === 'work'
@@ -316,7 +364,7 @@ export class PapadoroUi {
           ? '{bold}SHORT BREAK{/bold}'
           : '{bold}LONG BREAK{/bold}';
     const statusText = state.hasPrompt
-      ? `SWITCH NOW (${state.promptCountdownSeconds}s)`
+      ? 'SWITCH NOW'
       : statusLabel(state.status);
 
     this.root.style.bg = style.base;
@@ -328,16 +376,15 @@ export class PapadoroUi {
       this.progressFill.hide();
     }
 
-    const compactHeight = rows < 10;
-    const narrowWidth = cols < 72;
-
     this.modeBannerBox.top = compactHeight ? 0 : 2;
     this.statusBox.top = compactHeight ? 1 : 4;
     this.helpBox.hidden = compactHeight;
     this.helpBox.setContent(
-      narrowWidth
-        ? 'q quit  p pause  r reset  c colors  m mute  w/s/l  L lock'
-        : 'q quit  p pause  r reset  c colors  m mute  w work  s short  l long  L lock'
+      ultraNarrow
+        ? HELP_TEXT_ULTRA
+        : narrowWidth
+          ? HELP_TEXT_NARROW
+          : HELP_TEXT_WIDE
     );
 
     this.modeBannerBox.style.bg = style.bannerBg;
@@ -354,23 +401,48 @@ export class PapadoroUi {
     );
 
     if (state.hasPrompt && state.promptNextMode) {
-      const promptWidth = clamp(cols - 8, 34, 72);
-      const promptHeight = clamp(rows < 14 ? 6 : 8, 6, 8);
+      const ultraSmall = cols < 40 || rows < 10;
+      const promptWidth = ultraSmall
+        ? clamp(cols - 2, 20, cols - 2)
+        : clamp(cols - 8, 34, 72);
+      const promptHeight = ultraSmall ? 5 : clamp(rows < 14 ? 7 : 8, 6, 8);
+      const compactPrompt = ultraSmall || promptWidth < 48 || promptHeight < 8;
       this.promptOverlay.width = promptWidth;
       this.promptOverlay.height = promptHeight;
-      this.promptOverlay.left = Math.floor((cols - promptWidth) / 2);
+      this.promptOverlay.left = Math.max(0, Math.floor((cols - promptWidth) / 2));
       this.promptOverlay.top = Math.max(0, Math.floor((rows - promptHeight) / 2));
       this.promptOverlay.style.bg = style.promptBg;
       this.promptOverlay.style.border.fg = style.promptFg;
       this.promptText.style.bg = style.promptBg;
       this.promptText.style.fg = style.promptFg;
+      this.promptText.height = promptHeight - 4;
+      this.promptBarTrack.style.bg = style.statusBg;
+      this.promptBarFill.style.bg = style.promptFg;
       this.promptOverlay.show();
+
+      const nextLabel = ultraSmall
+        ? MODE_LABELS_SHORT[state.promptNextMode]
+        : MODE_LABELS[state.promptNextMode];
       this.promptText.setContent(
-        '{bold}Time done{/bold}\n' +
-          `Next: {bold}${MODE_LABELS[state.promptNextMode]}{/bold}\n` +
-          `Press any key/click to confirm (${state.promptCountdownSeconds}s)\n` +
-          'q exits immediately'
+        compactPrompt
+          ? `{bold}Done{/bold}\nNext: {bold}${nextLabel}{/bold}\nkey/click`
+          : '{bold}Time done{/bold}\n' +
+            `Next: {bold}${nextLabel}{/bold}\n` +
+            'Press any key/click to confirm\n' +
+            'q exits immediately'
       );
+
+      const trackWidth = Math.max(1, promptWidth - 4);
+      const ratio = state.promptTotalSeconds > 0
+        ? clamp(state.promptCountdownSeconds / state.promptTotalSeconds, 0, 1)
+        : 0;
+      const fillWidth = Math.max(0, Math.round(trackWidth * ratio));
+      if (fillWidth > 0) {
+        this.promptBarFill.show();
+        this.promptBarFill.width = fillWidth;
+      } else {
+        this.promptBarFill.hide();
+      }
     } else {
       this.promptOverlay.hide();
     }

@@ -25,7 +25,6 @@ export type TickResult = {
   state: TimerState;
   completedMode: TimerMode | null;
   startedPrompt: boolean;
-  autoSwitchedPaused: boolean;
   switchedRunning: boolean;
   switchedToMode: TimerMode | null;
 };
@@ -105,6 +104,30 @@ export class TimerStateMachine {
     return { state: this.getState(), switchedToMode: mode };
   }
 
+  public debugJumpToNearEnd(secondsLeft: number = 3): TimerState {
+    if (this.state.status === 'switchPrompt' && this.state.switchPrompt) {
+      this.state = {
+        ...this.state,
+        switchPrompt: {
+          ...this.state.switchPrompt,
+          deadlineTs: Date.now() + Math.max(1, Math.floor(secondsLeft)) * 1000
+        }
+      };
+      return this.getState();
+    }
+
+    if (this.state.status !== 'running') {
+      return this.getState();
+    }
+
+    this.state = {
+      ...this.state,
+      remainingSeconds: Math.max(1, Math.floor(secondsLeft))
+    };
+
+    return this.getState();
+  }
+
   public forceQuitState(): TimerState {
     return this.getState();
   }
@@ -119,7 +142,7 @@ export class TimerStateMachine {
           ...this.state,
           mode: prompt.nextMode,
           remainingSeconds: duration,
-          status: 'paused',
+          status: 'running',
           switchPrompt: null
         };
 
@@ -127,8 +150,7 @@ export class TimerStateMachine {
           state: this.getState(),
           completedMode: null,
           startedPrompt: false,
-          autoSwitchedPaused: true,
-          switchedRunning: false,
+          switchedRunning: true,
           switchedToMode: prompt.nextMode
         };
       }
@@ -137,7 +159,6 @@ export class TimerStateMachine {
         state: this.getState(),
         completedMode: null,
         startedPrompt: false,
-        autoSwitchedPaused: false,
         switchedRunning: false,
         switchedToMode: null
       };
@@ -148,7 +169,6 @@ export class TimerStateMachine {
         state: this.getState(),
         completedMode: null,
         startedPrompt: false,
-        autoSwitchedPaused: false,
         switchedRunning: false,
         switchedToMode: null
       };
@@ -164,7 +184,6 @@ export class TimerStateMachine {
         state: this.getState(),
         completedMode: null,
         startedPrompt: false,
-        autoSwitchedPaused: false,
         switchedRunning: false,
         switchedToMode: null
       };
@@ -191,7 +210,6 @@ export class TimerStateMachine {
       state: this.getState(),
       completedMode,
       startedPrompt: true,
-      autoSwitchedPaused: false,
       switchedRunning: false,
       switchedToMode: null
     };
