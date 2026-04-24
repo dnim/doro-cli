@@ -4,10 +4,23 @@
     "bash": {
       "*": "ask",
       "git status *": "allow",
+      "git status": "allow",
       "git diff *": "allow",
       "git log *": "allow",
       "git checkout *": "allow",
       "git add *": "allow",
+      "git commit *": "allow",
+      "git branch *": "allow",
+      "git branch": "allow",
+      "git fetch *": "allow",
+      "git merge *": "allow",
+      "git rebase *": "allow",
+      "git stash *": "allow",
+      "git reset *": "allow",
+      "git restore *": "allow",
+      "git show *": "allow",
+      "git push *": "allow",
+      "git push": "allow",
       "gh *": "allow"
     }
   }

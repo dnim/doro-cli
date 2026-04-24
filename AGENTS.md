@@ -10,6 +10,7 @@ Minimal terminal Pomodoro timer (Node.js, TypeScript, blessed TUI).
   - `fix/<name>` for bug fixes
   - `chore/<name>` for tooling, config, or maintenance work
 - Only merge to `main` via a pull request.
+- **Never push to remote without explicit user approval.**
 
 ## Plan Mode
 
