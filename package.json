@@ -2,6 +2,11 @@
   "name": "doro-cli",
   "version": "1.0.0-rc.1",
   "description": "Minimal terminal pomodoro timer with keyboard shortcuts and chiptune cues",
+  "files": [
+    "dist",
+    "!dist/__tests__",
+    "CHANGELOG.md"
+  ],
   "main": "dist/cli.js",
   "bin": {
     "doro": "dist/cli.js"
