@@ -55,7 +55,7 @@ describe('DoroUi', () => {
     expect(blessed.box).toHaveBeenCalledTimes(9);
 
     expect(enableMouse).toHaveBeenCalledTimes(1);
-    
+
     const mouseCallback = (enableMouse as jest.Mock).mock.calls[0][0];
     mouseCallback();
     expect(handlers.onAnyClick).toHaveBeenCalledTimes(1);

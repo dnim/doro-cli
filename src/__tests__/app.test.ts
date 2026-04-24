@@ -266,15 +266,18 @@ describe('DoroApp', () => {
     it('should bind SIGINT and SIGTERM and call shutdown', () => {
       const mockOn = jest.spyOn(process, 'on').mockImplementation();
       const mockShutdown = jest.spyOn(app as any, 'shutdown').mockImplementation();
-      
+
       app.bindProcessSignals();
-      
+
       expect(mockOn).toHaveBeenCalledWith('SIGINT', expect.any(Function));
       expect(mockOn).toHaveBeenCalledWith('SIGTERM', expect.any(Function));
 
       // Simulate SIGINT
-      const sigintHandler = mockOn.mock.calls.find((call) => call[0] === 'SIGINT')![1] as Function;
-      sigintHandler();
+      const sigintCall = mockOn.mock.calls.find((call) => call[0] === 'SIGINT');
+      if (sigintCall && sigintCall[1]) {
+        const sigintHandler = sigintCall[1] as () => void;
+        sigintHandler();
+      }
       expect(mockShutdown).toHaveBeenCalledTimes(1);
 
       mockOn.mockRestore();
