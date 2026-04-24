@@ -1,13 +1,13 @@
 version: 2
 updates:
   # Check for npm/pnpm dependency updates
-  - package-ecosystem: "npm"
-    directory: "/"
+  - package-ecosystem: 'npm'
+    directory: '/'
     schedule:
-      interval: "weekly" # Options: daily, weekly, monthly
-    
+      interval: 'weekly' # Options: daily, weekly, monthly
+
   # Check for GitHub Actions updates
-  - package-ecosystem: "github-actions"
-    directory: "/"
+  - package-ecosystem: 'github-actions'
+    directory: '/'
     schedule:
-      interval: "weekly"
+      interval: 'weekly'

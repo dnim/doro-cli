@@ -117,9 +117,7 @@ export function createCompletionBeepClip(): Buffer {
 }
 
 export function createResetBeepClip(): Buffer {
-  return makeClip([
-    { frequency: 783.99, durationMs: 140, volume: 0.15, wave: 'sine' }
-  ]);
+  return makeClip([{ frequency: 783.99, durationMs: 140, volume: 0.15, wave: 'sine' }]);
 }
 
 export const AUDIO_SAMPLE_RATE = SAMPLE_RATE;

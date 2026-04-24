@@ -2,15 +2,15 @@ import { enableMouse, disableMouse } from '../mouse';
 
 describe('Mouse Tracking', () => {
   let mockStdoutWrite: jest.SpyInstance;
-  let mockStdinOn: jest.SpyInstance;
   let mockStdinOff: jest.SpyInstance;
   let mockStdinPrependListener: jest.SpyInstance;
 
   beforeEach(() => {
     mockStdoutWrite = jest.spyOn(process.stdout, 'write').mockImplementation(() => true);
-    mockStdinOn = jest.spyOn(process.stdin, 'on').mockImplementation(() => process.stdin);
     mockStdinOff = jest.spyOn(process.stdin, 'off').mockImplementation(() => process.stdin);
-    mockStdinPrependListener = jest.spyOn(process.stdin, 'prependListener').mockImplementation(() => process.stdin);
+    mockStdinPrependListener = jest
+      .spyOn(process.stdin, 'prependListener')
+      .mockImplementation(() => process.stdin);
     jest.useFakeTimers();
   });
 
@@ -25,7 +25,7 @@ describe('Mouse Tracking', () => {
     enableMouse(mockHandler);
 
     expect(mockStdinPrependListener).toHaveBeenCalledWith('data', expect.any(Function));
-    
+
     // Process the setImmediate
     jest.runAllTimers();
 
@@ -46,9 +46,9 @@ describe('Mouse Tracking', () => {
   it('should call handler on left mouse click SGR sequences', () => {
     const mockHandler = jest.fn();
     enableMouse(mockHandler);
-    
+
     const dataListener = mockStdinPrependListener.mock.calls[0][1];
-    
+
     // Left mouse press: \x1b[<0;10;10M
     dataListener(Buffer.from('\x1b[<0;10;10M'));
     expect(mockHandler).toHaveBeenCalledTimes(1);
@@ -60,7 +60,7 @@ describe('Mouse Tracking', () => {
     // Mouse motion: \x1b[<32;10;10M (should not trigger)
     dataListener(Buffer.from('\x1b[<32;10;10M'));
     expect(mockHandler).toHaveBeenCalledTimes(1);
-    
+
     // Another left mouse press
     dataListener(Buffer.from('\x1b[<0;5;5M'));
     expect(mockHandler).toHaveBeenCalledTimes(2);

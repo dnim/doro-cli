@@ -56,7 +56,10 @@ export class TimerStateMachine {
   }
 
   public getState(): TimerState {
-    return { ...this.state, switchPrompt: this.state.switchPrompt ? { ...this.state.switchPrompt } : null };
+    return {
+      ...this.state,
+      switchPrompt: this.state.switchPrompt ? { ...this.state.switchPrompt } : null
+    };
   }
 
   public toggleLock(): TimerState {
@@ -104,7 +107,7 @@ export class TimerStateMachine {
     return { state: this.getState(), switchedToMode: mode };
   }
 
-  public debugJumpToNearEnd(secondsLeft: number = 3): TimerState {
+  public debugJumpToNearEnd(secondsLeft = 3): TimerState {
     if (this.state.status === 'switchPrompt' && this.state.switchPrompt) {
       this.state = {
         ...this.state,
@@ -190,9 +193,10 @@ export class TimerStateMachine {
     }
 
     const completedMode = this.state.mode;
-    const completedWorkSessions = completedMode === 'work'
-      ? this.state.completedWorkSessions + 1
-      : this.state.completedWorkSessions;
+    const completedWorkSessions =
+      completedMode === 'work'
+        ? this.state.completedWorkSessions + 1
+        : this.state.completedWorkSessions;
     const nextMode = getNextModeAfterCompletion(completedMode, completedWorkSessions, this.config);
 
     this.state = {

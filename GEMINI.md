@@ -1,9 +1,11 @@
 # doro-cli: Gemini Context
 
 ## Project Overview
+
 `doro-cli` is a keyboard-first, full-screen terminal Pomodoro timer written in TypeScript for Node.js. It features soft pastel themes and synthetic 8-bit audio cues.
 
 ## Core Tech Stack
+
 - **Runtime**: Node.js (>=22)
 - **Language**: TypeScript
 - **UI Framework**: `neo-blessed` (terminal TUI)
@@ -11,6 +13,7 @@
 - **Linting**: ESLint + TypeScript ESLint
 
 ## Source of Truth & Rule Interconnection
+
 To avoid repetition and ensure consistency, this project follows a hierarchical rule structure:
 
 1.  **Tool Permissions (`opencode.json`)**: This is the absolute source of truth for tool executions (e.g., `bash` permissions). Never attempt to bypass these restrictions.
@@ -18,6 +21,7 @@ To avoid repetition and ensure consistency, this project follows a hierarchical 
 3.  **Project Context (`GEMINI.md`)**: This file, focusing on technical architecture and development commands.
 
 ## Key Development Commands
+
 - **Install**: `npm install`
 - **Build**: `npm run build`
 - **Run (Dev)**: `npm run dev`
@@ -27,6 +31,7 @@ To avoid repetition and ensure consistency, this project follows a hierarchical 
 - **Typecheck**: `npm run typecheck`
 
 ## Architecture Highlights
+
 - `src/cli.ts`: Application entry point.
 - `src/app.ts`: Main controller; manages the lifecycle and event loop.
 - `src/stateMachine.ts`: Pure logic for timer states and transitions.
@@ -34,6 +39,7 @@ To avoid repetition and ensure consistency, this project follows a hierarchical 
 - `src/audio/`: Logic for programmatic audio generation and playback fallback.
 
 ## Development Conventions
+
 - **Keyboard-First**: Maintain single-key shortcuts for core timer operations.
 - **Responsiveness**: UI must remain readable down to very small terminal widths.
 - **Pure Logic**: Keep timer logic in `TimerStateMachine` and verify with unit tests in `src/__tests__/`.
@@ -42,4 +48,3 @@ To avoid repetition and ensure consistency, this project follows a hierarchical 
 ## Debugging Workflow
 
 - When investigating CI/CD failures, always start by checking the output of the latest GitHub Actions run using the `gh` CLI tool before attempting to reproduce the issue locally. For example: `gh run view --log`.
-

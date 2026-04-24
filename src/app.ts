@@ -1,8 +1,18 @@
 import type blessed from 'blessed';
-import { createCompletionBeepClip, createResetBeepClip, createRestStartClip, createWorkStartClip } from './audio/synth';
+import {
+  createCompletionBeepClip,
+  createResetBeepClip,
+  createRestStartClip,
+  createWorkStartClip
+} from './audio/synth';
 import { playClip, stopPlayback } from './audio/player';
 import { getDurationForMode } from './constants';
-import { isAllowedWhenLocked, isPromptConfirmEvent, resolveControlCommand, type InputEvent } from './input';
+import {
+  isAllowedWhenLocked,
+  isPromptConfirmEvent,
+  resolveControlCommand,
+  type InputEvent
+} from './input';
 import { TimerStateMachine } from './stateMachine';
 import { DoroUi } from './ui';
 
@@ -254,7 +264,10 @@ export class DoroApp {
     let promptTotalSeconds = 0;
     let promptNextMode: 'work' | 'short' | 'long' | null = null;
     if (state.switchPrompt) {
-      promptCountdownSeconds = Math.max(0, Math.ceil((state.switchPrompt.deadlineTs - Date.now()) / 1000));
+      promptCountdownSeconds = Math.max(
+        0,
+        Math.ceil((state.switchPrompt.deadlineTs - Date.now()) / 1000)
+      );
       promptTotalSeconds = this.machine.getConfig().switchConfirmSeconds;
       promptNextMode = state.switchPrompt.nextMode;
     }

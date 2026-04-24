@@ -39,27 +39,32 @@ describe('Audio Player', () => {
           setTimeout(() => cb(0, null), 0); // exit code 0
         }
       }),
-      killed: false,
+      killed: false
     };
     mockSpawn.mockReturnValue(mockChild);
 
     const dummyBuffer = Buffer.from('dummy-audio-data');
-    
+
     await playClip(dummyBuffer);
 
-    expect(mockFsWriteFile).toHaveBeenCalledWith(expect.stringMatching(/doro-[0-9a-f]+\.wav/), dummyBuffer);
+    expect(mockFsWriteFile).toHaveBeenCalledWith(
+      expect.stringMatching(/doro-[0-9a-f]+\.wav/),
+      dummyBuffer
+    );
     expect(mockSpawn).toHaveBeenCalled();
     // Verify cleanup
-    expect(mockFsRm).toHaveBeenCalledWith(expect.stringMatching(/doro-[0-9a-f]+\.wav/), { force: true });
+    expect(mockFsRm).toHaveBeenCalledWith(expect.stringMatching(/doro-[0-9a-f]+\.wav/), {
+      force: true
+    });
   });
 
   it('should stop playback and kill child process if stopPlayback is called', async () => {
     let closeCb: (code: number, signal: string) => void;
-    
+
     const mockChild = {
       kill: jest.fn().mockImplementation((signal) => {
         if (closeCb) {
-          closeCb(null as any, signal); // Simulate child exiting after kill
+          closeCb(null as unknown as number, signal); // Simulate child exiting after kill
         }
       }),
       on: jest.fn().mockImplementation((event, cb) => {
@@ -67,17 +72,17 @@ describe('Audio Player', () => {
           closeCb = cb;
         }
       }),
-      killed: false,
+      killed: false
     };
-    
+
     mockSpawn.mockReturnValue(mockChild);
 
     const dummyBuffer = Buffer.from('dummy');
-    
+
     const playPromise = playClip(dummyBuffer);
 
     // Give it a tick to start
-    await new Promise(resolve => setTimeout(resolve, 0));
+    await new Promise((resolve) => setTimeout(resolve, 0));
 
     stopPlayback();
 
@@ -99,7 +104,7 @@ describe('Audio Player', () => {
             setTimeout(() => cb(isFirst ? 1 : 0, null), 0); // fail 1st, succeed 2nd
           }
         }),
-        killed: false,
+        killed: false
       };
     });
 

@@ -1,7 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-empty-function */
 import { DoroApp } from '../app';
 import { TimerStateMachine } from '../stateMachine';
 import { DoroUi } from '../ui';
-import { playClip, stopPlayback } from '../audio/player';
+import { stopPlayback } from '../audio/player';
 import {
   createCompletionBeepClip,
   createResetBeepClip,
@@ -9,7 +10,7 @@ import {
   createWorkStartClip
 } from '../audio/synth';
 import { getDurationForMode } from '../constants';
-import { isAllowedWhenLocked, isPromptConfirmEvent, resolveControlCommand } from '../input';
+import { resolveControlCommand } from '../input';
 
 // Mock dependencies
 jest.mock('../stateMachine');
@@ -50,24 +51,24 @@ describe('DoroApp', () => {
       toggleLock: jest.fn(),
       togglePause: jest.fn(),
       debugJumpToNearEnd: jest.fn(),
-      resetCurrentAndRun: jest.fn(),
+      resetCurrentAndRun: jest.fn()
       // Add other methods of TimerStateMachine as they are used
-    } as jest.Mocked<TimerStateMachine>;
+    } as unknown as jest.Mocked<TimerStateMachine>;
 
     // Initialize mock DoroUi instance
     mockDoroUi = {
       render: jest.fn(),
       destroy: jest.fn(),
-      toggleColorScheme: jest.fn(),
-    } as jest.Mocked<DoroUi>;
+      toggleColorScheme: jest.fn()
+    } as unknown as jest.Mocked<DoroUi>;
 
     // Mock constructor implementations
     (TimerStateMachine as jest.Mock).mockImplementation(() => mockTimerStateMachine);
     (DoroUi as jest.Mock).mockImplementation((options) => {
       // Capture the callbacks passed to DoroUi constructor
-      mockDoroUi.onKey = options.onKey;
-      mockDoroUi.onAnyClick = options.onAnyClick;
-      mockDoroUi.onResize = options.onResize;
+      (mockDoroUi as any).onKey = options.onKey;
+      (mockDoroUi as any).onAnyClick = options.onAnyClick;
+      (mockDoroUi as any).onResize = options.onResize;
       return mockDoroUi;
     });
 
@@ -80,17 +81,17 @@ describe('DoroApp', () => {
     // Default mock implementations for methods
     mockTimerStateMachine.getState.mockReturnValue({
       mode: 'work',
-      status: 'idle',
+      status: 'paused',
       remainingSeconds: 0,
       isLocked: false,
       switchPrompt: null,
-      cycleCount: 0
+      completedWorkSessions: 0
     });
     mockTimerStateMachine.getConfig.mockReturnValue({
       workSeconds: 25 * 60,
-      shortBreakSeconds: 5 * 60,
-      longBreakSeconds: 15 * 60,
-      longBreakInterval: 4,
+      shortRestSeconds: 5 * 60,
+      longRestSeconds: 15 * 60,
+      longRestEveryWorkSessions: 4,
       switchConfirmSeconds: 5
     });
     (getDurationForMode as jest.Mock).mockReturnValue(25 * 60); // Default duration
@@ -102,11 +103,12 @@ describe('DoroApp', () => {
         remainingSeconds: 10,
         isLocked: false,
         switchPrompt: null,
-        cycleCount: 0
+        completedWorkSessions: 0
       },
       startedPrompt: false,
       switchedRunning: false,
-      switchedToMode: null
+      switchedToMode: null,
+      completedMode: null
     });
 
     app = new DoroApp();
@@ -183,19 +185,40 @@ describe('DoroApp', () => {
   describe('handleInput', () => {
     it('should ignore input if exiting', () => {
       (app as any).isExiting = true;
-      (app as any).handleInput({ type: 'key', ch: 'a', keyName: 'a', keyFull: 'a', shift: false, ctrl: false });
+      (app as any).handleInput({
+        type: 'key',
+        ch: 'a',
+        keyName: 'a',
+        keyFull: 'a',
+        shift: false,
+        ctrl: false
+      });
       expect(mockDoroUi.render).not.toHaveBeenCalled();
     });
 
     it('should toggle color scheme', () => {
       (resolveControlCommand as jest.Mock).mockReturnValue('toggleColorScheme');
-      (app as any).handleInput({ type: 'key', ch: 'c', keyName: 'c', keyFull: 'c', shift: false, ctrl: false });
+      (app as any).handleInput({
+        type: 'key',
+        ch: 'c',
+        keyName: 'c',
+        keyFull: 'c',
+        shift: false,
+        ctrl: false
+      });
       expect(mockDoroUi.toggleColorScheme).toHaveBeenCalledTimes(1);
     });
 
     it('should toggle pause', () => {
       (resolveControlCommand as jest.Mock).mockReturnValue('pauseResume');
-      (app as any).handleInput({ type: 'key', ch: 'p', keyName: 'p', keyFull: 'p', shift: false, ctrl: false });
+      (app as any).handleInput({
+        type: 'key',
+        ch: 'p',
+        keyName: 'p',
+        keyFull: 'p',
+        shift: false,
+        ctrl: false
+      });
       expect(mockTimerStateMachine.togglePause).toHaveBeenCalledTimes(1);
     });
   });
@@ -204,6 +227,60 @@ describe('DoroApp', () => {
     it('should step the timer and render', () => {
       (app as any).stepClock();
       expect(mockTimerStateMachine.tick).toHaveBeenCalled();
+    });
+
+    it('should pass prompt values to ui.render when switchPrompt is active', () => {
+      const stateWithPrompt = {
+        mode: 'work' as const,
+        status: 'switchPrompt' as const,
+        remainingSeconds: 0,
+        isLocked: false,
+        switchPrompt: {
+          deadlineTs: Date.now() + 5000,
+          nextMode: 'short' as const
+        },
+        completedWorkSessions: 1
+      };
+
+      mockTimerStateMachine.tick.mockReturnValue({
+        state: stateWithPrompt,
+        startedPrompt: true,
+        switchedRunning: false,
+        switchedToMode: null,
+        completedMode: 'work'
+      });
+
+      mockTimerStateMachine.getState.mockReturnValue(stateWithPrompt);
+
+      (app as any).stepClock();
+      expect(mockDoroUi.render).toHaveBeenCalledWith(
+        expect.objectContaining({
+          hasPrompt: true,
+          promptNextMode: 'short'
+        })
+      );
+    });
+  });
+
+  describe('bindProcessSignals', () => {
+    it('should bind SIGINT and SIGTERM and call shutdown', () => {
+      const mockOn = jest.spyOn(process, 'on').mockImplementation();
+      const mockShutdown = jest.spyOn(app as any, 'shutdown').mockImplementation();
+
+      app.bindProcessSignals();
+
+      expect(mockOn).toHaveBeenCalledWith('SIGINT', expect.any(Function));
+      expect(mockOn).toHaveBeenCalledWith('SIGTERM', expect.any(Function));
+
+      // Simulate SIGINT
+      const sigintCall = mockOn.mock.calls.find((call) => call[0] === 'SIGINT');
+      if (sigintCall && sigintCall[1]) {
+        const sigintHandler = sigintCall[1] as () => void;
+        sigintHandler();
+      }
+      expect(mockShutdown).toHaveBeenCalledTimes(1);
+
+      mockOn.mockRestore();
     });
   });
 });
