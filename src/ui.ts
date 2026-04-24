@@ -405,8 +405,8 @@ export class PapadoroUi {
         : state.mode === 'work'
           ? 'WORK'
           : state.mode === 'short'
-            ? 'SHORT BREAK'
-            : 'LONG BREAK';
+            ? (cols < 14 ? 'SHORT' : 'SHORT BREAK')
+            : (cols < 13 ? 'LONG' : 'LONG BREAK');
 
     let statusText: string;
     if (state.hasPrompt && state.promptNextMode) {
