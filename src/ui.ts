@@ -44,6 +44,64 @@ const HELP_TEXT_WIDE = 'q quit  p pause  r reset  c colors  m mute  w work  s sh
 const HELP_TEXT_NARROW = 'q:✕  p:⏸  r:↺  c:✦  m:♪  w/s/l  L:⊟';
 const HELP_TEXT_ULTRA = 'q p r c m w s l L';
 
+// Priority-ordered single-key tokens for sub-ultra fallback
+const HELP_TOKENS_PRIORITY = ['q', 'p', 'r', 'm', 'w', 's', 'l', 'c', 'L'];
+
+/**
+ * Returns the widest help-legend string that fits within `cols` characters.
+ * Items are dropped from lowest priority first when space is very tight.
+ */
+function getHelpText(cols: number): string {
+  if (cols <= 0) return '';
+  if (HELP_TEXT_WIDE.length <= cols) return HELP_TEXT_WIDE;
+  if (HELP_TEXT_NARROW.length <= cols) return HELP_TEXT_NARROW;
+  if (HELP_TEXT_ULTRA.length <= cols) return HELP_TEXT_ULTRA;
+  // Still doesn't fit – drop lowest-priority tokens one at a time
+  const tokens: string[] = [];
+  for (const token of HELP_TOKENS_PRIORITY) {
+    const candidate = [...tokens, token].join(' ');
+    if (candidate.length <= cols) {
+      tokens.push(token);
+    } else {
+      break;
+    }
+  }
+  return tokens.join(' ');
+}
+
+/**
+ * Builds a full-width row string that shows a two-tone progress background
+ * using blessed markup tags.  The `visibleText` (plain, no markup) is centred
+ * across `cols` columns; everything left of `fillWidth` gets `fillBg` and
+ * everything to the right gets `baseBg`.
+ */
+function buildProgressRow(
+  visibleText: string,
+  cols: number,
+  fillWidth: number,
+  fillBg: string,
+  baseBg: string,
+  fg: string,
+  bold = false
+): string {
+  if (cols <= 0) return '';
+  const fw = Math.max(0, Math.min(fillWidth, cols));
+  const textLen = Math.min(visibleText.length, cols);
+  const safeText = visibleText.slice(0, textLen);
+  const totalPad = cols - textLen;
+  const padLeft = Math.floor(totalPad / 2);
+  const padRight = totalPad - padLeft;
+  const full = ' '.repeat(padLeft) + safeText + ' '.repeat(padRight);
+  const p1 = full.substring(0, fw);
+  const p2 = full.substring(fw);
+  const bO = bold ? '{bold}' : '';
+  const bC = bold ? '{/bold}' : '';
+  let content = '';
+  if (p1.length > 0) content += `{${fillBg}-bg}{${fg}-fg}${bO}${p1}${bC}`;
+  if (p2.length > 0) content += `{${baseBg}-bg}{${fg}-fg}${bO}${p2}${bC}`;
+  return content;
+}
+
 const MODERN_MODE_STYLES: Record<TimerMode, ModeStyle> = {
   work: {
     base: '#fce9f1',
@@ -247,7 +305,7 @@ export class PapadoroUi {
         bg: initialStyle.statusBg,
         fg: initialStyle.statusFg
       },
-      content: 'RUNNING | OPEN'
+      content: ''
     });
 
     this.helpBox = blessed.box({
@@ -262,7 +320,7 @@ export class PapadoroUi {
         bg: initialStyle.statusBg,
         fg: initialStyle.statusFg
       },
-      content: HELP_TEXT_WIDE
+      content: ''
     });
 
     this.promptOverlay = blessed.box({
@@ -343,19 +401,18 @@ export class PapadoroUi {
       : clamp((state.durationSeconds - state.remainingSeconds) / state.durationSeconds, 0, 1);
     const progressWidth = Math.round(cols * progressRatio);
     const compactHeight = rows < 10;
-    const narrowWidth = cols < 72;
-    const ultraNarrow = cols < 40;
 
-    const modeText = isPaused
-      ? '{bold}PAUSED{/bold}'
+    const bannerText = isPaused
+      ? 'PAUSED'
       : state.mode === 'work'
-        ? '{bold}WORK{/bold}'
+        ? 'WORK'
         : state.mode === 'short'
-          ? '{bold}SHORT BREAK{/bold}'
-          : '{bold}LONG BREAK{/bold}';
-    const statusText = state.hasPrompt
+          ? 'SHORT BREAK'
+          : 'LONG BREAK';
+    const statusBaseText = state.hasPrompt
       ? 'SWITCH NOW'
       : statusLabel(state.status);
+    const statusText = `${statusBaseText} | ${state.isLocked ? 'LOCKED' : 'OPEN'} | ${state.isMuted ? 'MUTED' : 'SOUND'}`;
 
     this.root.style.bg = style.base;
     this.progressFill.style.bg = style.fill;
@@ -368,14 +425,8 @@ export class PapadoroUi {
 
     this.modeBannerBox.top = compactHeight ? 0 : 2;
     this.statusBox.top = compactHeight ? 1 : 4;
-    this.helpBox.hidden = compactHeight;
-    this.helpBox.setContent(
-      ultraNarrow
-        ? HELP_TEXT_ULTRA
-        : narrowWidth
-          ? HELP_TEXT_NARROW
-          : HELP_TEXT_WIDE
-    );
+    // Show help unless there is genuinely no row for it (banner + status take rows 0-1).
+    this.helpBox.hidden = rows < 3;
 
     this.modeBannerBox.style.bg = style.bannerBg;
     this.modeBannerBox.style.fg = style.bannerFg;
@@ -385,9 +436,14 @@ export class PapadoroUi {
     this.helpBox.style.fg = style.statusFg;
 
     this.screen.title = `papadoro ${formatTime(state.remainingSeconds)}`;
-    this.modeBannerBox.setContent(modeText);
+    this.modeBannerBox.setContent(
+      buildProgressRow(bannerText, cols, progressWidth, style.fill, style.bannerBg, style.bannerFg, true)
+    );
     this.statusBox.setContent(
-      `${statusText} | ${state.isLocked ? 'LOCKED' : 'OPEN'} | ${state.isMuted ? 'MUTED' : 'SOUND'}`
+      buildProgressRow(statusText, cols, progressWidth, style.fill, style.statusBg, style.statusFg)
+    );
+    this.helpBox.setContent(
+      buildProgressRow(getHelpText(cols), cols, progressWidth, style.fill, style.statusBg, style.statusFg)
     );
 
     if (state.hasPrompt && state.promptNextMode) {
