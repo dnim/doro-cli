@@ -12,7 +12,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [18.x, 20.x, 22.x]
+        node-version: [22.x]
 
     steps:
     - name: Checkout Code
@@ -40,7 +40,7 @@ jobs:
       run: npm run build
 
     - name: Verify Binary Packaging
-      if: matrix.node-version == '18.x' # Only run on the version used for packaging
+      if: matrix.node-version == '22.x' # Only run on the version used for packaging
       run: npm run build:binaries
 
     - name: Upload Coverage to Codecov
