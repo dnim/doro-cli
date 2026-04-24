@@ -1,0 +1,59 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: 'npm'
+          registry-url: 'https://registry.npmjs.org'
+
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run test:unit
+      - run: npm run lint
+
+      - name: Build binaries
+        run: npm run build:binaries
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/binaries/*
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish to npm
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Update Homebrew formula
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          SHA256_MACOS=$(sha256sum dist/binaries/doro-cli-macos-x64 | awk '{print $1}')
+          # You would repeat this for arm64 and linux
+          
+          # This part is conceptual as it depends on having a tap repo
+          # and a secret token (e.g., TAP_TOKEN) to push to it.
+          echo "Updating Homebrew formula for version $VERSION..."
+          # git clone https://${{ secrets.TAP_TOKEN }}@github.com/your-username/homebrew-doro-cli.git
+          # cd homebrew-doro-cli
+          # update doro.rb
+          # git add . && git commit -m "Update doro to $VERSION" && git push
+

@@ -1,7 +1,7 @@
-# papadoro: Gemini Context
+# doro-cli: Gemini Context
 
 ## Project Overview
-`papadoro` is a keyboard-first, full-screen terminal Pomodoro timer written in TypeScript for Node.js. It features soft pastel themes and synthetic 8-bit audio cues.
+`doro-cli` is a keyboard-first, full-screen terminal Pomodoro timer written in TypeScript for Node.js. It features soft pastel themes and synthetic 8-bit audio cues.
 
 ## Core Tech Stack
 - **Runtime**: Node.js (>=22)

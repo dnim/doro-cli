@@ -260,7 +260,7 @@ function statusLabel(status: TimerStatus): string {
   return 'SWITCH';
 }
 
-export class PapadoroUi {
+export class DoroUi {
   private readonly screen: blessed.Widgets.Screen;
 
   private readonly root: blessed.Widgets.BoxElement;
@@ -291,7 +291,7 @@ export class PapadoroUi {
       fastCSR: false,
       fullUnicode: true,
       autoPadding: false,
-      title: 'papadoro',
+      title: 'doro',
       dockBorders: false,
       warnings: false
     });

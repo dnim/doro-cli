@@ -1,4 +1,4 @@
-# papadoro
+# doro-cli
 
 Tiny terminal pomodoro. Full-screen vibes. Keyboard-first flow. Soft pastel themes. Chiptune cues.
 
@@ -6,9 +6,9 @@ Based on the Pomodoro Technique: https://en.wikipedia.org/wiki/Pomodoro_Techniqu
 
 ## Preview
 
-![papadoro demo](./assets/papadoro-demo.gif)
+![doro-cli demo](./assets/doro-demo.gif)
 
-## Why papadoro
+## Why doro-cli
 
 - fast launch, no config maze
 - focused timer flow with zero UI noise
@@ -35,7 +35,7 @@ Optional local command:
 
 ```bash
 npm link
-papadoro
+doro
 ```
 
 ## Controls

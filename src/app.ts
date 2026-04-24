@@ -4,12 +4,12 @@ import { playClip, stopPlayback } from './audio/player';
 import { getDurationForMode } from './constants';
 import { isAllowedWhenLocked, isPromptConfirmEvent, resolveControlCommand, type InputEvent } from './input';
 import { TimerStateMachine } from './stateMachine';
-import { PapadoroUi } from './ui';
+import { DoroUi } from './ui';
 
-export class PapadoroApp {
+export class DoroApp {
   private readonly machine: TimerStateMachine;
 
-  private readonly ui: PapadoroUi;
+  private readonly ui: DoroUi;
 
   private readonly workStartClip: Buffer;
 
@@ -34,7 +34,7 @@ export class PapadoroApp {
     this.completionBeepClip = createCompletionBeepClip();
     this.resetBeepClip = createResetBeepClip();
 
-    this.ui = new PapadoroUi({
+    this.ui = new DoroUi({
       onKey: (ch, key) => {
         this.handleInput({
           type: 'key',

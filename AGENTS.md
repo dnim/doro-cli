@@ -1,4 +1,4 @@
-# papadoro
+# doro-cli
 
 Minimal terminal Pomodoro timer (Node.js, TypeScript, blessed TUI).
 

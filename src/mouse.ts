@@ -13,6 +13,7 @@
 export type MouseClickHandler = () => void;
 
 // SGR extended mouse: \x1b[<btn;col;rowM  (press)  or  \x1b[<btn;col;rowm  (release)
+// eslint-disable-next-line no-control-regex
 const SGR_RE = /\x1b\[<(\d+);(\d+);(\d+)([Mm])/g;
 
 let handler: MouseClickHandler | null = null;

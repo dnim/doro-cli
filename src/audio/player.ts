@@ -85,7 +85,7 @@ export async function playClip(buffer: Buffer): Promise<void> {
   };
   activePlayback = playback;
 
-  const filePath = join(tmpdir(), `papadoro-${randomBytes(6).toString('hex')}.wav`);
+  const filePath = join(tmpdir(), `doro-${randomBytes(6).toString('hex')}.wav`);
   await fs.writeFile(filePath, buffer);
 
   try {
