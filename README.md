@@ -69,13 +69,3 @@ npm run test:unit
 ```
 
 If changing colors/audio/controls, add or adjust tests in `src/__tests__`.
-
-## Debug input logging
-
-To debug key/mouse events and prompt confirmation flow:
-
-```bash
-PAPADORO_DEBUG_INPUT=1 npm run dev
-```
-
-Logs are appended to `/tmp/papadoro-input.log`.

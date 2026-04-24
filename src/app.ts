@@ -1,4 +1,3 @@
-import { appendFile } from 'node:fs/promises';
 import type blessed from 'blessed';
 import { createCompletionBeepClip, createResetBeepClip, createRestStartClip, createWorkStartClip } from './audio/synth';
 import { playClip, stopPlayback } from './audio/player';
@@ -8,8 +7,6 @@ import { TimerStateMachine } from './stateMachine';
 import { PapadoroUi } from './ui';
 
 export class PapadoroApp {
-  private readonly debugInputEnabled: boolean;
-
   private readonly machine: TimerStateMachine;
 
   private readonly ui: PapadoroUi;
@@ -31,7 +28,6 @@ export class PapadoroApp {
   private lastTickTs = Date.now();
 
   public constructor() {
-    this.debugInputEnabled = process.env.PAPADORO_DEBUG_INPUT === '1';
     this.machine = new TimerStateMachine();
     this.workStartClip = createWorkStartClip();
     this.restStartClip = createRestStartClip();
@@ -123,7 +119,6 @@ export class PapadoroApp {
     }
 
     const command = resolveControlCommand(event);
-    this.debugInput(event, command, 'received');
 
     if (command === 'quit') {
       this.shutdown();
@@ -133,7 +128,6 @@ export class PapadoroApp {
     const state = this.machine.getState();
 
     if (state.status === 'switchPrompt') {
-      this.debugInput(event, command, 'switchPrompt');
       if (command === 'debugNearEnd') {
         this.machine.debugJumpToNearEnd(3);
         this.render();
@@ -224,17 +218,6 @@ export class PapadoroApp {
     }
 
     this.render();
-  }
-
-  private debugInput(event: InputEvent, command: string, stage: string): void {
-    if (!this.debugInputEnabled) {
-      return;
-    }
-
-    const state = this.machine.getState();
-    const eventLabel = event.type === 'mouse' ? `mouse:${event.source ?? 'unknown'}` : event.type;
-    const line = `${new Date().toISOString()} stage=${stage} event=${eventLabel} command=${command} status=${state.status} prompt=${state.switchPrompt ? 'on' : 'off'}\n`;
-    void appendFile('/tmp/papadoro-input.log', line, { encoding: 'utf8' });
   }
 
   private playModeClip(mode: 'work' | 'short' | 'long'): void {
