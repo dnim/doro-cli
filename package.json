@@ -8,7 +8,7 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "build:binaries": "npm run build && npx @yao-pkg/pkg . --out-path dist/binaries",
+
     "dev": "tsx src/cli.ts",
     "lint": "eslint . --ext .ts",
     "lint:local": "eslint . --ext .ts --cache",
@@ -24,22 +24,7 @@
   "engines": {
     "node": ">=22"
   },
-  "pkg": {
-    "scripts": [
-      "dist/**/*.js",
-      "node_modules/blessed/lib/widgets/*.js"
-    ],
-    "assets": [
-      "node_modules/blessed/usr/**/*"
-    ],
-    "targets": [
-      "node22-macos-x64",
-      "node22-macos-arm64",
-      "node22-linux-x64",
-      "node22-linux-arm64",
-      "node22-win-x64"
-    ]
-  },
+
   "dependencies": {
     "blessed": "npm:@rook2pawn/neo-blessed@^2.0.2"
   },
