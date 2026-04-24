@@ -1,0 +1,19 @@
+# papadoro
+
+Minimal terminal Pomodoro timer (Node.js, TypeScript, blessed TUI).
+
+## Git Workflow
+
+- **Never commit or make changes directly on `main`.**
+- Always create a branch first:
+  - `feature/<name>` for new features
+  - `fix/<name>` for bug fixes
+  - `chore/<name>` for tooling, config, or maintenance work
+- Only merge to `main` via a pull request.
+
+## Plan Mode
+
+- Keep plans short and concise.
+- Default plan: 100 lines max.
+- If the user says "more": 200 lines max.
+- Avoid padding — every line should add value.

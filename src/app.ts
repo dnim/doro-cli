@@ -49,14 +49,8 @@ export class PapadoroApp {
           ctrl: Boolean(key.ctrl)
         });
       },
-      onMouse: () => {
-        this.handleInput({ type: 'mouse', source: 'mouse' });
-      },
-      onClick: () => {
-        this.handleInput({ type: 'mouse', source: 'click' });
-      },
-      onMouseDown: () => {
-        this.handleInput({ type: 'mouse', source: 'mousedown' });
+      onAnyClick: () => {
+        this.handleInput({ type: 'mouse' });
       },
       onResize: () => {
         this.handleInput({ type: 'resize' });

@@ -1,5 +1,6 @@
 import blessed from 'blessed';
 import { MODE_LABELS, MODE_LABELS_SHORT, type TimerMode, type TimerStatus } from './constants';
+import { enableMouse, disableMouse } from './mouse';
 
 type UiRenderState = {
   mode: TimerMode;
@@ -16,10 +17,8 @@ type UiRenderState = {
 
 type UiHandlers = {
   onKey: (ch: string, key: blessed.Widgets.Events.IKeyEventArg) => void;
-  onMouse: () => void;
-  onClick: () => void;
-  onMouseDown: () => void;
   onResize: () => void;
+  onAnyClick: () => void;
 };
 
 type ModeStyle = {
@@ -195,7 +194,6 @@ export class PapadoroUi {
       fullUnicode: true,
       autoPadding: false,
       title: 'papadoro',
-      mouse: true,
       dockBorders: false,
       warnings: false
     });
@@ -206,7 +204,6 @@ export class PapadoroUi {
       left: 0,
       width: '100%',
       height: '100%',
-      mouse: true,
       style: {
         bg: initialStyle.base
       }
@@ -218,7 +215,6 @@ export class PapadoroUi {
       left: 0,
       width: 0,
       height: '100%',
-      mouse: true,
       style: {
         bg: initialStyle.fill
       }
@@ -230,7 +226,6 @@ export class PapadoroUi {
       left: 0,
       width: '100%',
       height: 1,
-      mouse: true,
       align: 'center',
       tags: true,
       style: {
@@ -246,7 +241,6 @@ export class PapadoroUi {
       left: 0,
       width: '100%',
       height: 1,
-      mouse: true,
       align: 'center',
       tags: true,
       style: {
@@ -262,7 +256,6 @@ export class PapadoroUi {
       left: 0,
       width: '100%',
       height: 1,
-      mouse: true,
       align: 'center',
       tags: true,
       style: {
@@ -279,7 +272,6 @@ export class PapadoroUi {
       left: 'center-26',
       width: 52,
       height: 8,
-      mouse: true,
       border: 'line',
       align: 'center',
       valign: 'middle',
@@ -297,7 +289,6 @@ export class PapadoroUi {
       left: 1,
       width: '100%-2',
       height: '100%-4',
-      mouse: true,
       align: 'center',
       valign: 'middle',
       tags: true,
@@ -313,7 +304,6 @@ export class PapadoroUi {
       left: 2,
       width: '100%-4',
       height: 1,
-      mouse: true,
       style: {
         bg: initialStyle.statusBg
       }
@@ -325,16 +315,16 @@ export class PapadoroUi {
       left: 0,
       width: 0,
       height: 1,
-      mouse: true,
       style: {
         bg: initialStyle.promptFg
       }
     });
 
+    enableMouse(() => {
+      handlers.onAnyClick();
+    });
+
     this.screen.on('keypress', handlers.onKey);
-    this.screen.on('mouse', handlers.onMouse);
-    this.screen.on('click', handlers.onClick);
-    this.screen.on('mousedown', handlers.onMouseDown);
     this.screen.on('resize', handlers.onResize);
   }
 
@@ -451,6 +441,7 @@ export class PapadoroUi {
   }
 
   public destroy(): void {
+    disableMouse();
     this.screen.destroy();
   }
 }
