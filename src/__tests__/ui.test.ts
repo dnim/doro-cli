@@ -55,6 +55,10 @@ describe('DoroUi', () => {
     expect(blessed.box).toHaveBeenCalledTimes(9);
 
     expect(enableMouse).toHaveBeenCalledTimes(1);
+    
+    const mouseCallback = (enableMouse as jest.Mock).mock.calls[0][0];
+    mouseCallback();
+    expect(handlers.onAnyClick).toHaveBeenCalledTimes(1);
   });
 
   it('should render work mode state', () => {
@@ -93,6 +97,68 @@ describe('DoroUi', () => {
       promptCountdownSeconds: 3,
       promptTotalSeconds: 5,
       promptNextMode: 'short'
+    });
+
+    expect(mockScreen.render).toHaveBeenCalledTimes(1);
+  });
+
+  it('should handle zero columns without crashing', () => {
+    ui = new DoroUi(handlers);
+    const mockScreen = (blessed.screen as jest.Mock).mock.results[0].value;
+    mockScreen.cols = 0;
+
+    ui.render({
+      mode: 'work',
+      status: 'running',
+      remainingSeconds: 600,
+      durationSeconds: 1500,
+      isLocked: false,
+      isMuted: false,
+      hasPrompt: false,
+      promptCountdownSeconds: 0,
+      promptTotalSeconds: 0,
+      promptNextMode: null
+    });
+
+    expect(mockScreen.render).toHaveBeenCalledTimes(1);
+    mockScreen.cols = 80; // Restore
+  });
+
+  it('should render paused state', () => {
+    ui = new DoroUi(handlers);
+    const mockScreen = (blessed.screen as jest.Mock).mock.results[0].value;
+
+    ui.render({
+      mode: 'work',
+      status: 'paused',
+      remainingSeconds: 600,
+      durationSeconds: 1500,
+      isLocked: false,
+      isMuted: false,
+      hasPrompt: false,
+      promptCountdownSeconds: 0,
+      promptTotalSeconds: 0,
+      promptNextMode: null
+    });
+
+    expect(mockScreen.render).toHaveBeenCalledTimes(1);
+  });
+
+  it('should render switchPrompt status explicitly', () => {
+    ui = new DoroUi(handlers);
+    const mockScreen = (blessed.screen as jest.Mock).mock.results[0].value;
+
+    ui.render({
+      mode: 'work',
+      status: 'switchPrompt',
+      remainingSeconds: 0,
+      durationSeconds: 1500,
+      isLocked: false,
+      isMuted: false,
+      hasPrompt: false, // Intentionally false to hit fallback branch in statusLabel
+      promptCountdownSeconds: 0,
+      promptTotalSeconds: 0,
+      promptNextMode: null
     });
 
     expect(mockScreen.render).toHaveBeenCalledTimes(1);

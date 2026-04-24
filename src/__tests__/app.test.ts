@@ -228,5 +228,56 @@ describe('DoroApp', () => {
       (app as any).stepClock();
       expect(mockTimerStateMachine.tick).toHaveBeenCalled();
     });
+
+    it('should pass prompt values to ui.render when switchPrompt is active', () => {
+      const stateWithPrompt = {
+        mode: 'work' as const,
+        status: 'switchPrompt' as const,
+        remainingSeconds: 0,
+        isLocked: false,
+        switchPrompt: {
+          deadlineTs: Date.now() + 5000,
+          nextMode: 'short' as const
+        },
+        completedWorkSessions: 1
+      };
+
+      mockTimerStateMachine.tick.mockReturnValue({
+        state: stateWithPrompt,
+        startedPrompt: true,
+        switchedRunning: false,
+        switchedToMode: null,
+        completedMode: 'work'
+      });
+
+      mockTimerStateMachine.getState.mockReturnValue(stateWithPrompt);
+
+      (app as any).stepClock();
+      expect(mockDoroUi.render).toHaveBeenCalledWith(
+        expect.objectContaining({
+          hasPrompt: true,
+          promptNextMode: 'short'
+        })
+      );
+    });
+  });
+
+  describe('bindProcessSignals', () => {
+    it('should bind SIGINT and SIGTERM and call shutdown', () => {
+      const mockOn = jest.spyOn(process, 'on').mockImplementation();
+      const mockShutdown = jest.spyOn(app as any, 'shutdown').mockImplementation();
+      
+      app.bindProcessSignals();
+      
+      expect(mockOn).toHaveBeenCalledWith('SIGINT', expect.any(Function));
+      expect(mockOn).toHaveBeenCalledWith('SIGTERM', expect.any(Function));
+
+      // Simulate SIGINT
+      const sigintHandler = mockOn.mock.calls.find((call) => call[0] === 'SIGINT')![1] as Function;
+      sigintHandler();
+      expect(mockShutdown).toHaveBeenCalledTimes(1);
+
+      mockOn.mockRestore();
+    });
   });
 });
