@@ -25,6 +25,9 @@ jobs:
       - run: npm run test:unit
       - run: npm run lint
 
+      - name: Publish to npm
+        run: npm publish --provenance --access public
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v3
         with:
@@ -33,6 +36,3 @@ jobs:
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Publish to npm
-        run: npm publish --provenance --access public
