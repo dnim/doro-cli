@@ -21,9 +21,17 @@ Focus on your work, not your timer.
 | :------------------------------------------------------------: | :-----------------------------------------------------------------------------: | :-------------------------------------------------------------------------------: | :----------------------------------------------------------: |
 | ![Screenshot Small](./assets/screenshots/screenshot-small.png) | ![Screenshot Medium with Keys](./assets/screenshots/screenshot-medium-keys.png) | ![Screenshot Medium with Icons](./assets/screenshots/screenshot-medium-icons.png) | ![Screenshot Wide](./assets/screenshots/screenshot-wide.png) |
 
-## Quick Start
-
+## Installation
+ 
 Requires Node.js >= 22.
+ 
+```bash
+npm install -g doro-cli
+```
+ 
+Once installed, just run `doro` in your terminal!
+ 
+## Quick Start (Build from source)
 
 ```bash
 # Clone the repository
