@@ -32,7 +32,7 @@
     "@eslint/js": "^9.24.0",
     "@types/blessed": "^0.1.27",
     "@types/jest": "^30.0.0",
-    "@types/node": "^22.14.0",
+    "@types/node": "^25.6.0",
     "@yao-pkg/pkg": "^6.19.0",
     "eslint": "^9.24.0",
     "eslint-config-prettier": "^10.1.8",
