@@ -9,6 +9,7 @@ Minimal terminal Pomodoro timer (Node.js, TypeScript, blessed TUI).
   - `feature/<name>` for new features
   - `fix/<name>` for bug fixes
   - `chore/<name>` for tooling, config, or maintenance work
+  - `release/v<version>` for release preparation
 - Only merge to `main` via a pull request.
 - **Never push to remote without explicit user approval.**
 
