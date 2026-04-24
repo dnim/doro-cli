@@ -18,3 +18,7 @@ Minimal terminal Pomodoro timer (Node.js, TypeScript, blessed TUI).
 - Default plan: 100 lines max.
 - If the user says "more": 200 lines max.
 - Avoid padding — every line should add value.
+
+## CI/CD
+
+- When investigating CI/CD failures on GitHub-hosted repositories, agents should first attempt to retrieve logs from the failed run using the `gh` CLI before attempting to reproduce locally.
