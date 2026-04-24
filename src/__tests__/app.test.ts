@@ -53,22 +53,22 @@ describe('DoroApp', () => {
       debugJumpToNearEnd: jest.fn(),
       resetCurrentAndRun: jest.fn()
       // Add other methods of TimerStateMachine as they are used
-    } as jest.Mocked<TimerStateMachine>;
+    } as unknown as jest.Mocked<TimerStateMachine>;
 
     // Initialize mock DoroUi instance
     mockDoroUi = {
       render: jest.fn(),
       destroy: jest.fn(),
       toggleColorScheme: jest.fn()
-    } as jest.Mocked<DoroUi>;
+    } as unknown as jest.Mocked<DoroUi>;
 
     // Mock constructor implementations
     (TimerStateMachine as jest.Mock).mockImplementation(() => mockTimerStateMachine);
     (DoroUi as jest.Mock).mockImplementation((options) => {
       // Capture the callbacks passed to DoroUi constructor
-      mockDoroUi.onKey = options.onKey;
-      mockDoroUi.onAnyClick = options.onAnyClick;
-      mockDoroUi.onResize = options.onResize;
+      (mockDoroUi as any).onKey = options.onKey;
+      (mockDoroUi as any).onAnyClick = options.onAnyClick;
+      (mockDoroUi as any).onResize = options.onResize;
       return mockDoroUi;
     });
 
@@ -81,17 +81,17 @@ describe('DoroApp', () => {
     // Default mock implementations for methods
     mockTimerStateMachine.getState.mockReturnValue({
       mode: 'work',
-      status: 'idle',
+      status: 'paused',
       remainingSeconds: 0,
       isLocked: false,
       switchPrompt: null,
-      cycleCount: 0
+      completedWorkSessions: 0
     });
     mockTimerStateMachine.getConfig.mockReturnValue({
       workSeconds: 25 * 60,
-      shortBreakSeconds: 5 * 60,
-      longBreakSeconds: 15 * 60,
-      longBreakInterval: 4,
+      shortRestSeconds: 5 * 60,
+      longRestSeconds: 15 * 60,
+      longRestEveryWorkSessions: 4,
       switchConfirmSeconds: 5
     });
     (getDurationForMode as jest.Mock).mockReturnValue(25 * 60); // Default duration
@@ -103,11 +103,12 @@ describe('DoroApp', () => {
         remainingSeconds: 10,
         isLocked: false,
         switchPrompt: null,
-        cycleCount: 0
+        completedWorkSessions: 0
       },
       startedPrompt: false,
       switchedRunning: false,
-      switchedToMode: null
+      switchedToMode: null,
+      completedMode: null
     });
 
     app = new DoroApp();
