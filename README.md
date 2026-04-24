@@ -1,37 +1,57 @@
 # doro-cli
 
-Tiny terminal pomodoro. Full-screen vibes. Keyboard-first flow. Soft pastel themes. Chiptune cues.
+A minimal, keyboard-first, full-screen terminal Pomodoro timer with soft pastel themes and synthetic 8-bit audio cues.
 
-Based on the Pomodoro Technique: https://en.wikipedia.org/wiki/Pomodoro_Technique
-
-## Preview
+Focus on your work, not your timer.
 
 ![doro-cli demo](./assets/doro-demo.gif)
 
-## Why doro-cli
+## Features
 
-- fast launch, no config maze
-- focused timer flow with zero UI noise
-- prompt-based mode switching (safe, explicit)
-- mouse click support in switch prompt
-- two color schemes (`modern` and `calm`) via `c`
-- lightweight generated audio cues (no external media files)
+-   **Distraction-Free UI**: Full-screen, minimalist design keeps you focused.
+-   **Keyboard-First**: Navigate and control everything from your keyboard.
+-   **Responsive Layout**: Adapts to any terminal size, from tiny to wide.
+-   **Color Themes**: Switch between `modern` and `calm` themes with a keypress.
+-   **Audio Cues**: Lightweight, generated 8-bit sounds for timer events (no media files needed).
+-   **Mouse Support**: Optional mouse control for key actions.
 
-## Quick start
+### Gallery
+
+| Small | Medium (Text Hints) | Medium (Icon Hints) | Wide |
+|:---:|:---:|:---:|:---:|
+| ![Screenshot Small](./assets/screenshots/screenshot-small.png) | ![Screenshot Medium with Keys](./assets/screenshots/screenshot-medium-keys.png) | ![Screenshot Medium with Icons](./assets/screenshots/screenshot-medium-icons.png) | ![Screenshot Wide](./assets/screenshots/screenshot-wide.png) |
+
+
+## Quick Start
+
+Requires Node.js >= 22.
 
 ```bash
+# Clone the repository
+git clone https://github.com/dnim/doro-cli.git
+cd doro-cli
+
+# Install dependencies
 npm install
+
+# Build the project
 npm run build
+
+# Run it!
 node dist/cli.js
 ```
 
-Dev mode:
+### Development
+
+Run in development mode with hot-reloading:
 
 ```bash
 npm run dev
 ```
 
-Optional local command:
+### Global Install (Optional)
+
+To run `doro` from anywhere:
 
 ```bash
 npm link
@@ -40,32 +60,37 @@ doro
 
 ## Controls
 
-- `q` quit
-- `p` pause/resume
-- `r` reset current timer and run (short beep)
-- `c` toggle color scheme (`modern` <-> `calm`)
-- `m` mute/unmute all sounds
-- `Shift+D` debug: jump current running timer to 3s left
-- `w` start work (22 min default)
-- `s` start short rest (5 min default)
-- `l` start long rest (12 min default)
-- `L` lock/unlock hotkeys
+| Key | Action |
+|:---:|---|
+| `q` | Quit |
+| `p` | Pause / Resume |
+| `r` | Reset Timer |
+| `c` | Toggle Color Scheme |
+| `m` | Mute / Unmute |
+| `w` | Start Work Timer |
+| `s` | Start Short Break |
+| `l` | Start Long Break |
+| `L` | Lock / Unlock Hotkeys |
+|`Shift+D`| Debug: Fast-forward timer |
 
-## Timer behavior
 
-- long rest every `3` completed work sessions
-- at `00:00`: completion beep + 60s switch prompt
-- in prompt: `q` exits, any other key or mouse click confirms next mode
-- if no confirm in 60s: app auto-switches and starts next mode
+## Behavior
+
+- A long break is offered every 3 completed work sessions.
+- When a timer finishes, you have 60 seconds to confirm the next mode before it auto-starts.
 
 ## Contributing
 
-New contributor welcome. Keep diffs small. Keep UI readable in common terminals.
+Contributions are welcome! Please keep pull requests small and focused.
 
+Before submitting, please run:
 ```bash
 npm run lint:local
 npm run typecheck
 npm run test:unit
 ```
 
-If changing colors/audio/controls, add or adjust tests in `src/__tests__`.
+---
+<p align="center">
+  Made with love and TypeScript
+</p>
