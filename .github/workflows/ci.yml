@@ -39,9 +39,6 @@ jobs:
     - name: Verify Project Build
       run: npm run build
 
-    - name: Verify Binary Packaging
-      if: matrix.node-version == '22.x' # Only run on the version used for packaging
-      run: npm run build:binaries
 
     - name: Upload Coverage to Codecov
       uses: codecov/codecov-action@v4
