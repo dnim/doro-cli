@@ -34,7 +34,7 @@
     "@types/jest": "^30.0.0",
     "@types/node": "^22.14.0",
     "@yao-pkg/pkg": "^6.19.0",
-    "eslint": "^9.24.0",
+    "eslint": "^10.2.1",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.5",
     "globals": "^16.0.0",
