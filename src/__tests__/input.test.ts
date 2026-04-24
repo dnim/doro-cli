@@ -1,7 +1,18 @@
 import { describe, expect, it } from '@jest/globals';
-import { isAllowedWhenLocked, isPromptConfirmEvent, resolveControlCommand, type InputEvent } from '../input';
+import {
+  isAllowedWhenLocked,
+  isPromptConfirmEvent,
+  resolveControlCommand,
+  type InputEvent
+} from '../input';
 
-function keyEvent(ch: string, keyName: string, keyFull = keyName, shift = false, ctrl = false): InputEvent {
+function keyEvent(
+  ch: string,
+  keyName: string,
+  keyFull = keyName,
+  shift = false,
+  ctrl = false
+): InputEvent {
   return {
     type: 'key',
     ch,

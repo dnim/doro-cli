@@ -1,7 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-empty-function */
 import { DoroApp } from '../app';
 import { TimerStateMachine } from '../stateMachine';
 import { DoroUi } from '../ui';
-import { playClip, stopPlayback } from '../audio/player';
+import { stopPlayback } from '../audio/player';
 import {
   createCompletionBeepClip,
   createResetBeepClip,
@@ -9,7 +10,7 @@ import {
   createWorkStartClip
 } from '../audio/synth';
 import { getDurationForMode } from '../constants';
-import { isAllowedWhenLocked, isPromptConfirmEvent, resolveControlCommand } from '../input';
+import { resolveControlCommand } from '../input';
 
 // Mock dependencies
 jest.mock('../stateMachine');
@@ -50,7 +51,7 @@ describe('DoroApp', () => {
       toggleLock: jest.fn(),
       togglePause: jest.fn(),
       debugJumpToNearEnd: jest.fn(),
-      resetCurrentAndRun: jest.fn(),
+      resetCurrentAndRun: jest.fn()
       // Add other methods of TimerStateMachine as they are used
     } as jest.Mocked<TimerStateMachine>;
 
@@ -58,7 +59,7 @@ describe('DoroApp', () => {
     mockDoroUi = {
       render: jest.fn(),
       destroy: jest.fn(),
-      toggleColorScheme: jest.fn(),
+      toggleColorScheme: jest.fn()
     } as jest.Mocked<DoroUi>;
 
     // Mock constructor implementations
@@ -183,19 +184,40 @@ describe('DoroApp', () => {
   describe('handleInput', () => {
     it('should ignore input if exiting', () => {
       (app as any).isExiting = true;
-      (app as any).handleInput({ type: 'key', ch: 'a', keyName: 'a', keyFull: 'a', shift: false, ctrl: false });
+      (app as any).handleInput({
+        type: 'key',
+        ch: 'a',
+        keyName: 'a',
+        keyFull: 'a',
+        shift: false,
+        ctrl: false
+      });
       expect(mockDoroUi.render).not.toHaveBeenCalled();
     });
 
     it('should toggle color scheme', () => {
       (resolveControlCommand as jest.Mock).mockReturnValue('toggleColorScheme');
-      (app as any).handleInput({ type: 'key', ch: 'c', keyName: 'c', keyFull: 'c', shift: false, ctrl: false });
+      (app as any).handleInput({
+        type: 'key',
+        ch: 'c',
+        keyName: 'c',
+        keyFull: 'c',
+        shift: false,
+        ctrl: false
+      });
       expect(mockDoroUi.toggleColorScheme).toHaveBeenCalledTimes(1);
     });
 
     it('should toggle pause', () => {
       (resolveControlCommand as jest.Mock).mockReturnValue('pauseResume');
-      (app as any).handleInput({ type: 'key', ch: 'p', keyName: 'p', keyFull: 'p', shift: false, ctrl: false });
+      (app as any).handleInput({
+        type: 'key',
+        ch: 'p',
+        keyName: 'p',
+        keyFull: 'p',
+        shift: false,
+        ctrl: false
+      });
       expect(mockTimerStateMachine.togglePause).toHaveBeenCalledTimes(1);
     });
   });

@@ -40,7 +40,8 @@ type Palette = {
   pause: ModeStyle;
 };
 
-const HELP_TEXT_WIDE = 'q quit  p pause  r reset  c colors  m mute  w work  s short  l long  L lock';
+const HELP_TEXT_WIDE =
+  'q quit  p pause  r reset  c colors  m mute  w work  s short  l long  L lock';
 const HELP_TEXT_NARROW = 'q:✕  p:⏸  r:↺  c:✦  m:♪  w/s/l  L:⊟';
 const HELP_TEXT_ULTRA = 'q p r c m w s l L';
 
@@ -52,10 +53,18 @@ const HELP_TOKENS_PRIORITY = ['q', 'p', 'r', 'm', 'w', 's', 'l', 'c', 'L'];
  * Items are dropped from lowest priority first when space is very tight.
  */
 function getHelpText(cols: number): string {
-  if (cols <= 0) return '';
-  if (HELP_TEXT_WIDE.length <= cols) return HELP_TEXT_WIDE;
-  if (HELP_TEXT_NARROW.length <= cols) return HELP_TEXT_NARROW;
-  if (HELP_TEXT_ULTRA.length <= cols) return HELP_TEXT_ULTRA;
+  if (cols <= 0) {
+    return '';
+  }
+  if (HELP_TEXT_WIDE.length <= cols) {
+    return HELP_TEXT_WIDE;
+  }
+  if (HELP_TEXT_NARROW.length <= cols) {
+    return HELP_TEXT_NARROW;
+  }
+  if (HELP_TEXT_ULTRA.length <= cols) {
+    return HELP_TEXT_ULTRA;
+  }
   // Still doesn't fit – drop lowest-priority tokens one at a time
   const tokens: string[] = [];
   for (const token of HELP_TOKENS_PRIORITY) {
@@ -79,7 +88,12 @@ function getHelpText(cols: number): string {
  * Returns a responsive transition status line that fits within `cols`.
  * Falls back to shorter variants as width shrinks.
  */
-function getRunningStatusText(status: TimerStatus, isLocked: boolean, isMuted: boolean, cols: number): string {
+function getRunningStatusText(
+  status: TimerStatus,
+  isLocked: boolean,
+  isMuted: boolean,
+  cols: number
+): string {
   const s = statusLabel(status);
   const lock = isLocked ? 'LOCK' : 'OPEN';
   const mute = isMuted ? 'MUTE' : 'SND';
@@ -89,10 +103,12 @@ function getRunningStatusText(status: TimerStatus, isLocked: boolean, isMuted: b
     `${s} | ${lock} | ${mute}`,
     `${s} | ${lock}`,
     `${s} ${lockIcon}`,
-    lockIcon,
+    lockIcon
   ];
   for (const c of candidates) {
-    if (c.length <= cols) return c;
+    if (c.length <= cols) {
+      return c;
+    }
   }
   return lockIcon.slice(0, cols);
 }
@@ -107,10 +123,12 @@ function getTransitionStatusText(nextMode: TimerMode, autoSec: number, cols: num
     `→ ${full}  ${autoSec}s`,
     `→ ${short}  ${autoSec}s`,
     `→${short} ${autoSec}s`,
-    `${autoSec}s`,
+    `${autoSec}s`
   ];
   for (const c of candidates) {
-    if (c.length <= cols) return c;
+    if (c.length <= cols) {
+      return c;
+    }
   }
   return '';
 }
@@ -124,7 +142,9 @@ function buildProgressRow(
   fg: string,
   bold = false
 ): string {
-  if (cols <= 0) return '';
+  if (cols <= 0) {
+    return '';
+  }
   const fw = Math.max(0, Math.min(fillWidth, cols));
   const textLen = Math.min(visibleText.length, cols);
   const safeText = visibleText.slice(0, textLen);
@@ -137,8 +157,12 @@ function buildProgressRow(
   const bO = bold ? '{bold}' : '';
   const bC = bold ? '{/bold}' : '';
   let content = '';
-  if (p1.length > 0) content += `{${fillBg}-bg}{${fg}-fg}${bO}${p1}${bC}`;
-  if (p2.length > 0) content += `{${baseBg}-bg}{${fg}-fg}${bO}${p2}${bC}`;
+  if (p1.length > 0) {
+    content += `{${fillBg}-bg}{${fg}-fg}${bO}${p1}${bC}`;
+  }
+  if (p2.length > 0) {
+    content += `{${baseBg}-bg}{${fg}-fg}${bO}${p2}${bC}`;
+  }
   return content;
 }
 
@@ -243,8 +267,12 @@ function clamp(value: number, min: number, max: number): number {
 
 function formatTime(seconds: number): string {
   const safe = Math.max(0, seconds);
-  const mm = Math.floor(safe / 60).toString().padStart(2, '0');
-  const ss = Math.floor(safe % 60).toString().padStart(2, '0');
+  const mm = Math.floor(safe / 60)
+    .toString()
+    .padStart(2, '0');
+  const ss = Math.floor(safe % 60)
+    .toString()
+    .padStart(2, '0');
   return `${mm}:${ss}`;
 }
 
@@ -364,10 +392,38 @@ export class DoroUi {
     });
 
     // Prompt overlay removed — transition state is shown inline via banner/status rows.
-    this.promptOverlay = blessed.box({ parent: this.root, hidden: true, top: 0, left: 0, width: 0, height: 0 });
-    this.promptText = blessed.box({ parent: this.promptOverlay, hidden: true, top: 0, left: 0, width: 0, height: 0 });
-    this.promptBarTrack = blessed.box({ parent: this.promptOverlay, hidden: true, top: 0, left: 0, width: 0, height: 0 });
-    this.promptBarFill = blessed.box({ parent: this.promptBarTrack, hidden: true, top: 0, left: 0, width: 0, height: 0 });
+    this.promptOverlay = blessed.box({
+      parent: this.root,
+      hidden: true,
+      top: 0,
+      left: 0,
+      width: 0,
+      height: 0
+    });
+    this.promptText = blessed.box({
+      parent: this.promptOverlay,
+      hidden: true,
+      top: 0,
+      left: 0,
+      width: 0,
+      height: 0
+    });
+    this.promptBarTrack = blessed.box({
+      parent: this.promptOverlay,
+      hidden: true,
+      top: 0,
+      left: 0,
+      width: 0,
+      height: 0
+    });
+    this.promptBarFill = blessed.box({
+      parent: this.promptBarTrack,
+      hidden: true,
+      top: 0,
+      left: 0,
+      width: 0,
+      height: 0
+    });
 
     enableMouse(() => {
       handlers.onAnyClick();
@@ -392,9 +448,10 @@ export class DoroUi {
       : isTransition && state.promptNextMode
         ? palette.modes[state.promptNextMode]
         : palette.modes[state.mode];
-    const progressRatio = isTransition || state.durationSeconds <= 0
-      ? 0
-      : clamp((state.durationSeconds - state.remainingSeconds) / state.durationSeconds, 0, 1);
+    const progressRatio =
+      isTransition || state.durationSeconds <= 0
+        ? 0
+        : clamp((state.durationSeconds - state.remainingSeconds) / state.durationSeconds, 0, 1);
     const progressWidth = Math.round(cols * progressRatio);
     const compactHeight = rows < 10;
 
@@ -405,12 +462,20 @@ export class DoroUi {
         : state.mode === 'work'
           ? 'WORK'
           : state.mode === 'short'
-            ? (cols < 14 ? 'SHORT' : 'SHORT BREAK')
-            : (cols < 13 ? 'LONG' : 'LONG BREAK');
+            ? cols < 14
+              ? 'SHORT'
+              : 'SHORT BREAK'
+            : cols < 13
+              ? 'LONG'
+              : 'LONG BREAK';
 
     let statusText: string;
     if (state.hasPrompt && state.promptNextMode) {
-      statusText = getTransitionStatusText(state.promptNextMode, state.promptCountdownSeconds, cols);
+      statusText = getTransitionStatusText(
+        state.promptNextMode,
+        state.promptCountdownSeconds,
+        cols
+      );
     } else {
       statusText = getRunningStatusText(state.status, state.isLocked, state.isMuted, cols);
     }
@@ -437,19 +502,39 @@ export class DoroUi {
     this.helpBox.style.fg = style.statusFg;
 
     const time = formatTime(state.remainingSeconds);
-    this.screen.title = state.hasPrompt && state.promptNextMode
-      ? (cols < 10 ? `→${MODE_LABELS_SHORT[state.promptNextMode]}` : `doro Done → ${MODE_LABELS_SHORT[state.promptNextMode]}`)
-      : cols >= 15 ? `doro ${time}`
-      : cols >= 10 ? `d ${time}`
-      : time;
+    this.screen.title =
+      state.hasPrompt && state.promptNextMode
+        ? cols < 10
+          ? `→${MODE_LABELS_SHORT[state.promptNextMode]}`
+          : `doro Done → ${MODE_LABELS_SHORT[state.promptNextMode]}`
+        : cols >= 15
+          ? `doro ${time}`
+          : cols >= 10
+            ? `d ${time}`
+            : time;
     this.modeBannerBox.setContent(
-      buildProgressRow(bannerText, cols, progressWidth, style.fill, style.bannerBg, style.bannerFg, true)
+      buildProgressRow(
+        bannerText,
+        cols,
+        progressWidth,
+        style.fill,
+        style.bannerBg,
+        style.bannerFg,
+        true
+      )
     );
     this.statusBox.setContent(
       buildProgressRow(statusText, cols, progressWidth, style.fill, style.statusBg, style.statusFg)
     );
     this.helpBox.setContent(
-      buildProgressRow(getHelpText(cols), cols, progressWidth, style.fill, style.statusBg, style.statusFg)
+      buildProgressRow(
+        getHelpText(cols),
+        cols,
+        progressWidth,
+        style.fill,
+        style.statusBg,
+        style.statusFg
+      )
     );
 
     // Transition state is now rendered inline — overlay always hidden.

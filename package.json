@@ -8,10 +8,11 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
-
     "dev": "tsx src/cli.ts",
-    "lint": "eslint . --ext .ts",
-    "lint:local": "eslint . --ext .ts --cache",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "eslint .",
+    "lint:local": "eslint . --cache",
     "typecheck": "tsc --noEmit",
     "test:unit": "jest --runInBand"
   },
@@ -24,7 +25,6 @@
   "engines": {
     "node": ">=22"
   },
-
   "dependencies": {
     "blessed": "npm:@rook2pawn/neo-blessed@^2.0.2"
   },
@@ -35,8 +35,11 @@
     "@types/node": "^22.14.0",
     "@yao-pkg/pkg": "^6.19.0",
     "eslint": "^9.24.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.5",
     "globals": "^16.0.0",
     "jest": "^30.3.0",
+    "prettier": "^3.8.3",
     "ts-jest": "^29.2.6",
     "tsx": "^4.19.3",
     "typescript": "^6.0.3",

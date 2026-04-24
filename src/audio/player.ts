@@ -31,7 +31,11 @@ const CANDIDATES: PlayerCandidate[] = [
 
 let activePlayback: PlaybackState | null = null;
 
-function runCandidate(command: string, args: string[], playback: PlaybackState): Promise<'ok' | 'failed' | 'cancelled'> {
+function runCandidate(
+  command: string,
+  args: string[],
+  playback: PlaybackState
+): Promise<'ok' | 'failed' | 'cancelled'> {
   return new Promise((resolve) => {
     if (playback.cancelled) {
       resolve('cancelled');

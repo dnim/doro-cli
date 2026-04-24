@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.1.0] - 2026-04-24
 
 ### Added
+
 - Initial release of `doro-cli`.
 - Full-screen terminal UI using `neo-blessed`.
 - Synthetic 8-bit audio cues.

@@ -42,7 +42,11 @@ export function getDurationForMode(config: TimerConfig, mode: TimerMode): number
   return config.longRestSeconds;
 }
 
-export function getNextModeAfterCompletion(mode: TimerMode, completedWorkSessions: number, config: TimerConfig): TimerMode {
+export function getNextModeAfterCompletion(
+  mode: TimerMode,
+  completedWorkSessions: number,
+  config: TimerConfig
+): TimerMode {
   if (mode === 'work') {
     return completedWorkSessions % config.longRestEveryWorkSessions === 0 ? 'long' : 'short';
   }
