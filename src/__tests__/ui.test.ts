@@ -2,6 +2,11 @@ import { DoroUi } from '../ui';
 import blessed from 'blessed';
 import { enableMouse, disableMouse } from '../mouse';
 
+jest.mock('../logger', () => ({
+  debugLog: jest.fn(),
+  isDebugEnabled: false
+}));
+
 jest.mock('blessed', () => {
   const mockScreen = {
     on: jest.fn(),
@@ -51,8 +56,8 @@ describe('DoroUi', () => {
     ui = new DoroUi(handlers);
 
     expect(blessed.screen).toHaveBeenCalledTimes(1);
-    // 1 root + 1 progress + 1 banner + 1 status + 1 help + 4 prompt overlays = 9 boxes
-    expect(blessed.box).toHaveBeenCalledTimes(9);
+    // 1 root + 1 progress + 1 banner + 1 status + 1 help + 4 prompt overlays + 1 debug = 10 boxes
+    expect(blessed.box).toHaveBeenCalledTimes(10);
 
     expect(enableMouse).toHaveBeenCalledTimes(1);
 

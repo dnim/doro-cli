@@ -20,6 +20,10 @@ jest.mock('../audio/player');
 jest.mock('../audio/synth');
 jest.mock('../constants');
 jest.mock('../input');
+jest.mock('../logger', () => ({
+  debugLog: jest.fn(),
+  isDebugEnabled: false
+}));
 
 // Mock `process.exit` to prevent tests from terminating the process
 const mockExit = jest.spyOn(process, 'exit').mockImplementation((() => {}) as never);

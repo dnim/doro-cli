@@ -1,5 +1,6 @@
 import blessed from 'blessed';
 import { MODE_LABELS, MODE_LABELS_SHORT, type TimerMode, type TimerStatus } from './constants';
+import { isDebugEnabled } from './logger';
 import { enableMouse, disableMouse } from './mouse';
 
 type UiRenderState = {
@@ -13,6 +14,17 @@ type UiRenderState = {
   promptTotalSeconds: number;
   hasPrompt: boolean;
   promptNextMode: TimerMode | null;
+};
+
+/**
+ * Optional debug metrics passed from the app controller.
+ * Only populated when DORO_DEBUG=1 is set.
+ */
+export type DebugMetrics = {
+  rssBytes: number;
+  heapUsedBytes: number;
+  tickDriftMs: number;
+  renderSkips: number;
 };
 
 type UiHandlers = {
@@ -310,7 +322,17 @@ export class DoroUi {
 
   private readonly promptBarFill: blessed.Widgets.BoxElement;
 
+  private readonly debugBox: blessed.Widgets.BoxElement;
+
   private colorScheme: ColorScheme = 'modern';
+
+  /** Hash of the last rendered state to skip redundant screen.render() calls. */
+  private lastRenderHash = '';
+
+  /** Counter for skipped renders (reported in debug overlay). */
+  private renderSkipCount = 0;
+
+  private debugOverlayVisible = false;
 
   public constructor(handlers: UiHandlers) {
     const initialStyle = PALETTES.modern.modes.work;
@@ -426,6 +448,22 @@ export class DoroUi {
       height: 0
     });
 
+    this.debugBox = blessed.box({
+      parent: this.root,
+      hidden: true,
+      top: 0,
+      right: 0,
+      width: 36,
+      height: 5,
+      align: 'left',
+      tags: false,
+      style: {
+        bg: '#1a1a2e',
+        fg: '#a0ffa0'
+      },
+      content: ''
+    });
+
     enableMouse(() => {
       handlers.onAnyClick();
     });
@@ -441,6 +479,17 @@ export class DoroUi {
   public render(state: UiRenderState): void {
     const cols = this.screen.cols;
     const rows = this.screen.rows;
+
+    // ── Render short-circuit ──────────────────────────────────────
+    // Build a compact hash of every value that affects visual output.
+    // If nothing changed, skip the expensive blessed render pass.
+    const hash = `${cols}|${rows}|${this.colorScheme}|${state.mode}|${state.status}|${state.remainingSeconds}|${state.durationSeconds}|${state.isLocked}|${state.volumeMode}|${state.hasPrompt}|${state.promptCountdownSeconds}|${state.promptNextMode}`;
+    if (hash === this.lastRenderHash) {
+      this.renderSkipCount += 1;
+      return;
+    }
+    this.lastRenderHash = hash;
+
     const isPaused = state.status === 'paused';
     const palette = PALETTES[this.colorScheme];
     const isTransition = state.hasPrompt;
@@ -542,6 +591,50 @@ export class DoroUi {
     this.promptOverlay.hide();
 
     this.screen.render();
+  }
+
+  /* ── Debug overlay (fully decoupled) ─────────────────────────── */
+
+  /**
+   * Toggle the debug overlay. Only effective when DORO_DEBUG=1.
+   * Has zero effect in production installs.
+   */
+  public toggleDebugOverlay(): void {
+    if (!isDebugEnabled) {
+      return;
+    }
+    this.debugOverlayVisible = !this.debugOverlayVisible;
+    if (!this.debugOverlayVisible) {
+      this.debugBox.hide();
+      this.screen.render();
+    }
+  }
+
+  /**
+   * Update the debug overlay with fresh metrics.
+   * Called after main render(). Skipped entirely when debug is off.
+   */
+  public renderDebugOverlay(metrics: DebugMetrics): void {
+    if (!this.debugOverlayVisible) {
+      return;
+    }
+    const rss = (metrics.rssBytes / 1024 / 1024).toFixed(1);
+    const heap = (metrics.heapUsedBytes / 1024 / 1024).toFixed(1);
+    const drift = metrics.tickDriftMs.toFixed(0);
+    const skips = metrics.renderSkips;
+    this.debugBox.setContent(
+      ` RSS: ${rss} MB  Heap: ${heap} MB\n` +
+        ` Tick drift: ${drift} ms\n` +
+        ` Render skips: ${skips}\n` +
+        ` Cols: ${this.screen.cols}  Rows: ${this.screen.rows}`
+    );
+    this.debugBox.show();
+    this.screen.render();
+  }
+
+  /** Expose skip count for the app controller to read. */
+  public getRenderSkipCount(): number {
+    return this.renderSkipCount;
   }
 
   public destroy(): void {

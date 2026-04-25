@@ -21,6 +21,7 @@ export type ControlCommand =
   | 'toggleColorScheme'
   | 'toggleMute'
   | 'debugNearEnd'
+  | 'toggleDebugOverlay'
   | 'pauseResume'
   | 'resetRun'
   | 'startWork'
@@ -56,6 +57,10 @@ export function resolveControlCommand(event: InputEvent): ControlCommand {
 
   if (event.keyName === 'm' || lowerChar === 'm') {
     return 'toggleMute';
+  }
+
+  if (event.keyName === 'i' && (event.shift || event.ch === 'I' || event.keyFull === 'S-i')) {
+    return 'toggleDebugOverlay';
   }
 
   if (event.keyName === 'd' && (event.shift || event.ch === 'D' || event.keyFull === 'S-d')) {

@@ -14,6 +14,7 @@ import {
   resolveControlCommand,
   type InputEvent
 } from './input';
+import { debugLog, isDebugEnabled } from './logger';
 import { TimerStateMachine } from './stateMachine';
 import { DoroUi } from './ui';
 
@@ -39,6 +40,9 @@ export class DoroApp {
   private tickInterval: NodeJS.Timeout | null = null;
 
   private lastTickTs = Date.now();
+
+  /** Measures event-loop drift for the debug overlay. */
+  private lastTickDriftMs = 0;
 
   public constructor() {
     this.machine = new TimerStateMachine();
@@ -72,6 +76,7 @@ export class DoroApp {
     this.machine.startMode('work');
     this.playModeClip('work');
     this.lastTickTs = Date.now();
+    debugLog('app', 'started', { mode: 'work' });
     this.render();
 
     this.tickInterval = setInterval(() => {
@@ -85,6 +90,10 @@ export class DoroApp {
     }
 
     const now = Date.now();
+    // Track event-loop drift: how far setInterval is from its 250ms target.
+    if (isDebugEnabled) {
+      this.lastTickDriftMs = Math.abs(now - this.lastTickTs - 250);
+    }
     let state = this.machine.getState();
 
     if (state.status === 'running') {
@@ -97,10 +106,12 @@ export class DoroApp {
           state = result.state;
 
           if (result.startedPrompt) {
+            debugLog('state', 'prompt started', { mode: state.mode });
             this.playCompletionBeep();
           }
 
           if (result.switchedRunning && result.switchedToMode) {
+            debugLog('state', 'auto-switched', { to: result.switchedToMode });
             this.playModeClip(result.switchedToMode);
           }
 
@@ -114,6 +125,7 @@ export class DoroApp {
       const result = this.machine.tick(now);
 
       if (result.switchedRunning && result.switchedToMode) {
+        debugLog('state', 'auto-switched (non-running)', { to: result.switchedToMode });
         this.playModeClip(result.switchedToMode);
       }
     }
@@ -201,6 +213,12 @@ export class DoroApp {
         this.resetBeepClip = createResetBeepClip(mult);
       }
 
+      this.render();
+      return;
+    }
+
+    if (command === 'toggleDebugOverlay') {
+      this.ui.toggleDebugOverlay();
       this.render();
       return;
     }
@@ -308,6 +326,17 @@ export class DoroApp {
       promptTotalSeconds,
       promptNextMode
     });
+
+    // Debug overlay — additive, completely decoupled from main render.
+    if (isDebugEnabled) {
+      const mem = process.memoryUsage();
+      this.ui.renderDebugOverlay({
+        rssBytes: mem.rss,
+        heapUsedBytes: mem.heapUsed,
+        tickDriftMs: this.lastTickDriftMs,
+        renderSkips: this.ui.getRenderSkipCount()
+      });
+    }
   }
 
   private shutdown(): void {
