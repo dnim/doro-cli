@@ -85,6 +85,24 @@ doro
 - A long break is offered every 3 completed work sessions.
 - When a timer finishes, you have 60 seconds to confirm the next mode before it auto-starts.
 
+## 🚀 Publishing a Release
+
+This project uses [`release-it`](https://github.com/release-it/release-it) to automate versioning, Git tagging, GitHub Releases, and npm publishing.
+
+To create a new release, ensure your working directory is clean, then run:
+
+```bash
+npm run release
+```
+
+The interactive wizard will guide you through:
+- Selecting the next version (patch, minor, major).
+- Committing the version bump in `package.json`.
+- Creating a Git tag.
+- Pushing the commit and tag to GitHub.
+- Creating an official GitHub Release.
+- Publishing the package to npm.
+
 ## Contributing
 
 Contributions are welcome! Please keep pull requests small and focused.

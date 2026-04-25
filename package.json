@@ -29,7 +29,7 @@
     "lint:local": "eslint . --cache",
     "typecheck": "tsc --noEmit",
     "test:unit": "jest --runInBand",
-    "release": "bash scripts/release.sh"
+    "release": "release-it"
   },
   "keywords": [
     "pomodoro",
@@ -55,9 +55,19 @@
     "globals": "^17.5.0",
     "jest": "^30.3.0",
     "prettier": "^3.8.3",
+    "release-it": "^20.0.1",
     "ts-jest": "^29.2.6",
     "tsx": "^4.19.3",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.29.0"
+  },
+  "release-it": {
+    "hooks": {
+      "before:init": [
+        "npm run lint",
+        "npm run typecheck",
+        "npm run test:unit"
+      ]
+    }
   }
 }
