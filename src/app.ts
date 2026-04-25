@@ -22,19 +22,19 @@ export class DoroApp {
 
   private readonly ui: DoroUi;
 
-  private readonly workStartClip: Buffer;
+  private workStartClip: Buffer;
 
-  private readonly shortRestStartClip: Buffer;
+  private shortRestStartClip: Buffer;
 
-  private readonly longRestStartClip: Buffer;
+  private longRestStartClip: Buffer;
 
-  private readonly completionBeepClip: Buffer;
+  private completionBeepClip: Buffer;
 
-  private readonly resetBeepClip: Buffer;
+  private resetBeepClip: Buffer;
 
   private isExiting = false;
 
-  private isMuted = false;
+  private volumeMode: 'normal' | 'quiet' | 'muted' = 'normal';
 
   private tickInterval: NodeJS.Timeout | null = null;
 
@@ -182,10 +182,25 @@ export class DoroApp {
     }
 
     if (command === 'toggleMute') {
-      this.isMuted = !this.isMuted;
-      if (this.isMuted) {
-        stopPlayback();
+      if (this.volumeMode === 'normal') {
+        this.volumeMode = 'quiet';
+      } else if (this.volumeMode === 'quiet') {
+        this.volumeMode = 'muted';
+      } else {
+        this.volumeMode = 'normal';
       }
+
+      if (this.volumeMode === 'muted') {
+        stopPlayback();
+      } else {
+        const mult = this.volumeMode === 'quiet' ? 0.25 : 1.0;
+        this.workStartClip = createWorkStartClip(mult);
+        this.shortRestStartClip = createShortRestStartClip(mult);
+        this.longRestStartClip = createLongRestStartClip(mult);
+        this.completionBeepClip = createCompletionBeepClip(mult);
+        this.resetBeepClip = createResetBeepClip(mult);
+      }
+
       this.render();
       return;
     }
@@ -234,7 +249,7 @@ export class DoroApp {
   }
 
   private playModeClip(mode: 'work' | 'short' | 'long'): void {
-    if (this.isMuted) {
+    if (this.volumeMode === 'muted') {
       return;
     }
 
@@ -249,7 +264,7 @@ export class DoroApp {
   }
 
   private playCompletionBeep(): void {
-    if (this.isMuted) {
+    if (this.volumeMode === 'muted') {
       return;
     }
 
@@ -257,7 +272,7 @@ export class DoroApp {
   }
 
   private playResetBeep(): void {
-    if (this.isMuted) {
+    if (this.volumeMode === 'muted') {
       return;
     }
 
@@ -287,7 +302,7 @@ export class DoroApp {
       remainingSeconds: state.remainingSeconds,
       durationSeconds: duration,
       isLocked: state.isLocked,
-      isMuted: this.isMuted,
+      volumeMode: this.volumeMode,
       hasPrompt: Boolean(state.switchPrompt),
       promptCountdownSeconds,
       promptTotalSeconds,

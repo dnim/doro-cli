@@ -8,7 +8,7 @@ type UiRenderState = {
   remainingSeconds: number;
   durationSeconds: number;
   isLocked: boolean;
-  isMuted: boolean;
+  volumeMode: 'normal' | 'quiet' | 'muted';
   promptCountdownSeconds: number;
   promptTotalSeconds: number;
   hasPrompt: boolean;
@@ -91,16 +91,17 @@ function getHelpText(cols: number): string {
 function getRunningStatusText(
   status: TimerStatus,
   isLocked: boolean,
-  isMuted: boolean,
+  volumeMode: 'normal' | 'quiet' | 'muted',
   cols: number
 ): string {
   const s = statusLabel(status);
   const lock = isLocked ? 'LOCK' : 'OPEN';
-  const mute = isMuted ? 'MUTE' : 'SND';
+  const muteStrLong = volumeMode === 'muted' ? 'MUTED' : volumeMode === 'quiet' ? 'QUIET' : 'SOUND';
+  const muteStrShort = volumeMode === 'muted' ? 'MUT' : volumeMode === 'quiet' ? 'SHH' : 'SND';
   const lockIcon = isLocked ? 'L' : '-';
   const candidates = [
-    `${s} | ${isLocked ? 'LOCKED' : 'OPEN'} | ${isMuted ? 'MUTED' : 'SOUND'}`,
-    `${s} | ${lock} | ${mute}`,
+    `${s} | ${isLocked ? 'LOCKED' : 'OPEN'} | ${muteStrLong}`,
+    `${s} | ${lock} | ${muteStrShort}`,
     `${s} | ${lock}`,
     `${s} ${lockIcon}`,
     lockIcon
@@ -477,7 +478,7 @@ export class DoroUi {
         cols
       );
     } else {
-      statusText = getRunningStatusText(state.status, state.isLocked, state.isMuted, cols);
+      statusText = getRunningStatusText(state.status, state.isLocked, state.volumeMode, cols);
     }
 
     this.root.style.bg = style.base;
