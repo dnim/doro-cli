@@ -1,4 +1,5 @@
 import blessed from 'blessed';
+import { execSync } from 'child_process';
 import { MODE_LABELS, MODE_LABELS_SHORT, type TimerMode, type TimerStatus } from './constants';
 import { isDebugEnabled } from './logger';
 import { enableMouse, disableMouse } from './mouse';
@@ -334,6 +335,9 @@ export class DoroUi {
 
   private debugOverlayVisible = false;
 
+  /** Last debug overlay text for clipboard copy. */
+  private lastDebugContent = '';
+
   public constructor(handlers: UiHandlers) {
     const initialStyle = PALETTES.modern.modes.work;
 
@@ -622,14 +626,52 @@ export class DoroUi {
     const heap = (metrics.heapUsedBytes / 1024 / 1024).toFixed(1);
     const drift = metrics.tickDriftMs.toFixed(0);
     const skips = metrics.renderSkips;
-    this.debugBox.setContent(
-      ` RSS: ${rss} MB  Heap: ${heap} MB\n` +
-        ` Tick drift: ${drift} ms\n` +
-        ` Render skips: ${skips}\n` +
-        ` Cols: ${this.screen.cols}  Rows: ${this.screen.rows}`
-    );
+    this.lastDebugContent =
+      `RSS: ${rss} MB  Heap: ${heap} MB\n` +
+      `Tick drift: ${drift} ms\n` +
+      `Render skips: ${skips}\n` +
+      `Cols: ${this.screen.cols}  Rows: ${this.screen.rows}`;
+    this.debugBox.setContent(` ${this.lastDebugContent.split('\n').join('\n ')}`);
     this.debugBox.show();
     this.screen.render();
+  }
+
+  /**
+   * Copy the current debug overlay content to the system clipboard.
+   * Uses pbcopy (macOS) or xclip (Linux). Fails silently.
+   */
+  public copyDebugToClipboard(): boolean {
+    if (!this.lastDebugContent) {
+      return false;
+    }
+    try {
+      const cmd = process.platform === 'darwin' ? 'pbcopy' : 'xclip -selection clipboard';
+      execSync(cmd, { input: this.lastDebugContent, timeout: 2000 });
+      this.flashCopiedIndicator();
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Briefly flash "✓ Copied!" in the debug box, then restore
+   * the normal content on the next render cycle.
+   */
+  private flashCopiedIndicator(): void {
+    const prevBg = this.debugBox.style.bg;
+    this.debugBox.setContent(' ✓ Copied to clipboard!');
+    this.debugBox.style.bg = '#0d3320';
+    this.screen.render();
+    setTimeout(() => {
+      this.debugBox.style.bg = prevBg;
+      // Content will be restored by the next renderDebugOverlay() call (~250ms).
+    }, 800);
+  }
+
+  /** Whether the debug overlay is currently visible. */
+  public isDebugOverlayVisible(): boolean {
+    return this.debugOverlayVisible;
   }
 
   /** Expose skip count for the app controller to read. */

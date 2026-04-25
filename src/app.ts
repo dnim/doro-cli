@@ -44,6 +44,9 @@ export class DoroApp {
   /** Measures event-loop drift for the debug overlay. */
   private lastTickDriftMs = 0;
 
+  /** Wall-clock time of last stepClock() call for accurate drift measurement. */
+  private lastStepClockWallTs = Date.now();
+
   public constructor() {
     this.machine = new TimerStateMachine();
     this.workStartClip = createWorkStartClip();
@@ -92,7 +95,8 @@ export class DoroApp {
     const now = Date.now();
     // Track event-loop drift: how far setInterval is from its 250ms target.
     if (isDebugEnabled) {
-      this.lastTickDriftMs = Math.abs(now - this.lastTickTs - 250);
+      this.lastTickDriftMs = Math.abs(now - this.lastStepClockWallTs - 250);
+      this.lastStepClockWallTs = now;
     }
     let state = this.machine.getState();
 
@@ -140,6 +144,13 @@ export class DoroApp {
 
     if (event.type === 'resize') {
       this.render();
+      return;
+    }
+
+    // When the debug overlay is visible, clicking copies metrics to clipboard.
+    if (event.type === 'mouse' && this.ui.isDebugOverlayVisible()) {
+      this.ui.copyDebugToClipboard();
+      debugLog('debug', 'copied overlay to clipboard');
       return;
     }
 
