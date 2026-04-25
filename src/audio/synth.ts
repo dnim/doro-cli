@@ -84,20 +84,20 @@ function makeClip(tones: Tone[]): Buffer {
 export function createWorkStartClip(): Buffer {
   // W. A. Mozart - Eine kleine Nachtmusik (Public Domain)
   return makeClip([
-    { frequency: 392.00, durationMs: 400, volume: 0.3, wave: 'square' }, // G4
+    { frequency: 392.0, durationMs: 400, volume: 0.3, wave: 'square' }, // G4
     { frequency: 293.66, durationMs: 400, volume: 0.3, wave: 'square' }, // D4
-    { frequency: 392.00, durationMs: 200, volume: 0.3, wave: 'square' }, // G4
+    { frequency: 392.0, durationMs: 200, volume: 0.3, wave: 'square' }, // G4
     { frequency: 293.66, durationMs: 200, volume: 0.3, wave: 'square' }, // D4
-    { frequency: 392.00, durationMs: 200, volume: 0.3, wave: 'square' }, // G4
+    { frequency: 392.0, durationMs: 200, volume: 0.3, wave: 'square' }, // G4
     { frequency: 493.88, durationMs: 200, volume: 0.3, wave: 'square' }, // B4
     { frequency: 587.33, durationMs: 800, volume: 0.3, wave: 'square' }, // D5
     { frequency: 523.25, durationMs: 400, volume: 0.3, wave: 'square' }, // C5
-    { frequency: 440.00, durationMs: 400, volume: 0.3, wave: 'square' }, // A4
+    { frequency: 440.0, durationMs: 400, volume: 0.3, wave: 'square' }, // A4
     { frequency: 523.25, durationMs: 200, volume: 0.3, wave: 'square' }, // C5
-    { frequency: 440.00, durationMs: 200, volume: 0.3, wave: 'square' }, // A4
+    { frequency: 440.0, durationMs: 200, volume: 0.3, wave: 'square' }, // A4
     { frequency: 523.25, durationMs: 200, volume: 0.3, wave: 'square' }, // C5
     { frequency: 369.99, durationMs: 200, volume: 0.3, wave: 'square' }, // F#4
-    { frequency: 440.00, durationMs: 800, volume: 0.3, wave: 'square' }  // A4
+    { frequency: 440.0, durationMs: 800, volume: 0.3, wave: 'square' } // A4
   ]);
 }
 
@@ -107,12 +107,12 @@ export function createShortRestStartClip(): Buffer {
     { frequency: 261.63, durationMs: 250, volume: 0.24, wave: 'square' }, // C4
     { frequency: 261.63, durationMs: 250, volume: 0.24, wave: 'square' }, // C4
     { frequency: 329.63, durationMs: 250, volume: 0.24, wave: 'square' }, // E4
-    { frequency: 392.00, durationMs: 500, volume: 0.24, wave: 'square' }, // G4
-    { frequency: 392.00, durationMs: 250, volume: 0.24, wave: 'square' }, // G4
+    { frequency: 392.0, durationMs: 500, volume: 0.24, wave: 'square' }, // G4
+    { frequency: 392.0, durationMs: 250, volume: 0.24, wave: 'square' }, // G4
     { frequency: 783.99, durationMs: 250, volume: 0.24, wave: 'square' }, // G5
     { frequency: 783.99, durationMs: 500, volume: 0.24, wave: 'square' }, // G5
     { frequency: 659.25, durationMs: 250, volume: 0.24, wave: 'square' }, // E5
-    { frequency: 659.25, durationMs: 500, volume: 0.24, wave: 'square' }  // E5
+    { frequency: 659.25, durationMs: 500, volume: 0.24, wave: 'square' } // E5
   ]);
 }
 
@@ -122,8 +122,8 @@ export function createLongRestStartClip(): Buffer {
     { frequency: 329.63, durationMs: 300, volume: 0.24, wave: 'square' }, // E4
     { frequency: 329.63, durationMs: 300, volume: 0.24, wave: 'square' }, // E4
     { frequency: 349.23, durationMs: 300, volume: 0.24, wave: 'square' }, // F4
-    { frequency: 392.00, durationMs: 300, volume: 0.24, wave: 'square' }, // G4
-    { frequency: 392.00, durationMs: 300, volume: 0.24, wave: 'square' }, // G4
+    { frequency: 392.0, durationMs: 300, volume: 0.24, wave: 'square' }, // G4
+    { frequency: 392.0, durationMs: 300, volume: 0.24, wave: 'square' }, // G4
     { frequency: 349.23, durationMs: 300, volume: 0.24, wave: 'square' }, // F4
     { frequency: 329.63, durationMs: 300, volume: 0.24, wave: 'square' }, // E4
     { frequency: 293.66, durationMs: 300, volume: 0.24, wave: 'square' }, // D4
@@ -133,7 +133,7 @@ export function createLongRestStartClip(): Buffer {
     { frequency: 329.63, durationMs: 300, volume: 0.24, wave: 'square' }, // E4
     { frequency: 329.63, durationMs: 450, volume: 0.24, wave: 'square' }, // E4 (dotted)
     { frequency: 293.66, durationMs: 150, volume: 0.24, wave: 'square' }, // D4
-    { frequency: 293.66, durationMs: 600, volume: 0.24, wave: 'square' }  // D4 (half)
+    { frequency: 293.66, durationMs: 600, volume: 0.24, wave: 'square' } // D4 (half)
   ]);
 }
 
@@ -144,9 +144,9 @@ export function createCompletionBeepClip(): Buffer {
     { frequency: 261.63, durationMs: 200, volume: 0.35, wave: 'sine' }, // C4
     { frequency: 329.63, durationMs: 200, volume: 0.35, wave: 'sine' }, // E4
     { frequency: 329.63, durationMs: 200, volume: 0.35, wave: 'sine' }, // E4
-    { frequency: 392.00, durationMs: 200, volume: 0.35, wave: 'sine' }, // G4
-    { frequency: 392.00, durationMs: 200, volume: 0.35, wave: 'sine' }, // G4
-    { frequency: 329.63, durationMs: 400, volume: 0.35, wave: 'sine' }  // E4
+    { frequency: 392.0, durationMs: 200, volume: 0.35, wave: 'sine' }, // G4
+    { frequency: 392.0, durationMs: 200, volume: 0.35, wave: 'sine' }, // G4
+    { frequency: 329.63, durationMs: 400, volume: 0.35, wave: 'sine' } // E4
   ]);
 }
 
