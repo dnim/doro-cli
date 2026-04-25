@@ -3,7 +3,8 @@ import {
   AUDIO_SAMPLE_RATE,
   createCompletionBeepClip,
   createResetBeepClip,
-  createRestStartClip,
+  createShortRestStartClip,
+  createLongRestStartClip,
   createWorkStartClip
 } from '../audio/synth';
 
@@ -24,10 +25,16 @@ describe('audio synth', () => {
     expect(buffer.length).toBeGreaterThan(44 + AUDIO_SAMPLE_RATE * 3);
   });
 
-  it('creates valid rest clip wav', () => {
-    const buffer = createRestStartClip();
+  it('creates valid short rest clip wav', () => {
+    const buffer = createShortRestStartClip();
     validateWav(buffer);
-    expect(buffer.length).toBeGreaterThan(44 + AUDIO_SAMPLE_RATE * 3);
+    expect(buffer.length).toBeGreaterThan(44 + AUDIO_SAMPLE_RATE * 2);
+  });
+
+  it('creates valid long rest clip wav', () => {
+    const buffer = createLongRestStartClip();
+    validateWav(buffer);
+    expect(buffer.length).toBeGreaterThan(44 + AUDIO_SAMPLE_RATE * 2);
   });
 
   it('creates valid smooth completion beep wav', () => {
