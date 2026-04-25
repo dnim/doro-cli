@@ -6,7 +6,8 @@ import { stopPlayback } from '../audio/player';
 import {
   createCompletionBeepClip,
   createResetBeepClip,
-  createRestStartClip,
+  createShortRestStartClip,
+  createLongRestStartClip,
   createWorkStartClip
 } from '../audio/synth';
 import { getDurationForMode } from '../constants';
@@ -74,7 +75,8 @@ describe('DoroApp', () => {
 
     // Mock synth functions to return dummy Buffers
     (createWorkStartClip as jest.Mock).mockReturnValue(Buffer.from('work'));
-    (createRestStartClip as jest.Mock).mockReturnValue(Buffer.from('rest'));
+    (createShortRestStartClip as jest.Mock).mockReturnValue(Buffer.from('short-rest'));
+    (createLongRestStartClip as jest.Mock).mockReturnValue(Buffer.from('long-rest'));
     (createCompletionBeepClip as jest.Mock).mockReturnValue(Buffer.from('complete'));
     (createResetBeepClip as jest.Mock).mockReturnValue(Buffer.from('reset'));
 
@@ -125,7 +127,8 @@ describe('DoroApp', () => {
     expect(TimerStateMachine).toHaveBeenCalledTimes(1);
     expect(DoroUi).toHaveBeenCalledTimes(1);
     expect(createWorkStartClip).toHaveBeenCalledTimes(1);
-    expect(createRestStartClip).toHaveBeenCalledTimes(1);
+    expect(createShortRestStartClip).toHaveBeenCalledTimes(1);
+    expect(createLongRestStartClip).toHaveBeenCalledTimes(1);
     expect(createCompletionBeepClip).toHaveBeenCalledTimes(1);
     expect(createResetBeepClip).toHaveBeenCalledTimes(1);
   });

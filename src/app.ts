@@ -2,7 +2,8 @@ import type blessed from 'blessed';
 import {
   createCompletionBeepClip,
   createResetBeepClip,
-  createRestStartClip,
+  createShortRestStartClip,
+  createLongRestStartClip,
   createWorkStartClip
 } from './audio/synth';
 import { playClip, stopPlayback } from './audio/player';
@@ -23,7 +24,9 @@ export class DoroApp {
 
   private readonly workStartClip: Buffer;
 
-  private readonly restStartClip: Buffer;
+  private readonly shortRestStartClip: Buffer;
+
+  private readonly longRestStartClip: Buffer;
 
   private readonly completionBeepClip: Buffer;
 
@@ -40,7 +43,8 @@ export class DoroApp {
   public constructor() {
     this.machine = new TimerStateMachine();
     this.workStartClip = createWorkStartClip();
-    this.restStartClip = createRestStartClip();
+    this.shortRestStartClip = createShortRestStartClip();
+    this.longRestStartClip = createLongRestStartClip();
     this.completionBeepClip = createCompletionBeepClip();
     this.resetBeepClip = createResetBeepClip();
 
@@ -234,7 +238,13 @@ export class DoroApp {
       return;
     }
 
-    const clip = mode === 'work' ? this.workStartClip : this.restStartClip;
+    let clip = this.workStartClip;
+    if (mode === 'short') {
+      clip = this.shortRestStartClip;
+    } else if (mode === 'long') {
+      clip = this.longRestStartClip;
+    }
+
     void playClip(clip);
   }
 

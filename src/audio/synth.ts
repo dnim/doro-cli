@@ -82,37 +82,71 @@ function makeClip(tones: Tone[]): Buffer {
 }
 
 export function createWorkStartClip(): Buffer {
+  // W. A. Mozart - Eine kleine Nachtmusik (Public Domain)
   return makeClip([
-    { frequency: 440, durationMs: 380, volume: 0.3, wave: 'square' },
-    { frequency: 523.25, durationMs: 380, volume: 0.3, wave: 'square' },
-    { frequency: 659.25, durationMs: 380, volume: 0.31, wave: 'square' },
-    { frequency: 523.25, durationMs: 280, volume: 0.27, wave: 'square' },
-    { frequency: 698.46, durationMs: 420, volume: 0.32, wave: 'square' },
-    { frequency: 783.99, durationMs: 420, volume: 0.33, wave: 'square' },
-    { frequency: 880, durationMs: 420, volume: 0.33, wave: 'square' },
-    { frequency: 1046.5, durationMs: 520, volume: 0.31, wave: 'square' },
-    { frequency: 880, durationMs: 420, volume: 0.28, wave: 'square' }
+    { frequency: 392.00, durationMs: 400, volume: 0.3, wave: 'square' }, // G4
+    { frequency: 293.66, durationMs: 400, volume: 0.3, wave: 'square' }, // D4
+    { frequency: 392.00, durationMs: 200, volume: 0.3, wave: 'square' }, // G4
+    { frequency: 293.66, durationMs: 200, volume: 0.3, wave: 'square' }, // D4
+    { frequency: 392.00, durationMs: 200, volume: 0.3, wave: 'square' }, // G4
+    { frequency: 493.88, durationMs: 200, volume: 0.3, wave: 'square' }, // B4
+    { frequency: 587.33, durationMs: 800, volume: 0.3, wave: 'square' }, // D5
+    { frequency: 523.25, durationMs: 400, volume: 0.3, wave: 'square' }, // C5
+    { frequency: 440.00, durationMs: 400, volume: 0.3, wave: 'square' }, // A4
+    { frequency: 523.25, durationMs: 200, volume: 0.3, wave: 'square' }, // C5
+    { frequency: 440.00, durationMs: 200, volume: 0.3, wave: 'square' }, // A4
+    { frequency: 523.25, durationMs: 200, volume: 0.3, wave: 'square' }, // C5
+    { frequency: 369.99, durationMs: 200, volume: 0.3, wave: 'square' }, // F#4
+    { frequency: 440.00, durationMs: 800, volume: 0.3, wave: 'square' }  // A4
   ]);
 }
 
-export function createRestStartClip(): Buffer {
+export function createShortRestStartClip(): Buffer {
+  // Johann Strauss II - The Blue Danube (Public Domain)
   return makeClip([
-    { frequency: 392, durationMs: 420, volume: 0.24, wave: 'square' },
-    { frequency: 329.63, durationMs: 420, volume: 0.23, wave: 'square' },
-    { frequency: 293.66, durationMs: 420, volume: 0.23, wave: 'square' },
-    { frequency: 261.63, durationMs: 520, volume: 0.22, wave: 'square' },
-    { frequency: 293.66, durationMs: 420, volume: 0.23, wave: 'square' },
-    { frequency: 329.63, durationMs: 420, volume: 0.23, wave: 'square' },
-    { frequency: 349.23, durationMs: 420, volume: 0.24, wave: 'square' },
-    { frequency: 392, durationMs: 620, volume: 0.24, wave: 'square' }
+    { frequency: 261.63, durationMs: 250, volume: 0.24, wave: 'square' }, // C4
+    { frequency: 261.63, durationMs: 250, volume: 0.24, wave: 'square' }, // C4
+    { frequency: 329.63, durationMs: 250, volume: 0.24, wave: 'square' }, // E4
+    { frequency: 392.00, durationMs: 500, volume: 0.24, wave: 'square' }, // G4
+    { frequency: 392.00, durationMs: 250, volume: 0.24, wave: 'square' }, // G4
+    { frequency: 783.99, durationMs: 250, volume: 0.24, wave: 'square' }, // G5
+    { frequency: 783.99, durationMs: 500, volume: 0.24, wave: 'square' }, // G5
+    { frequency: 659.25, durationMs: 250, volume: 0.24, wave: 'square' }, // E5
+    { frequency: 659.25, durationMs: 500, volume: 0.24, wave: 'square' }  // E5
+  ]);
+}
+
+export function createLongRestStartClip(): Buffer {
+  // Ludwig van Beethoven - Ode to Joy (Public Domain)
+  return makeClip([
+    { frequency: 329.63, durationMs: 300, volume: 0.24, wave: 'square' }, // E4
+    { frequency: 329.63, durationMs: 300, volume: 0.24, wave: 'square' }, // E4
+    { frequency: 349.23, durationMs: 300, volume: 0.24, wave: 'square' }, // F4
+    { frequency: 392.00, durationMs: 300, volume: 0.24, wave: 'square' }, // G4
+    { frequency: 392.00, durationMs: 300, volume: 0.24, wave: 'square' }, // G4
+    { frequency: 349.23, durationMs: 300, volume: 0.24, wave: 'square' }, // F4
+    { frequency: 329.63, durationMs: 300, volume: 0.24, wave: 'square' }, // E4
+    { frequency: 293.66, durationMs: 300, volume: 0.24, wave: 'square' }, // D4
+    { frequency: 261.63, durationMs: 300, volume: 0.24, wave: 'square' }, // C4
+    { frequency: 261.63, durationMs: 300, volume: 0.24, wave: 'square' }, // C4
+    { frequency: 293.66, durationMs: 300, volume: 0.24, wave: 'square' }, // D4
+    { frequency: 329.63, durationMs: 300, volume: 0.24, wave: 'square' }, // E4
+    { frequency: 329.63, durationMs: 450, volume: 0.24, wave: 'square' }, // E4 (dotted)
+    { frequency: 293.66, durationMs: 150, volume: 0.24, wave: 'square' }, // D4
+    { frequency: 293.66, durationMs: 600, volume: 0.24, wave: 'square' }  // D4 (half)
   ]);
 }
 
 export function createCompletionBeepClip(): Buffer {
+  // Joseph Haydn - Surprise Symphony (Public Domain)
   return makeClip([
-    { frequency: 587.33, durationMs: 260, volume: 0.14, wave: 'sine' },
-    { frequency: 659.25, durationMs: 260, volume: 0.14, wave: 'sine' },
-    { frequency: 698.46, durationMs: 360, volume: 0.13, wave: 'sine' }
+    { frequency: 261.63, durationMs: 200, volume: 0.35, wave: 'sine' }, // C4
+    { frequency: 261.63, durationMs: 200, volume: 0.35, wave: 'sine' }, // C4
+    { frequency: 329.63, durationMs: 200, volume: 0.35, wave: 'sine' }, // E4
+    { frequency: 329.63, durationMs: 200, volume: 0.35, wave: 'sine' }, // E4
+    { frequency: 392.00, durationMs: 200, volume: 0.35, wave: 'sine' }, // G4
+    { frequency: 392.00, durationMs: 200, volume: 0.35, wave: 'sine' }, // G4
+    { frequency: 329.63, durationMs: 400, volume: 0.35, wave: 'sine' }  // E4
   ]);
 }
 
