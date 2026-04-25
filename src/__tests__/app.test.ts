@@ -224,6 +224,33 @@ describe('DoroApp', () => {
       });
       expect(mockTimerStateMachine.togglePause).toHaveBeenCalledTimes(1);
     });
+
+    it('should cycle volumeMode: normal -> quiet -> muted -> normal', () => {
+      (resolveControlCommand as jest.Mock).mockReturnValue('toggleMute');
+      const inputEvent = {
+        type: 'key',
+        ch: 'm',
+        keyName: 'm',
+        keyFull: 'm',
+        shift: false,
+        ctrl: false
+      };
+
+      // Initial state is normal. First toggle -> quiet
+      (app as any).handleInput(inputEvent);
+      expect((app as any).volumeMode).toBe('quiet');
+      expect(createWorkStartClip).toHaveBeenCalledWith(0.25);
+
+      // Second toggle -> muted
+      (app as any).handleInput(inputEvent);
+      expect((app as any).volumeMode).toBe('muted');
+      expect(stopPlayback).toHaveBeenCalledTimes(1);
+
+      // Third toggle -> normal
+      (app as any).handleInput(inputEvent);
+      expect((app as any).volumeMode).toBe('normal');
+      expect(createWorkStartClip).toHaveBeenCalledWith(1.0);
+    });
   });
 
   describe('stepClock', () => {
