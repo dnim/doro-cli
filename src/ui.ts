@@ -310,10 +310,11 @@ export class DoroUi {
 
   private readonly promptBarFill: blessed.Widgets.BoxElement;
 
-  private colorScheme: ColorScheme = 'modern';
+  private colorScheme: ColorScheme;
 
-  public constructor(handlers: UiHandlers) {
-    const initialStyle = PALETTES.modern.modes.work;
+  public constructor(handlers: UiHandlers, initialColorScheme: ColorScheme = 'modern') {
+    this.colorScheme = initialColorScheme;
+    const initialStyle = PALETTES[this.colorScheme].modes.work;
 
     this.screen = blessed.screen({
       smartCSR: false,
@@ -434,8 +435,17 @@ export class DoroUi {
     this.screen.on('resize', handlers.onResize);
   }
 
-  public toggleColorScheme(): void {
+  public getColorScheme(): ColorScheme {
+    return this.colorScheme;
+  }
+
+  public setColorScheme(scheme: ColorScheme): void {
+    this.colorScheme = scheme;
+  }
+
+  public toggleColorScheme(): ColorScheme {
     this.colorScheme = this.colorScheme === 'modern' ? 'calm' : 'modern';
+    return this.colorScheme;
   }
 
   public render(state: UiRenderState): void {

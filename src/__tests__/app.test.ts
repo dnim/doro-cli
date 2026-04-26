@@ -1,4 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-empty-function */
+jest.mock('env-paths', () => {
+  return jest.fn().mockReturnValue({
+    config: '/mock/config/path'
+  });
+});
 import { DoroApp } from '../app';
 import { TimerStateMachine } from '../stateMachine';
 import { DoroUi } from '../ui';
@@ -12,6 +17,7 @@ import {
 } from '../audio/synth';
 import { getDurationForMode } from '../constants';
 import { resolveControlCommand } from '../input';
+import { saveSettings, resetSettings } from '../config';
 
 // Mock dependencies
 jest.mock('../stateMachine');
@@ -20,6 +26,7 @@ jest.mock('../audio/player');
 jest.mock('../audio/synth');
 jest.mock('../constants');
 jest.mock('../input');
+jest.mock('../config');
 
 // Mock `process.exit` to prevent tests from terminating the process
 const mockExit = jest.spyOn(process, 'exit').mockImplementation((() => {}) as never);
@@ -60,7 +67,9 @@ describe('DoroApp', () => {
     mockDoroUi = {
       render: jest.fn(),
       destroy: jest.fn(),
-      toggleColorScheme: jest.fn()
+      toggleColorScheme: jest.fn(),
+      getColorScheme: jest.fn(),
+      setColorScheme: jest.fn()
     } as unknown as jest.Mocked<DoroUi>;
 
     // Mock constructor implementations
@@ -113,7 +122,16 @@ describe('DoroApp', () => {
       completedMode: null
     });
 
-    app = new DoroApp();
+    (saveSettings as jest.Mock).mockResolvedValue(undefined);
+    (resetSettings as jest.Mock).mockResolvedValue({
+      volumeMode: 'normal',
+      colorScheme: 'modern'
+    });
+
+    app = new DoroApp({
+      volumeMode: 'normal',
+      colorScheme: 'modern'
+    });
   });
 
   afterAll(() => {
@@ -201,6 +219,8 @@ describe('DoroApp', () => {
 
     it('should toggle color scheme', () => {
       (resolveControlCommand as jest.Mock).mockReturnValue('toggleColorScheme');
+      (mockDoroUi.toggleColorScheme as jest.Mock).mockReturnValue('calm');
+      (mockDoroUi.getColorScheme as jest.Mock).mockReturnValue('calm');
       (app as any).handleInput({
         type: 'key',
         ch: 'c',
@@ -210,6 +230,7 @@ describe('DoroApp', () => {
         ctrl: false
       });
       expect(mockDoroUi.toggleColorScheme).toHaveBeenCalledTimes(1);
+      expect(saveSettings).toHaveBeenCalled();
     });
 
     it('should toggle pause', () => {

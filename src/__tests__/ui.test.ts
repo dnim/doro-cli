@@ -164,29 +164,22 @@ describe('DoroUi', () => {
     expect(mockScreen.render).toHaveBeenCalledTimes(1);
   });
 
-  it('should toggle color scheme', () => {
-    ui = new DoroUi(handlers);
+  it('should toggle color scheme and return it', () => {
+    ui = new DoroUi(handlers, 'modern');
+    expect(ui.getColorScheme()).toBe('modern');
 
-    // Test that the method doesn't throw, and state is preserved internally
-    ui.toggleColorScheme();
+    const next = ui.toggleColorScheme();
+    expect(next).toBe('calm');
+    expect(ui.getColorScheme()).toBe('calm');
 
-    ui.render({
-      mode: 'work',
-      status: 'running',
-      remainingSeconds: 600,
-      durationSeconds: 1500,
-      isLocked: false,
-      volumeMode: 'normal',
-      hasPrompt: false,
-      promptCountdownSeconds: 0,
-      promptTotalSeconds: 0,
-      promptNextMode: null
-    });
+    const back = ui.toggleColorScheme();
+    expect(back).toBe('modern');
+  });
 
-    // We expect the styles to change, which internally modifies root.style.bg.
-    // The specifics are covered by integration / manual tests, but we ensure no crashes.
-    const mockScreen = (blessed.screen as jest.Mock).mock.results[0].value;
-    expect(mockScreen.render).toHaveBeenCalledTimes(1);
+  it('should set color scheme explicitly', () => {
+    ui = new DoroUi(handlers, 'modern');
+    ui.setColorScheme('calm');
+    expect(ui.getColorScheme()).toBe('calm');
   });
 
   it('should destroy and disable mouse', () => {

@@ -16,6 +16,7 @@ import {
 } from './input';
 import { TimerStateMachine } from './stateMachine';
 import { DoroUi } from './ui';
+import { type Settings, saveSettings, resetSettings } from './config';
 
 export class DoroApp {
   private readonly machine: TimerStateMachine;
@@ -34,38 +35,44 @@ export class DoroApp {
 
   private isExiting = false;
 
-  private volumeMode: 'normal' | 'quiet' | 'muted' = 'normal';
+  private volumeMode: 'normal' | 'quiet' | 'muted';
 
   private tickInterval: NodeJS.Timeout | null = null;
 
   private lastTickTs = Date.now();
 
-  public constructor() {
+  public constructor(initialSettings: Settings) {
     this.machine = new TimerStateMachine();
-    this.workStartClip = createWorkStartClip();
-    this.shortRestStartClip = createShortRestStartClip();
-    this.longRestStartClip = createLongRestStartClip();
-    this.completionBeepClip = createCompletionBeepClip();
-    this.resetBeepClip = createResetBeepClip();
+    this.volumeMode = initialSettings.volumeMode;
 
-    this.ui = new DoroUi({
-      onKey: (ch, key) => {
-        this.handleInput({
-          type: 'key',
-          ch,
-          keyName: key.name ?? '',
-          keyFull: key.full ?? '',
-          shift: Boolean(key.shift),
-          ctrl: Boolean(key.ctrl)
-        });
+    const mult = this.volumeMode === 'quiet' ? 0.25 : 1.0;
+    this.workStartClip = createWorkStartClip(mult);
+    this.shortRestStartClip = createShortRestStartClip(mult);
+    this.longRestStartClip = createLongRestStartClip(mult);
+    this.completionBeepClip = createCompletionBeepClip(mult);
+    this.resetBeepClip = createResetBeepClip(mult);
+
+    this.ui = new DoroUi(
+      {
+        onKey: (ch, key) => {
+          this.handleInput({
+            type: 'key',
+            ch,
+            keyName: key.name ?? '',
+            keyFull: key.full ?? '',
+            shift: Boolean(key.shift),
+            ctrl: Boolean(key.ctrl)
+          });
+        },
+        onAnyClick: () => {
+          this.handleInput({ type: 'mouse' });
+        },
+        onResize: () => {
+          this.handleInput({ type: 'resize' });
+        }
       },
-      onAnyClick: () => {
-        this.handleInput({ type: 'mouse' });
-      },
-      onResize: () => {
-        this.handleInput({ type: 'resize' });
-      }
-    });
+      initialSettings.colorScheme
+    );
   }
 
   public start(): void {
@@ -177,6 +184,7 @@ export class DoroApp {
 
     if (command === 'toggleColorScheme') {
       this.ui.toggleColorScheme();
+      this.persistSettings();
       this.render();
       return;
     }
@@ -201,7 +209,13 @@ export class DoroApp {
         this.resetBeepClip = createResetBeepClip(mult);
       }
 
+      this.persistSettings();
       this.render();
+      return;
+    }
+
+    if (command === 'none' && event.type === 'key' && event.keyFull === 'S-r') {
+      void this.handleResetSettings();
       return;
     }
 
@@ -308,6 +322,27 @@ export class DoroApp {
       promptTotalSeconds,
       promptNextMode
     });
+  }
+
+  private persistSettings(): void {
+    void saveSettings({
+      volumeMode: this.volumeMode,
+      colorScheme: this.ui.getColorScheme()
+    });
+  }
+
+  private async handleResetSettings(): Promise<void> {
+    const settings = await resetSettings();
+    this.volumeMode = settings.volumeMode;
+    const mult = this.volumeMode === 'quiet' ? 0.25 : 1.0;
+    this.workStartClip = createWorkStartClip(mult);
+    this.shortRestStartClip = createShortRestStartClip(mult);
+    this.longRestStartClip = createLongRestStartClip(mult);
+    this.completionBeepClip = createCompletionBeepClip(mult);
+    this.resetBeepClip = createResetBeepClip(mult);
+
+    this.ui.setColorScheme(settings.colorScheme);
+    this.render();
   }
 
   private shutdown(): void {

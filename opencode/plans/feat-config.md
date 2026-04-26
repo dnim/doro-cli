@@ -2,7 +2,7 @@
 
 - **Feature**: Persistent user settings (volume, color scheme).
 - **Branch**: `feature/persistent-config`
-- **Status**: `Pending`
+- **Status**: `Completed`
 - **Summary**: This plan covers loading user settings from a global configuration file on startup and saving them when they are changed. It introduces one new dependency.
 
 ---
