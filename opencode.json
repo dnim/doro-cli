@@ -22,6 +22,9 @@
       "git push *": "allow",
       "git push": "allow",
       "gh *": "allow"
+    },
+    "skill": {
+      "antivibe": "allow"
     }
   }
 }
