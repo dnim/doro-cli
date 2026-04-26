@@ -214,7 +214,7 @@ export class DoroApp {
       return;
     }
 
-    if (command === 'none' && event.type === 'key' && event.keyFull === 'S-r') {
+    if (command === 'resetSettings') {
       void this.handleResetSettings();
       return;
     }

@@ -23,6 +23,7 @@ export type ControlCommand =
   | 'debugNearEnd'
   | 'pauseResume'
   | 'resetRun'
+  | 'resetSettings'
   | 'startWork'
   | 'startShort'
   | 'startLong'
@@ -63,6 +64,9 @@ export function resolveControlCommand(event: InputEvent): ControlCommand {
   }
 
   if (event.keyName === 'r' || lowerChar === 'r') {
+    if (event.shift || event.ch === 'R' || event.keyFull === 'S-r') {
+      return 'resetSettings';
+    }
     return 'resetRun';
   }
 
@@ -86,7 +90,8 @@ export function isAllowedWhenLocked(command: ControlCommand): boolean {
     command === 'quit' ||
     command === 'toggleLock' ||
     command === 'toggleColorScheme' ||
-    command === 'toggleMute'
+    command === 'toggleMute' ||
+    command === 'resetSettings'
   );
 }
 
