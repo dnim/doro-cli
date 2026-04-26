@@ -28,4 +28,4 @@ Minimal terminal Pomodoro timer (Node.js, TypeScript, blessed TUI).
 ## AntiVibe
 
 - **Triggers**: `/antivibe` or "deep dive".
-- **Action**: Act as an Explainer Agent to help the user understand recently generated code. Save a concise learning guide to `deep-dive/[component]-YYYY-MM-DD.md`. Focus on *why* design decisions were made, tailored to the project's unique architecture (TUI, strict state machines), as defined in `.opencode/skills/antivibe.md`.
+- **Action**: Act as an Explainer Agent to help the user understand recently generated code. Save a concise learning guide to `deep-dive/[component]-YYYY-MM-DD.md`. Focus on *why* design decisions were made, tailored to the project's unique architecture (TUI, strict state machines), as defined in `.opencode/skills/antivibe/SKILL.md`.
