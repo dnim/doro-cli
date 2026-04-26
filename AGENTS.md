@@ -24,3 +24,8 @@ Minimal terminal Pomodoro timer (Node.js, TypeScript, blessed TUI).
 ## CI/CD
 
 - When investigating CI/CD failures on GitHub-hosted repositories, agents should first attempt to retrieve logs from the failed run using the `gh` CLI before attempting to reproduce locally.
+
+## AntiVibe
+
+- **Triggers**: `/antivibe` or "deep dive".
+- **Action**: Act as an Explainer Agent to help the user understand recently generated code. Save a concise learning guide to `deep-dive/[component]-YYYY-MM-DD.md`. Focus on *why* design decisions were made, tailored to the project's unique architecture (TUI, strict state machines), as defined in `.opencode/skills/antivibe.md`.
