@@ -9,11 +9,11 @@
 
 ### Checklist
 
--   `[ ]` **(Mandatory)** Install `env-paths` dependency to locate the config directory.
--   `[ ]` **(Mandatory)** Create `src/config.ts` module with functions for loading and saving `settings.json`.
--   `[ ]` **(Mandatory)** Refactor `DoroApp` and `cli.ts` to support asynchronous startup.
--   `[ ]` **(Mandatory)** Integrate config loading into `DoroApp` to initialize with saved settings.
--   `[ ]` **(Mandatory)** Refactor `DoroUi` to be stateless regarding its color scheme.
--   `[ ]` **(Mandatory)** Update `DoroApp` handlers to save settings when they are changed by the user.
--   `[ ]` **(Mandatory)** Add a "Reset Settings" command (`Shift+R`).
--   `[ ]` **(Mandatory)** Verify changes by running the type checker and unit tests.
+- `[ ]` **(Mandatory)** Install `env-paths` dependency to locate the config directory.
+- `[ ]` **(Mandatory)** Create `src/config.ts` module with functions for loading and saving `settings.json`.
+- `[ ]` **(Mandatory)** Refactor `DoroApp` and `cli.ts` to support asynchronous startup.
+- `[ ]` **(Mandatory)** Integrate config loading into `DoroApp` to initialize with saved settings.
+- `[ ]` **(Mandatory)** Refactor `DoroUi` to be stateless regarding its color scheme.
+- `[ ]` **(Mandatory)** Update `DoroApp` handlers to save settings when they are changed by the user.
+- `[ ]` **(Mandatory)** Add a "Reset Settings" command (`Shift+R`).
+- `[ ]` **(Mandatory)** Verify changes by running the type checker and unit tests.

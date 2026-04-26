@@ -78,7 +78,7 @@ doro
 |    `s`    | Start Short Break         |
 |    `l`    | Start Long Break          |
 |    `L`    | Lock / Unlock Hotkeys     |
-| `Shift+R` | Reset All Settings       |
+| `Shift+R` | Reset All Settings        |
 | `Shift+D` | Debug: Fast-forward timer |
 
 ## Configuration

@@ -80,6 +80,16 @@ describe('config', () => {
       expect(fs.promises.mkdir).not.toHaveBeenCalled();
       expect(fs.promises.writeFile).toHaveBeenCalled();
     });
+
+    it('should log error on save failure', async () => {
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+      (fs.promises.writeFile as jest.Mock).mockRejectedValue(new Error('Write error'));
+
+      await saveSettings({ volumeMode: 'normal', colorScheme: 'modern' });
+
+      expect(consoleSpy).toHaveBeenCalledWith('Failed to save settings:', expect.any(Error));
+      consoleSpy.mockRestore();
+    });
   });
 
   describe('resetSettings', () => {

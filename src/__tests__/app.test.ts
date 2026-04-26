@@ -7,7 +7,7 @@ jest.mock('env-paths', () => {
 import { DoroApp } from '../app';
 import { TimerStateMachine } from '../stateMachine';
 import { DoroUi } from '../ui';
-import { stopPlayback } from '../audio/player';
+import { playClip, stopPlayback } from '../audio/player';
 import {
   createCompletionBeepClip,
   createResetBeepClip,
@@ -271,6 +271,60 @@ describe('DoroApp', () => {
       (app as any).handleInput(inputEvent);
       expect((app as any).volumeMode).toBe('normal');
       expect(createWorkStartClip).toHaveBeenCalledWith(1.0);
+    });
+
+    it('should handle resetSettings command', async () => {
+      (resolveControlCommand as jest.Mock).mockReturnValue('resetSettings');
+      await (app as any).handleInput({
+        type: 'key',
+        ch: 'R',
+        keyName: 'r',
+        keyFull: 'S-r',
+        shift: true,
+        ctrl: false
+      });
+      expect(resetSettings).toHaveBeenCalled();
+      expect(mockDoroUi.render).toHaveBeenCalled();
+    });
+
+    it('should play clips on mode start', () => {
+      mockTimerStateMachine.getState.mockReturnValue({ status: 'running' } as any);
+      (app as any).lastTickTs = Date.now() - 1500;
+
+      mockTimerStateMachine.tick.mockReturnValue({
+        state: { mode: 'work', status: 'running' } as any,
+        startedPrompt: false,
+        switchedRunning: true,
+        switchedToMode: 'work',
+        completedMode: null
+      });
+
+      (app as any).stepClock();
+      expect(playClip).toHaveBeenCalled();
+    });
+
+    it('should play completion and reset beeps', () => {
+      // Test completion beep
+      mockTimerStateMachine.getState.mockReturnValue({ status: 'running' } as any);
+      (app as any).lastTickTs = Date.now() - 1500; // Force at least one tick
+
+      mockTimerStateMachine.tick.mockReturnValue({
+        state: { mode: 'work', status: 'switchPrompt' } as any,
+        startedPrompt: true,
+        switchedRunning: false,
+        switchedToMode: null,
+        completedMode: 'work'
+      });
+      (app as any).stepClock();
+      expect(playClip).toHaveBeenCalled();
+
+      // Test reset beep
+      (resolveControlCommand as jest.Mock).mockReturnValue('resetRun');
+      mockTimerStateMachine.resetCurrentAndRun.mockReturnValue({
+        switchedToMode: 'work'
+      } as any);
+      (app as any).handleInput({ type: 'key', ch: 'r' } as any);
+      expect(playClip).toHaveBeenCalled();
     });
   });
 

@@ -32,6 +32,7 @@ describe('input mapping', () => {
     expect(resolveControlCommand(keyEvent('D', 'd', 'S-d', true))).toBe('debugNearEnd');
     expect(resolveControlCommand(keyEvent('d', 'd'))).toBe('none');
     expect(resolveControlCommand(keyEvent('r', 'r'))).toBe('resetRun');
+    expect(resolveControlCommand(keyEvent('R', 'r', 'S-r', true))).toBe('resetSettings');
     expect(resolveControlCommand(keyEvent('w', 'w'))).toBe('startWork');
     expect(resolveControlCommand(keyEvent('s', 's'))).toBe('startShort');
     expect(resolveControlCommand(keyEvent('l', 'l'))).toBe('startLong');
@@ -44,6 +45,7 @@ describe('input mapping', () => {
     expect(isAllowedWhenLocked('toggleLock')).toBe(true);
     expect(isAllowedWhenLocked('toggleColorScheme')).toBe(true);
     expect(isAllowedWhenLocked('toggleMute')).toBe(true);
+    expect(isAllowedWhenLocked('resetSettings')).toBe(true);
     expect(isAllowedWhenLocked('pauseResume')).toBe(false);
   });
 
