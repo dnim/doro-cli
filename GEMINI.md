@@ -22,21 +22,11 @@ To avoid repetition and ensure consistency, this project follows a hierarchical 
 
 ## Key Development Commands
 
-- **Install**: `npm install`
-- **Build**: `npm run build`
-- **Run (Dev)**: `npm run dev`
-- **Run (Prod)**: `node dist/cli.js`
-- **Test**: `npm run test:unit`
-- **Lint**: `npm run lint:local`
-- **Typecheck**: `npm run typecheck`
+Refer to a file://./.opencode/docs/DEV_COMMANDS.md for a list of key development commands.
 
 ## Architecture Highlights
 
-- `src/cli.ts`: Application entry point.
-- `src/app.ts`: Main controller; manages the lifecycle and event loop.
-- `src/stateMachine.ts`: Pure logic for timer states and transitions.
-- `src/ui.ts`: Handles rendering logic and responsiveness for different terminal sizes.
-- `src/audio/`: Logic for programmatic audio generation and playback fallback.
+Refer to a file://./.opencode/docs/ARCHITECTURE.md for an overview of the project architecture.
 
 ## Development Conventions
 
