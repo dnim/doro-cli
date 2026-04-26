@@ -11,5 +11,12 @@ module.exports = {
       lines: 75,
       statements: 75
     }
+  },
+  transform: {
+    '^.+\\.tsx?$': ['ts-jest', { useESM: true }]
+  },
+  extensionsToTreatAsEsm: ['.ts'],
+  moduleNameMapper: {
+    '^(\\.{1,2}/.*)\\.js$': '$1'
   }
 };

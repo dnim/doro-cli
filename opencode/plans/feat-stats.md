@@ -9,9 +9,9 @@
 
 ### Checklist
 
--   `[ ]` **(Mandatory)** Install `proper-lockfile` dependency to manage concurrent file access.
--   `[ ]` **(Mandatory)** Create `src/stats.ts` module with file-locking logic for reading and writing `stats.json`.
--   `[ ]` **(Mandatory)** Integrate session recording into `DoroApp`, calling the stats module upon session completion.
--   `[ ]` **(Mandatory)** Add `--stats` flag handling to `src/cli.ts` to trigger the stats view.
--   `[ ]` **(Mandatory)** Create `src/stats-ui.ts` to render the statistics in a clean, responsive, full-screen view.
--   `[ ]` **(Mandatory)** Verify changes by running the type checker and adding new unit tests for the stats logic.
+- `[ ]` **(Mandatory)** Install `proper-lockfile` dependency to manage concurrent file access.
+- `[ ]` **(Mandatory)** Create `src/stats.ts` module with file-locking logic for reading and writing `stats.json`.
+- `[ ]` **(Mandatory)** Integrate session recording into `DoroApp`, calling the stats module upon session completion.
+- `[ ]` **(Mandatory)** Add `--stats` flag handling to `src/cli.ts` to trigger the stats view.
+- `[ ]` **(Mandatory)** Create `src/stats-ui.ts` to render the statistics in a clean, responsive, full-screen view.
+- `[ ]` **(Mandatory)** Verify changes by running the type checker and adding new unit tests for the stats logic.

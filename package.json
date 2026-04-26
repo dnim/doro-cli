@@ -42,7 +42,8 @@
     "node": ">=22"
   },
   "dependencies": {
-    "blessed": "npm:@rook2pawn/neo-blessed@^2.0.2"
+    "blessed": "npm:@rook2pawn/neo-blessed@^2.0.2",
+    "env-paths": "^4.0.0"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
@@ -71,5 +72,8 @@
         "npm run test:unit"
       ]
     }
-  }
+  },
+  "browserslist": [
+    "maintained node versions"
+  ]
 }

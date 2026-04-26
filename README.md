@@ -78,7 +78,19 @@ doro
 |    `s`    | Start Short Break         |
 |    `l`    | Start Long Break          |
 |    `L`    | Lock / Unlock Hotkeys     |
+| `Shift+R` | Reset All Settings        |
 | `Shift+D` | Debug: Fast-forward timer |
+
+## Configuration
+
+`doro-cli` automatically saves your settings (volume mode and color scheme) to a persistent configuration file.
+
+- **Settings Location**:
+  - **macOS**: `~/Library/Preferences/doro-cli-nodejs/settings.json`
+  - **Linux**: `~/.config/doro-cli-nodejs/settings.json`
+  - **Windows**: `%LOCALAPPDATA%\doro-cli-nodejs\Config\settings.json`
+
+To reset all settings to their factory defaults, press `Shift+R` within the app.
 
 ## Behavior
 
