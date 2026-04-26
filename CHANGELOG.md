@@ -5,6 +5,32 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- Integrated a tailored `antivibe` AI code learning skill to help explain AI-generated code.
+- Configured OpenCode to explicitly allow the `antivibe` skill.
+
+## [1.1.0] - 2026-04-25
+
+### Added
+- Replaced synthetic 8-bit audio cues with curated classical Austrian composer snippets.
+
+### Changed
+- Transitioned to `release-it` for a standardized and automated package publishing workflow.
+
+## [1.0.0] - 2026-04-24
+
+### Added
+- Automated NPM publishing pipeline via GitHub Actions using Trusted Publishing (OIDC).
+- Added robust local release scripts with pre-release safety checks.
+- Included package metadata and graphical assets for the NPM registry.
+
+### Changed
+- Excluded test files and unnecessary artifacts from the published NPM package.
+- Consolidated development dependencies via Dependabot.
+- Fixed multiple CI workflow issues related to Node versions and build steps.
+
 ## [0.1.0] - 2026-04-24
 
 ### Added
