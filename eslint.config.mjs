@@ -28,6 +28,12 @@ export default tseslint.config(
     }
   },
   {
-    ignores: ['dist/**', 'jest.config.cjs', 'coverage/**', 'node_modules/**']
+    ignores: [
+      'dist/**',
+      'jest.config.cjs',
+      'coverage/**',
+      'node_modules/**',
+      'playwright.config.ts'
+    ]
   }
 );

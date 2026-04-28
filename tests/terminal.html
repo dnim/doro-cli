@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="../node_modules/xterm/css/xterm.css" />
+    <script src="../node_modules/xterm/lib/xterm.js"></script>
+    <style>
+        body { 
+            margin: 0; 
+            background: #1c1e26; 
+            overflow: hidden; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            width: 100vw;
+        }
+        #terminal-container {
+            padding: 20px;
+            background: #1c1e26;
+            border: 2px solid #2e303e;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        #terminal { 
+            background: #1c1e26;
+        }
+    </style>
+</head>
+<body>
+    <div id="terminal-container">
+        <div id="terminal"></div>
+    </div>
+    <script>
+        const COLOR_MAP = {
+            // MODERN THEME
+            // Bases (Pale) -> Dark Background
+            '#fce9f1': '#1c1e26', '#e9f5fc': '#1c1e26', '#e9fce9': '#1c1e26', '#f5f5f5': '#1c1e26',
+            '#fff3f8': '#1c1e26', '#f3faff': '#1c1e26', '#f3fff3': '#1c1e26', '#fafafa': '#1c1e26',
+            
+            // Status/Help Strips -> Lighter Navy/Grey
+            '#e5a7c4': '#2e303e', '#a7c4e5': '#2e303e', '#a7e5a7': '#2e303e', '#cccccc': '#2e303e',
+            '#f7ccd3': '#2e303e', '#cce6f7': '#2e303e', '#ccf7cc': '#2e303e', '#dddddd': '#2e303e',
+
+            // Text Colors -> Crisp White
+            '#3a1e2d': '#ffffff', '#1e2d3a': '#ffffff', '#1e3a1e': '#ffffff', '#333333': '#ffffff',
+            '#1a1414': '#ffffff', '#14171a': '#ffffff', '#141a14': '#ffffff', '#222222': '#ffffff',
+
+            // Vibrant Mappings (Banner/Status/Fill)
+            '#c96f97': '#ff007f', // Modern Work Pink
+            '#6f97c9': '#0099ff', // Modern Short Blue
+            '#6fc96f': '#00ff66', // Modern Long Green
+            '#999999': '#abb2bf', // Modern Pause Grey
+            
+            '#f4b8d0': '#ff66b2', // Fill Work
+            '#b8e2f4': '#66ccff', // Fill Short
+            '#b8f4b8': '#66ff66', // Fill Long
+            
+            '#f2a9b3': '#ff3366', // Calm Work
+            '#a9d4f2': '#3399ff', // Calm Short
+            '#a9f2a9': '#33ff33', // Calm Long
+        };
+
+        function transformColors(data) {
+            // Matches \x1b[38;2;R;G;Bm or \x1b[48;2;R;G;Bm
+            return data.replace(/\x1b\[(38|48);2;(\d+);(\d+);(\d+)m/g, (match, type, r, g, b) => {
+                const hex = '#' + [r, g, b].map(x => parseInt(x).toString(16).padStart(2, '0')).join('');
+                const mapped = COLOR_MAP[hex.toLowerCase()];
+                if (mapped) {
+                    const mr = parseInt(mapped.slice(1, 3), 16);
+                    const mg = parseInt(mapped.slice(3, 5), 16);
+                    const mb = parseInt(mapped.slice(5, 7), 16);
+                    return `\x1b[${type};2;${mr};${mg};${mb}m`;
+                }
+                return match;
+            });
+        }
+
+        const Terminal = window.Terminal;
+        const term = new Terminal({
+            theme: {
+                background: '#1c1e26',
+                foreground: '#ffffff',
+                cursor: '#ffffff',
+                black: '#1c1e26',
+                red: '#ff007f',
+                green: '#00ff66',
+                yellow: '#f39c12',
+                blue: '#0099ff',
+                magenta: '#ff007f',
+                cyan: '#00ffff',
+                white: '#ffffff'
+            },
+            fontFamily: '"JetBrains Mono", "Fira Code", monospace',
+            fontSize: 16,
+            fontWeight: '500',
+            allowProposedApi: true
+        });
+        
+        term.open(document.getElementById('terminal'));
+        window.term = term;
+
+        // Custom write that transforms colors
+        const originalWrite = term.write.bind(term);
+        term.write = (data) => {
+            originalWrite(transformColors(data));
+        };
+    </script>
+</body>
+</html>
