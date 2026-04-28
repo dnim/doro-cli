@@ -47,7 +47,7 @@ export function resolveControlCommand(event: InputEvent): ControlCommand {
     return 'toggleLock';
   }
 
-  if (event.keyName === 'p' || lowerChar === 'p') {
+  if (event.keyName === 'p' || lowerChar === 'p' || event.keyName === 'space') {
     return 'pauseResume';
   }
 

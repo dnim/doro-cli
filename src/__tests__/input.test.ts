@@ -27,6 +27,7 @@ describe('input mapping', () => {
   it('maps commands correctly', () => {
     expect(resolveControlCommand(keyEvent('q', 'q'))).toBe('quit');
     expect(resolveControlCommand(keyEvent('p', 'p'))).toBe('pauseResume');
+    expect(resolveControlCommand(keyEvent(' ', 'space'))).toBe('pauseResume');
     expect(resolveControlCommand(keyEvent('c', 'c'))).toBe('toggleColorScheme');
     expect(resolveControlCommand(keyEvent('m', 'm'))).toBe('toggleMute');
     expect(resolveControlCommand(keyEvent('D', 'd', 'S-d', true))).toBe('debugNearEnd');

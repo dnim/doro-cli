@@ -70,7 +70,7 @@ doro
 |    Key    | Action                    |
 | :-------: | ------------------------- |
 |    `q`    | Quit                      |
-|    `p`    | Pause / Resume            |
+| `p` or `Space` | Pause / Resume            |
 |    `r`    | Reset Timer               |
 |    `c`    | Toggle Color Scheme       |
 |    `m`    | Mute / Unmute             |
