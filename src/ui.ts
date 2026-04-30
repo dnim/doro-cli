@@ -103,9 +103,10 @@ export function getRunningStatusText(
   const candidates = [
     `${s} | ${isLocked ? 'LOCKED' : 'OPEN'} | ${muteStrLong}`,
     `${s} | ${lock} | ${muteStrShort}`,
+    `${s} | ${muteStrShort}`,
     `${s} | ${lock}`,
-    `${s} ${lockIcon}`,
     `${s} ${volumeIcon}`,
+    `${s} ${lockIcon}`,
     `${lockIcon} ${volumeIcon}`,
     volumeIcon,
     lockIcon

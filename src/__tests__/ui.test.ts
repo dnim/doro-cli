@@ -205,13 +205,25 @@ describe('DoroUi', () => {
 
   it('should show volume icons for all modes at tiny widths', () => {
     // Test that volume indicators are prioritized over lock icons at tiny widths
-    const result1 = getRunningStatusText('running', true, 'muted', 3);
-    const result2 = getRunningStatusText('running', true, 'quiet', 3);
-    const result3 = getRunningStatusText('running', true, 'normal', 3);
+    const result1 = getRunningStatusText('running', true, 'muted', 5);
+    const result2 = getRunningStatusText('running', true, 'quiet', 5);
+    const result3 = getRunningStatusText('running', true, 'normal', 5);
 
-    // At width 3, should fit "⊘ ✕" (lock + space + volume)
+    // At width 5, should fit "⊘ ✕" (lock + space + volume)
     expect(result1).toBe('⊘ ✕');
     expect(result2).toBe('⊘ ♪');
     expect(result3).toBe('⊘ ♫');
+  });
+
+  it('should prioritize volume over lock at medium widths', () => {
+    // Test that volume is shown before lock-only at medium widths
+    const result1 = getRunningStatusText('running', false, 'muted', 10);
+    const result2 = getRunningStatusText('running', false, 'quiet', 10);
+    const result3 = getRunningStatusText('running', false, 'normal', 10);
+
+    // At width 10, should show "RUNNING ✕/♪/♫" (volume icons) instead of "RUNNING | OPEN"
+    expect(result1).toBe('RUNNING ✕');
+    expect(result2).toBe('RUNNING ♪');
+    expect(result3).toBe('RUNNING ♫');
   });
 });
