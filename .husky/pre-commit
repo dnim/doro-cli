@@ -1,3 +1,14 @@
+#!/bin/sh
+
+# Prevent commits on main branch
+BRANCH=$(git rev-parse --abbrev-ref HEAD)
+if [ "$BRANCH" = "main" ]; then
+  echo "🚫 Direct commits to main branch are not allowed."
+  echo "Please create a feature branch first:"
+  echo "  git checkout -b feature/your-feature-name"
+  exit 1
+fi
+
 npm run lint
 npm run typecheck
 npm run test:unit -- --coverage
