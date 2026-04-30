@@ -26,4 +26,4 @@ This document outlines the standard operating procedures for all AI agents worki
 
 ## 4. CI/CD
 
-- When investigating CI/CD failures on GitHub-hosted repositories, agents should first attempt to retrieve logs from the failed run using the `gh` CLI before attempting to reproduce locally.
+- When investigating CI/CD failures on GitHub-hosted repositories, agents MUST use the `gh` CLI tool (e.g., `gh run view`, `gh pr checks`, `gh run list`) to inspect commits and workflow runs before attempting to reproduce issues locally. This ensures agents have the most accurate and up-to-date information regarding build failures.
