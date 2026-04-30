@@ -1,6 +1,12 @@
 {
   "$schema": "https://opencode.ai/config.json",
   "model": "github-copilot/gpt-5.1-codex",
+  "instructions": [
+    ".opencode/docs/AGENT_WORKFLOW.md",
+    ".opencode/docs/ARCHITECTURE.md",
+    ".opencode/docs/DEV_COMMANDS.md",
+    ".opencode/docs/DEVELOPMENT_GUIDELINES.md"
+  ],
   "agent": {
     "plan": {
       "model": "github-copilot/gpt-5.3-codex"

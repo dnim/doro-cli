@@ -2,6 +2,15 @@
 
 This document outlines the standard operating procedures for all AI agents working on this project.
 
+## 0. Token Efficiency
+
+- No preamble: never start responses with "I'll now...", "Sure!", "Let me...", "Great!"
+- No narrating tool calls — execute, don't describe
+- No repeating context already established in the conversation
+- Never create files unless explicitly required; prefer editing existing ones
+- **Plan mode**: output a structured numbered plan only — no code, no prose
+- **Build mode**: follow the plan, execute directly; ask only when genuinely blocked
+
 ## 1. Git Workflow
 
 - **Never commit or make changes directly on `main`.**
