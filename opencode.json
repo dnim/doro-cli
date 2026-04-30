@@ -9,10 +9,22 @@
   ],
   "agent": {
     "plan": {
-      "model": "github-copilot/gpt-5.3-codex"
+      "model": "github-copilot/gpt-5.3-codex",
+      "permission": {
+        "bash": {
+          "git commit *": "deny",
+          "git push *": "deny"
+        }
+      }
     },
     "general": {
-      "model": "github-copilot/gemini-3.1-pro-preview"
+      "model": "github-copilot/gemini-3.1-pro-preview",
+      "permission": {
+        "bash": {
+          "git commit *": "deny", 
+          "git push *": "deny"
+        }
+      }
     },
     "explore": {
       "model": "github-copilot/gemini-3-flash"
@@ -32,23 +44,32 @@
       "*": "ask",
       "git status *": "allow",
       "git status": "allow",
-      "git diff *": "allow",
+      "git diff *": "allow", 
       "git log *": "allow",
-      "git checkout *": "allow",
-      "git add *": "allow",
-      "git commit *": "allow",
-      "git branch *": "allow",
-      "git branch": "allow",
-      "git fetch *": "allow",
-      "git merge *": "allow",
-      "git rebase *": "allow",
-      "git stash *": "allow",
-      "git reset *": "allow",
-      "git restore *": "allow",
       "git show *": "allow",
-      "git push *": "allow",
-      "git push": "allow",
-      "gh *": "allow"
+      "git branch": "allow",
+      "git branch -v*": "allow",
+      "git branch --list*": "allow", 
+      "git fetch *": "allow",
+      "gh pr checks*": "allow",
+      "gh run view*": "allow",
+      "gh run list*": "allow",
+      "git checkout *": "ask",
+      "git add *": "ask",
+      "git stash *": "ask",
+      "git reset *": "ask", 
+      "git restore *": "ask",
+      "git merge *": "ask",
+      "git rebase *": "ask",
+      "git commit *": "deny",
+      "git push *": "deny",
+      "git push": "deny"
+    },
+    "edit": {
+      "*": "allow",
+      "opencode.json": "ask",
+      ".opencode/**": "ask",
+      ".husky/**": "ask"
     },
     "skill": {
       "antivibe": "allow"
