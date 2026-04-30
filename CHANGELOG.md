@@ -7,10 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-04-30
+
 ### Added
 
-- Integrated a tailored `antivibe` AI code learning skill to help explain AI-generated code.
-- Configured OpenCode to explicitly allow the `antivibe` skill.
+- Comprehensive visual regression tests with color mapping using Playwright.
+- Persistent configuration system for storing user settings.
+- `laconic-conversation` AI skill for concise communication.
+- Integrated `antivibe` AI code learning skill to help explain AI-generated code.
+- Planning workflow with structured feature plans and templates.
+- Space bar as an additional pause shortcut alongside 'p'.
+
+### Fixed
+
+- Improved pause behavior to properly interrupt audio and handle state transitions.
+
+### Changed
+
+- Reorganized agent instruction files with token efficiency rules.
+- Configured model-specific settings per agent type.
+- Enhanced test coverage with comprehensive unit tests for configuration and app behavior.
 
 ## [1.1.0] - 2026-04-25
 
