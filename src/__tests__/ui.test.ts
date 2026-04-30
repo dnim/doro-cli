@@ -192,38 +192,23 @@ describe('DoroUi', () => {
     expect(mockScreen.destroy).toHaveBeenCalledTimes(1);
   });
 
-  it('should show volume indicator at very small widths', () => {
-    // Test that volume icon appears at width 1
-    const result1 = getRunningStatusText('running', false, 'muted', 1);
-    const result2 = getRunningStatusText('running', false, 'quiet', 1);
-    const result3 = getRunningStatusText('running', false, 'normal', 1);
-
-    expect(result1).toBe('✕');
-    expect(result2).toBe('♪');
-    expect(result3).toBe('♫');
+  it('should show lock icon at minimal width', () => {
+    // At width 1, only the lock icon fits
+    expect(getRunningStatusText('running', false, 'muted', 1)).toBe('○');
+    expect(getRunningStatusText('running', true, 'muted', 1)).toBe('⊘');
   });
 
-  it('should show volume icons for all modes at tiny widths', () => {
-    // Test that volume indicators are prioritized over lock icons at tiny widths
-    const result1 = getRunningStatusText('running', true, 'muted', 5);
-    const result2 = getRunningStatusText('running', true, 'quiet', 5);
-    const result3 = getRunningStatusText('running', true, 'normal', 5);
-
-    // At width 5, should fit "⊘ ✕" (lock + space + volume)
-    expect(result1).toBe('⊘ ✕');
-    expect(result2).toBe('⊘ ♪');
-    expect(result3).toBe('⊘ ♫');
+  it('should show both lock and volume icons at super tiny widths', () => {
+    // At width 5, both icons fit but not the running label
+    expect(getRunningStatusText('running', true, 'muted', 5)).toBe('⊘ ✕');
+    expect(getRunningStatusText('running', true, 'quiet', 5)).toBe('⊘ ♪');
+    expect(getRunningStatusText('running', true, 'normal', 5)).toBe('⊘ ♫');
   });
 
-  it('should prioritize volume over lock at medium widths', () => {
-    // Test that volume is shown before lock-only at medium widths
-    const result1 = getRunningStatusText('running', false, 'muted', 10);
-    const result2 = getRunningStatusText('running', false, 'quiet', 10);
-    const result3 = getRunningStatusText('running', false, 'normal', 10);
-
-    // At width 10, should show "RUNNING ✕/♪/♫" (volume icons) instead of "RUNNING | OPEN"
-    expect(result1).toBe('RUNNING ✕');
-    expect(result2).toBe('RUNNING ♪');
-    expect(result3).toBe('RUNNING ♫');
+  it('should show all three indicators at medium widths', () => {
+    // At width 11, compact icons with running label fits
+    expect(getRunningStatusText('running', false, 'muted', 11)).toBe('RUNNING ○ ✕');
+    expect(getRunningStatusText('running', false, 'quiet', 11)).toBe('RUNNING ○ ♪');
+    expect(getRunningStatusText('running', false, 'normal', 11)).toBe('RUNNING ○ ♫');
   });
 });

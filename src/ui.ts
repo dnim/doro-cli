@@ -104,12 +104,8 @@ export function getRunningStatusText(
   const candidates = [
     `${s} | ${isLocked ? 'LOCKED' : 'OPEN'} | ${muteStrLong}`,
     `${s} | ${lock} | ${muteStrShort}`,
-    `${s} | ${muteStrShort}`,
-    `${s} | ${lock}`,
-    `${s} ${volumeIcon}`,
-    `${s} ${lockIcon}`,
+    `${s} ${lockIcon} ${volumeIcon}`,
     `${lockIcon} ${volumeIcon}`,
-    volumeIcon,
     lockIcon
   ];
   for (const c of candidates) {
@@ -117,7 +113,7 @@ export function getRunningStatusText(
       return c;
     }
   }
-  return volumeIcon.slice(0, cols);
+  return lockIcon.slice(0, cols);
 }
 
 function getTransitionStatusText(nextMode: TimerMode, autoSec: number, cols: number): string {
