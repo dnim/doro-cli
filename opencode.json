@@ -1,11 +1,32 @@
 {
   "$schema": "https://opencode.ai/config.json",
+  "model": "github-copilot/gpt-5.1-codex",
   "instructions": [
     ".opencode/docs/AGENT_WORKFLOW.md",
     ".opencode/docs/ARCHITECTURE.md",
     ".opencode/docs/DEV_COMMANDS.md",
     ".opencode/docs/DEVELOPMENT_GUIDELINES.md"
   ],
+  "agent": {
+    "plan": {
+      "model": "github-copilot/gpt-5.3-codex"
+    },
+    "general": {
+      "model": "github-copilot/gemini-3.1-pro-preview"
+    },
+    "explore": {
+      "model": "github-copilot/gemini-3-flash"
+    },
+    "title": {
+      "model": "github-copilot/gemini-3-flash"
+    },
+    "summary": {
+      "model": "github-copilot/gemini-3-flash"
+    },
+    "compaction": {
+      "model": "github-copilot/gemini-3-flash"
+    }
+  },
   "permission": {
     "bash": {
       "*": "ask",
@@ -31,30 +52,6 @@
     },
     "skill": {
       "antivibe": "allow"
-    }
-  },
-  "agent": {
-    "plan": {
-      "model": "github-copilot/claude-opus-4.7",
-      "temperature": 0,
-      "steps": 15,
-      "prompt": "You are in plan mode. Think deeply before responding. Output a structured, minimal plan only — numbered steps, no implementation prose, no filler. Be concise and direct."
-    },
-    "build": {
-      "model": "github-copilot/claude-sonnet-4.6",
-      "temperature": 0.1,
-      "steps": 50
-    },
-    "title": {
-      "model": "github-copilot/claude-haiku-4.5",
-      "steps": 3
-    },
-    "summary": {
-      "model": "github-copilot/claude-haiku-4.5",
-      "steps": 5
-    },
-    "compaction": {
-      "model": "github-copilot/claude-haiku-4-5"
     }
   }
 }
