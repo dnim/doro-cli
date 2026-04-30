@@ -1,4 +1,4 @@
-import { DoroUi } from '../ui';
+import { DoroUi, getRunningStatusText } from '../ui';
 import blessed from 'blessed';
 import { enableMouse, disableMouse } from '../mouse';
 
@@ -190,5 +190,28 @@ describe('DoroUi', () => {
 
     expect(disableMouse).toHaveBeenCalledTimes(1);
     expect(mockScreen.destroy).toHaveBeenCalledTimes(1);
+  });
+
+  it('should show volume indicator at very small widths', () => {
+    // Test that volume icon appears at width 1
+    const result1 = getRunningStatusText('running', false, 'muted', 1);
+    const result2 = getRunningStatusText('running', false, 'quiet', 1);
+    const result3 = getRunningStatusText('running', false, 'normal', 1);
+
+    expect(result1).toBe('✕');
+    expect(result2).toBe('♪');
+    expect(result3).toBe('♫');
+  });
+
+  it('should show volume icons for all modes at tiny widths', () => {
+    // Test that volume indicators are prioritized over lock icons at tiny widths
+    const result1 = getRunningStatusText('running', true, 'muted', 3);
+    const result2 = getRunningStatusText('running', true, 'quiet', 3);
+    const result3 = getRunningStatusText('running', true, 'normal', 3);
+
+    // At width 3, should fit "⊘ ✕" (lock + space + volume)
+    expect(result1).toBe('⊘ ✕');
+    expect(result2).toBe('⊘ ♪');
+    expect(result3).toBe('⊘ ♫');
   });
 });

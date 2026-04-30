@@ -86,13 +86,7 @@ export function resolveControlCommand(event: InputEvent): ControlCommand {
 }
 
 export function isAllowedWhenLocked(command: ControlCommand): boolean {
-  return (
-    command === 'quit' ||
-    command === 'toggleLock' ||
-    command === 'toggleColorScheme' ||
-    command === 'toggleMute' ||
-    command === 'resetSettings'
-  );
+  return command === 'quit' || command === 'toggleLock' || command === 'pauseResume';
 }
 
 export function isPromptConfirmEvent(event: InputEvent, command: ControlCommand): boolean {
