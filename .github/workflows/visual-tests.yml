@@ -5,13 +5,23 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  workflow_dispatch:
+    inputs:
+      update-snapshots:
+        description: 'Force update snapshots'
+        type: boolean
+        default: false
 
 jobs:
   test:
     timeout-minutes: 60
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
     - uses: actions/checkout@v6
+      with:
+        ref: ${{ github.head_ref }}
     
     - uses: actions/setup-node@v6
       with:
@@ -25,7 +35,19 @@ jobs:
       run: npx playwright install --with-deps chromium
       
     - name: Run Visual Tests
+      if: github.event.inputs.update-snapshots != 'true'
       run: npm run test:visual
+      
+    - name: Update Snapshots (Manual or Failure)
+      if: failure() || github.event.inputs.update-snapshots == 'true'
+      run: npm run test:visual:update
+      
+    - name: Commit Updated Snapshots
+      if: failure() || github.event.inputs.update-snapshots == 'true'
+      uses: stefanzweifel/git-auto-commit-action@v5
+      with:
+        commit_message: "chore(vis-reg): update baseline snapshots [skip ci]"
+        file_pattern: 'tests/snapshots/visual.spec.mts-snapshots/*.png'
       
     - uses: actions/upload-artifact@v6
       if: failure()
