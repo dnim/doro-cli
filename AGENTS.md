@@ -1,16 +1,24 @@
 # doro-cli Agent Instructions
 
-This document provides high-level instructions and project-specific context for all AI agents.
+## Token Efficiency (All Agents)
+
+- No preamble: never start responses with "I'll now...", "Sure!", "Let me...", "Great!"
+- No narrating tool calls — execute, don't describe what you're about to do
+- No repeating context already in the conversation
+- Never create files unless explicitly required; always prefer editing existing ones
+- Never create docs/README files unless asked
+- **Plan mode**: output a structured numbered plan only — no code, no implementation prose
+- **Build mode**: follow the plan, execute directly; ask only when genuinely blocked
 
 ## Standard Workflow
 
-All agents MUST follow the standard operating procedures defined in the canonical workflow document:
+Core workflow rules (Git, Planning, Committing, CI/CD) are injected automatically via `opencode.json` instructions.
 
-**-> Refer to a file://./.opencode/docs/AGENT_WORKFLOW.md for all core workflow rules (Git, Planning, Committing, CI/CD).**
+Agents not using OpenCode: refer to `.opencode/docs/AGENT_WORKFLOW.md`.
 
 ## Project-Specific Skills
 
 ### AntiVibe
 
-- **Triggers**: `/antivibe` or "deep dive".
-- **Action**: Act as an Explainer Agent to help the user understand recently generated code. Save a concise learning guide to `deep-dive/[component]-YYYY-MM-DD.md`. Focus on _why_ design decisions were made, tailored to the project's unique architecture (TUI, strict state machines), as defined in `.opencode/skills/antivibe/SKILL.md`.
+- **Triggers**: `/antivibe` or "deep dive"
+- **Action**: Generate a concise learning guide for recently modified/AI-generated code. Save to `deep-dive/[component]-YYYY-MM-DD.md`. Focus on _why_ decisions were made, tied to doro-cli's TUI/state-machine architecture. See `.opencode/skills/antivibe/SKILL.md`.
