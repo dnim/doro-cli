@@ -9,3 +9,4 @@ playwright-report/
 test-results/
 tests/test-config/
 tests/ci-results/
+.opencode/package-lock.json
