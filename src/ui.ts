@@ -85,8 +85,9 @@ function getHelpText(cols: number): string {
  * everything to the right gets `baseBg`.
  */
 /**
- * Returns a responsive transition status line that fits within `cols`.
- * Falls back to shorter variants as width shrinks.
+ * Returns a responsive running/paused status line that fits within `cols`.
+ * Includes the current status plus lock and volume indicators, and falls back
+ * to shorter variants as width shrinks.
  */
 export function getRunningStatusText(
   status: TimerStatus,
