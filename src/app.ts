@@ -153,6 +153,19 @@ export class DoroApp {
         this.render();
         return;
       }
+
+      if (command === 'pauseResume') {
+        // Special case: confirm transition but leave paused, no start sound
+        stopPlayback(); // Stop any current audio
+        const result = this.machine.confirmPromptAndSwitch();
+        if (result.switchedToMode) {
+          // Immediately pause the new mode without playing start sound
+          this.machine.togglePause();
+        }
+        this.render();
+        return;
+      }
+
       if (isPromptConfirmEvent(event, command)) {
         const result = this.machine.confirmPromptAndSwitch();
         if (result.switchedToMode) {
@@ -176,7 +189,15 @@ export class DoroApp {
     }
 
     if (command === 'pauseResume') {
+      const beforeState = this.machine.getState();
       this.machine.togglePause();
+      const afterState = this.machine.getState();
+
+      // Stop audio if transitioning from running to paused
+      if (beforeState.status === 'running' && afterState.status === 'paused') {
+        stopPlayback();
+      }
+
       this.lastTickTs = Date.now();
       this.render();
       return;

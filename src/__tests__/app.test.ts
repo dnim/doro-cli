@@ -246,6 +246,131 @@ describe('DoroApp', () => {
       expect(mockTimerStateMachine.togglePause).toHaveBeenCalledTimes(1);
     });
 
+    it('should stop audio when pausing from running state', () => {
+      (resolveControlCommand as jest.Mock).mockReturnValue('pauseResume');
+
+      // Set up initial running state
+      const runningState = {
+        mode: 'work' as const,
+        status: 'running' as const,
+        remainingSeconds: 300,
+        isLocked: false,
+        switchPrompt: null,
+        completedWorkSessions: 0
+      };
+
+      const pausedState = {
+        mode: 'work' as const,
+        status: 'paused' as const,
+        remainingSeconds: 300,
+        isLocked: false,
+        switchPrompt: null,
+        completedWorkSessions: 0
+      };
+
+      // Mock the three getState calls: initial check, beforeState, afterState
+      mockTimerStateMachine.getState
+        .mockReturnValueOnce(runningState) // Initial state check at beginning of handleInput
+        .mockReturnValueOnce(runningState) // beforeState
+        .mockReturnValueOnce(pausedState); // afterState
+
+      (app as any).handleInput({
+        type: 'key',
+        ch: 'p',
+        keyName: 'p',
+        keyFull: 'p',
+        shift: false,
+        ctrl: false
+      });
+
+      expect(mockTimerStateMachine.togglePause).toHaveBeenCalledTimes(1);
+      expect(stopPlayback).toHaveBeenCalledTimes(1);
+    });
+
+    it('should not stop audio when resuming from paused state', () => {
+      (resolveControlCommand as jest.Mock).mockReturnValue('pauseResume');
+
+      // Set up initial paused state
+      const pausedState = {
+        mode: 'work' as const,
+        status: 'paused' as const,
+        remainingSeconds: 300,
+        isLocked: false,
+        switchPrompt: null,
+        completedWorkSessions: 0
+      };
+
+      const runningState = {
+        mode: 'work' as const,
+        status: 'running' as const,
+        remainingSeconds: 300,
+        isLocked: false,
+        switchPrompt: null,
+        completedWorkSessions: 0
+      };
+
+      // Mock the three getState calls: initial check, beforeState, afterState
+      mockTimerStateMachine.getState
+        .mockReturnValueOnce(pausedState) // Initial state check
+        .mockReturnValueOnce(pausedState) // beforeState
+        .mockReturnValueOnce(runningState); // afterState
+
+      (app as any).handleInput({
+        type: 'key',
+        ch: 'p',
+        keyName: 'p',
+        keyFull: 'p',
+        shift: false,
+        ctrl: false
+      });
+
+      expect(mockTimerStateMachine.togglePause).toHaveBeenCalledTimes(1);
+      expect(stopPlayback).not.toHaveBeenCalled();
+    });
+
+    it('should confirm transition and pause when pauseResume pressed during switchPrompt', () => {
+      (resolveControlCommand as jest.Mock).mockReturnValue('pauseResume');
+
+      // Mock switchPrompt state
+      mockTimerStateMachine.getState.mockReturnValue({
+        mode: 'work' as const,
+        status: 'switchPrompt' as const,
+        remainingSeconds: 0,
+        isLocked: false,
+        switchPrompt: {
+          nextMode: 'short' as const,
+          deadlineTs: Date.now() + 5000
+        },
+        completedWorkSessions: 1
+      });
+
+      mockTimerStateMachine.confirmPromptAndSwitch.mockReturnValue({
+        state: {
+          mode: 'short' as const,
+          status: 'running' as const,
+          remainingSeconds: 300,
+          isLocked: false,
+          switchPrompt: null,
+          completedWorkSessions: 1
+        },
+        switchedToMode: 'short' as const
+      });
+
+      (app as any).handleInput({
+        type: 'key',
+        ch: 'p',
+        keyName: 'p',
+        keyFull: 'p',
+        shift: false,
+        ctrl: false
+      });
+
+      expect(stopPlayback).toHaveBeenCalledTimes(1);
+      expect(mockTimerStateMachine.confirmPromptAndSwitch).toHaveBeenCalledTimes(1);
+      expect(mockTimerStateMachine.togglePause).toHaveBeenCalledTimes(1);
+      expect(playClip).not.toHaveBeenCalled(); // Should not play start sound
+    });
+
     it('should cycle volumeMode: normal -> quiet -> muted -> normal', () => {
       (resolveControlCommand as jest.Mock).mockReturnValue('toggleMute');
       const inputEvent = {
