@@ -8,11 +8,11 @@ triggers:
 
 # AntiVibe (doro-cli edition)
 
-When triggered, generate a concise learning guide for recently modified or AI-generated code. Save output to `deep-dive/[component]-YYYY-MM-DD.md`.
+When triggered, generate a concise learning guide for recently modified or AI-generated code. Save to `deep-dive/[component]-YYYY-MM-DD.md`. No filler, no padding.
 
 ## Guidelines
 
-1. **Explain the Why**: Focus on design logic and architecture decisions, not just reciting the code.
-2. **Contextualize**: Relate explanations to `doro-cli`'s keyboard-first `neo-blessed` UI and state machine constraints.
-3. **Be Direct**: Strip away generic fluff. Point directly to CS concepts, TypeScript features, or relevant TUI patterns utilized.
-4. **Resources**: Include at most 1 or 2 highly specific reference links (no generic tutorials).
+1. **Why, not What**: Design logic and architecture decisions — not a code recitation.
+2. **Contextualize**: Tie explanations to doro-cli's `neo-blessed` TUI and state machine constraints.
+3. **Be Direct**: Name the CS concept, TypeScript feature, or TUI pattern. Cut generic prose.
+4. **Resources**: At most 2 highly specific links — no generic tutorials.

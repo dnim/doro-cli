@@ -1,22 +1,21 @@
 # doro-cli: Gemini Context
 
-This document provides the context and instructions for the Gemini agent.
+`doro-cli` is a keyboard-first, full-screen terminal Pomodoro timer written in TypeScript for Node.js. Soft pastel themes, synthetic 8-bit audio cues. Stack: Node.js >=22, TypeScript, `neo-blessed` TUI.
 
-## Project Overview
+## Token Efficiency
 
-`doro-cli` is a keyboard-first, full-screen terminal Pomodoro timer written in TypeScript for Node.js. It features soft pastel themes and synthetic 8-bit audio cues.
-
-## Core Tech Stack
-
-- **Runtime**: Node.js (>=22)
-- **Language**: TypeScript
-- **UI Framework**: `neo-blessed` (terminal TUI)
+- No preamble ("I'll now...", "Sure!", "Let me...")
+- No narrating tool calls — execute, don't describe
+- No repeating context already in the conversation
+- Never create files unless required; prefer editing existing ones
+- **Plan mode**: structured numbered plan only — no code, no prose
+- **Build mode**: follow the plan, execute directly; ask only when blocked
 
 ## Instructions & Source of Truth
 
-This project centralizes all instructions for AI agents in the `./.opencode/docs/` directory.
+All agent instructions live in `.opencode/docs/`:
 
-- **Agent Workflow**: For all rules on Git, planning, and committing, refer to a file://./.opencode/docs/AGENT_WORKFLOW.md.
-- **Development Commands**: For a list of `npm` scripts and commands, refer to a file://./.opencode/docs/DEV_COMMANDS.md.
-- **Architecture Overview**: For technical details on the codebase, refer to a file://./.opencode/docs/ARCHITECTURE.md.
-- **Development Guidelines**: For conventions and debugging procedures, refer to a file://./.opencode/docs/DEVELOPMENT_GUIDELINES.md.
+- **Workflow** (Git, planning, committing): `.opencode/docs/AGENT_WORKFLOW.md`
+- **Dev commands**: `.opencode/docs/DEV_COMMANDS.md`
+- **Architecture**: `.opencode/docs/ARCHITECTURE.md`
+- **Conventions & debugging**: `.opencode/docs/DEVELOPMENT_GUIDELINES.md`
