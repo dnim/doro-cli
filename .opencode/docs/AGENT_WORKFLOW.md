@@ -31,7 +31,52 @@ This document outlines the standard operating procedures for all AI agents worki
 ## 3. Implementation & Committing
 
 - **Small, Atomic Commits**: Changes should be broken down into small, logical commits.
-- **Pre-Commit Approval**: The agent MUST ask for user approval before every `git commit` operation, presenting the proposed commit message.
+
+### Commit Protection System
+
+**OpenCode automatically prevents unauthorized commits** via the permission system defined in `opencode.json`:
+- `"git commit *": "deny"` blocks all direct commit attempts by agents
+- Environment variables (`OPENCODE=1`, `OPENCODE_PROCESS_ROLE=worker`) identify agent context
+- This protection is automatic and cannot be bypassed by agents
+
+### Proper Commit Workflow for Agents
+
+1. **Request Approval**: Before committing, the agent MUST ask the user explicitly:
+   - Present the proposed commit message
+   - Show what changes will be included (`git status`, `git diff`)
+   - Wait for explicit user confirmation (e.g., "yes", "proceed", "commit")
+
+2. **User Executes Commit**: After approval, the **user** runs the commit command:
+   - User types: `git commit -m "the agreed message"`
+   - OR user can modify the message and commit manually
+
+3. **Agent Never Commits Directly**: Agents must never attempt `git commit` commands
+   - Such attempts will be blocked by OpenCode's permission system
+   - Instead, agents should guide users through the commit process
+
+### Troubleshooting Commit Issues
+
+- **"Permission denied" errors**: Normal behavior - agents cannot commit directly
+- **Agent claims to commit**: Bug in agent logic - agent should request approval instead
+- **Manual commits failing**: Check if you're in an agent session vs manual terminal
+
+### Example Proper Commit Request
+
+```
+I've completed the feature implementation. Here are the changes ready to commit:
+
+**Proposed commit message**: "Add dark mode toggle to settings page"
+
+**Files changed** (git status):
+- src/components/Settings.tsx (modified)
+- src/styles/themes.css (new file)
+
+**Summary of changes** (git diff --stat):
+- Added toggle component with state management
+- Implemented CSS variables for theme switching
+
+Please review and run: `git commit -m "Add dark mode toggle to settings page"`
+```
 
 ## 4. CI/CD
 
