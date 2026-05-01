@@ -75,7 +75,9 @@ describe('DoroUi', () => {
       hasPrompt: false,
       promptCountdownSeconds: 0,
       promptTotalSeconds: 0,
-      promptNextMode: null
+      promptNextMode: null,
+      updatePromptState: 'none',
+      updateCheckResult: null
     });
 
     expect(mockScreen.render).toHaveBeenCalledTimes(1);
@@ -96,7 +98,9 @@ describe('DoroUi', () => {
       hasPrompt: true,
       promptCountdownSeconds: 3,
       promptTotalSeconds: 5,
-      promptNextMode: 'short'
+      promptNextMode: 'short',
+      updatePromptState: 'none',
+      updateCheckResult: null
     });
 
     expect(mockScreen.render).toHaveBeenCalledTimes(1);
@@ -117,7 +121,9 @@ describe('DoroUi', () => {
       hasPrompt: false,
       promptCountdownSeconds: 0,
       promptTotalSeconds: 0,
-      promptNextMode: null
+      promptNextMode: null,
+      updatePromptState: 'none',
+      updateCheckResult: null
     });
 
     expect(mockScreen.render).toHaveBeenCalledTimes(1);
@@ -138,7 +144,9 @@ describe('DoroUi', () => {
       hasPrompt: false,
       promptCountdownSeconds: 0,
       promptTotalSeconds: 0,
-      promptNextMode: null
+      promptNextMode: null,
+      updatePromptState: 'none',
+      updateCheckResult: null
     });
 
     expect(mockScreen.render).toHaveBeenCalledTimes(1);
@@ -158,7 +166,9 @@ describe('DoroUi', () => {
       hasPrompt: false, // Intentionally false to hit fallback branch in statusLabel
       promptCountdownSeconds: 0,
       promptTotalSeconds: 0,
-      promptNextMode: null
+      promptNextMode: null,
+      updatePromptState: 'none',
+      updateCheckResult: null
     });
 
     expect(mockScreen.render).toHaveBeenCalledTimes(1);
@@ -192,7 +202,7 @@ describe('DoroUi', () => {
     expect(mockScreen.destroy).toHaveBeenCalledTimes(1);
   });
 
-  it('should show lock icon at minimal width', () => {
+  it('should show volume icons at various widths as documented', () => {
     // At width 1, only the lock icon fits
     expect(getRunningStatusText('running', false, 'muted', 1)).toBe('○');
     expect(getRunningStatusText('running', true, 'muted', 1)).toBe('⊘');
@@ -210,5 +220,96 @@ describe('DoroUi', () => {
     expect(getRunningStatusText('running', false, 'muted', 11)).toBe('RUNNING ○ ✕');
     expect(getRunningStatusText('running', false, 'quiet', 11)).toBe('RUNNING ○ ♪');
     expect(getRunningStatusText('running', false, 'normal', 11)).toBe('RUNNING ○ ♫');
+  });
+
+  it('should render update prompt states', () => {
+    ui = new DoroUi(handlers);
+    const mockScreen = (blessed.screen as jest.Mock).mock.results[0].value;
+
+    // Update available prompt
+    ui.render({
+      mode: 'work',
+      status: 'running',
+      remainingSeconds: 600,
+      durationSeconds: 1500,
+      isLocked: false,
+      volumeMode: 'normal',
+      hasPrompt: false,
+      promptCountdownSeconds: 0,
+      promptTotalSeconds: 0,
+      promptNextMode: null,
+      updatePromptState: 'available',
+      updateCheckResult: {
+        isAvailable: true,
+        latestVersion: '1.3.0',
+        currentVersion: '1.2.1'
+      }
+    });
+
+    expect(mockScreen.render).toHaveBeenCalledTimes(1);
+    expect(mockScreen.title).toBe('doro Update');
+
+    mockScreen.render.mockClear();
+
+    // Copy success state
+    ui.render({
+      mode: 'work',
+      status: 'running',
+      remainingSeconds: 600,
+      durationSeconds: 1500,
+      isLocked: false,
+      volumeMode: 'normal',
+      hasPrompt: false,
+      promptCountdownSeconds: 0,
+      promptTotalSeconds: 0,
+      promptNextMode: null,
+      updatePromptState: 'copySuccess',
+      updateCheckResult: null
+    });
+
+    expect(mockScreen.render).toHaveBeenCalledTimes(1);
+
+    mockScreen.render.mockClear();
+
+    // Copy fallback state
+    ui.render({
+      mode: 'work',
+      status: 'running',
+      remainingSeconds: 600,
+      durationSeconds: 1500,
+      isLocked: false,
+      volumeMode: 'normal',
+      hasPrompt: false,
+      promptCountdownSeconds: 0,
+      promptTotalSeconds: 0,
+      promptNextMode: null,
+      updatePromptState: 'copyFallback',
+      updateCheckResult: null
+    });
+
+    expect(mockScreen.render).toHaveBeenCalledTimes(1);
+
+    mockScreen.render.mockClear();
+
+    // Skipped state (no update)
+    ui.render({
+      mode: 'work',
+      status: 'running',
+      remainingSeconds: 600,
+      durationSeconds: 1500,
+      isLocked: false,
+      volumeMode: 'normal',
+      hasPrompt: false,
+      promptCountdownSeconds: 0,
+      promptTotalSeconds: 0,
+      promptNextMode: null,
+      updatePromptState: 'skipped',
+      updateCheckResult: {
+        isAvailable: false,
+        currentVersion: '1.2.1'
+      }
+    });
+
+    expect(mockScreen.render).toHaveBeenCalledTimes(1);
   });
 });

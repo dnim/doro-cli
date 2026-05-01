@@ -5,11 +5,15 @@ import envPaths from 'env-paths';
 export type Settings = {
   volumeMode: 'normal' | 'quiet' | 'muted';
   colorScheme: 'modern' | 'calm';
+  lastCheckedAt?: number;
+  checkIntervalHours?: number;
+  skippedVersion?: string;
 };
 
 const DEFAULT_SETTINGS: Settings = {
   volumeMode: 'normal',
-  colorScheme: 'modern'
+  colorScheme: 'modern',
+  checkIntervalHours: 24
 };
 
 const paths = envPaths('doro-cli');

@@ -67,19 +67,19 @@ doro
 
 ## Controls
 
-|    Key    | Action                    |
-| :-------: | ------------------------- |
-|    `q`    | Quit                      |
+|      Key       | Action                    |
+| :------------: | ------------------------- |
+|      `q`       | Quit                      |
 | `p` or `Space` | Pause / Resume            |
-|    `r`    | Reset Timer               |
-|    `c`    | Toggle Color Scheme       |
-|    `m`    | Mute / Unmute             |
-|    `w`    | Start Work Timer          |
-|    `s`    | Start Short Break         |
-|    `l`    | Start Long Break          |
-|    `L`    | Lock / Unlock Hotkeys     |
-| `Shift+R` | Reset All Settings        |
-| `Shift+D` | Debug: Fast-forward timer |
+|      `r`       | Reset Timer               |
+|      `c`       | Toggle Color Scheme       |
+|      `m`       | Mute / Unmute             |
+|      `w`       | Start Work Timer          |
+|      `s`       | Start Short Break         |
+|      `l`       | Start Long Break          |
+|      `L`       | Lock / Unlock Hotkeys     |
+|   `Shift+R`    | Reset All Settings        |
+|   `Shift+D`    | Debug: Fast-forward timer |
 
 ## Configuration
 

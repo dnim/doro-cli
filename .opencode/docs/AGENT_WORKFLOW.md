@@ -36,6 +36,7 @@ This document outlines the standard operating procedures for all AI agents worki
 ### Commit Protection System
 
 **OpenCode automatically prevents unauthorized commits** via the permission system defined in `opencode.json`:
+
 - `"git commit *": "deny"` blocks all direct commit attempts by agents
 - Environment variables (`OPENCODE=1`, `OPENCODE_PROCESS_ROLE=worker`) identify agent context
 - This protection is automatic and cannot be bypassed by agents

@@ -8,14 +8,14 @@ export default defineConfig({
   workers: 1, // Stick to 1 worker for terminal tests
   reporter: 'html',
   use: {
-    trace: 'on-first-retry',
+    trace: 'on-first-retry'
   },
   projects: [
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
-    },
+      use: { ...devices['Desktop Chrome'] }
+    }
   ],
   // Snapshot configuration
-  snapshotDir: './tests/snapshots',
+  snapshotDir: './tests/snapshots'
 });

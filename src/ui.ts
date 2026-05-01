@@ -1,6 +1,9 @@
 import blessed from 'blessed';
 import { MODE_LABELS, MODE_LABELS_SHORT, type TimerMode, type TimerStatus } from './constants';
 import { enableMouse, disableMouse } from './mouse';
+import type { UpdateCheckResult } from './update';
+
+export type UpdatePromptState = 'none' | 'available' | 'copySuccess' | 'copyFallback' | 'skipped';
 
 type UiRenderState = {
   mode: TimerMode;
@@ -13,6 +16,8 @@ type UiRenderState = {
   promptTotalSeconds: number;
   hasPrompt: boolean;
   promptNextMode: TimerMode | null;
+  updatePromptState: UpdatePromptState;
+  updateCheckResult: UpdateCheckResult | null;
 };
 
 type UiHandlers = {
@@ -41,12 +46,12 @@ type Palette = {
 };
 
 const HELP_TEXT_WIDE =
-  'q quit  p pause  r reset  c colors  m mute  w work  s short  l long  L lock';
-const HELP_TEXT_NARROW = 'q:✕  p:⏸  r:↺  c:✦  m:♪  w/s/l  L:⊟';
-const HELP_TEXT_ULTRA = 'q p r c m w s l L';
+  'q quit  p pause  r reset  c colors  m mute  w work  s short  l long  L lock  U update';
+const HELP_TEXT_NARROW = 'q:✕  p:⏸  r:↺  c:✦  m:♪  w/s/l  L:⊟  U:⬆';
+const HELP_TEXT_ULTRA = 'q p r c m w s l L U';
 
 // Priority-ordered single-key tokens for sub-ultra fallback
-const HELP_TOKENS_PRIORITY = ['q', 'p', 'r', 'm', 'w', 's', 'l', 'c', 'L'];
+const HELP_TOKENS_PRIORITY = ['q', 'p', 'r', 'm', 'w', 's', 'l', 'c', 'L', 'U'];
 
 /**
  * Returns the widest help-legend string that fits within `cols` characters.
@@ -133,6 +138,100 @@ function getTransitionStatusText(nextMode: TimerMode, autoSec: number, cols: num
       return c;
     }
   }
+  return '';
+}
+
+/**
+ * Returns responsive update prompt text based on state and screen width
+ */
+function getUpdatePromptText(
+  updatePromptState: UpdatePromptState,
+  updateCheckResult: UpdateCheckResult | null,
+  cols: number
+): string {
+  if (updatePromptState === 'none') {
+    return '';
+  }
+
+  if (updatePromptState === 'available' && updateCheckResult?.latestVersion) {
+    const version = updateCheckResult.latestVersion;
+    const candidates = [
+      `Update available: v${version}  |  Press y to update, n to skip  |  U to check again`,
+      `Update available: v${version}  |  y=update, n=skip`,
+      `Update v${version} available  |  y/n?`,
+      `Update v${version}  |  y/n?`,
+      `v${version} y/n?`,
+      `y/n?`
+    ];
+    for (const c of candidates) {
+      if (c.length <= cols) {
+        return c;
+      }
+    }
+    return 'y/n?';
+  }
+
+  if (updatePromptState === 'copySuccess') {
+    const candidates = [
+      'Update command copied to clipboard! Run it in your terminal after doro exits.',
+      'Command copied to clipboard! Run after exit.',
+      'Copied to clipboard! Run after exit.',
+      'Copied! Run after exit.',
+      'Copied!'
+    ];
+    for (const c of candidates) {
+      if (c.length <= cols) {
+        return c;
+      }
+    }
+    return 'Copied!';
+  }
+
+  if (updatePromptState === 'copyFallback') {
+    const candidates = [
+      'Run this command after doro exits: npm install -g doro-cli@latest',
+      'Run after exit: npm install -g doro-cli@latest',
+      'Run: npm install -g doro-cli@latest',
+      'Run: npm i -g doro-cli@latest',
+      'npm i -g doro-cli@latest'
+    ];
+    for (const c of candidates) {
+      if (c.length <= cols) {
+        return c;
+      }
+    }
+    return 'npm i -g doro-cli@latest';
+  }
+
+  if (updatePromptState === 'skipped') {
+    if (!updateCheckResult?.isAvailable) {
+      const candidates = [
+        'No update available. You are running the latest version.',
+        'No update available.',
+        'Up to date.',
+        'Latest.'
+      ];
+      for (const c of candidates) {
+        if (c.length <= cols) {
+          return c;
+        }
+      }
+      return 'Latest.';
+    } else {
+      const candidates = [
+        `Update v${updateCheckResult.latestVersion} skipped. Press U to check again.`,
+        `v${updateCheckResult.latestVersion} skipped.`,
+        'Skipped.'
+      ];
+      for (const c of candidates) {
+        if (c.length <= cols) {
+          return c;
+        }
+      }
+      return 'Skipped.';
+    }
+  }
+
   return '';
 }
 
@@ -456,6 +555,7 @@ export class DoroUi {
     const isPaused = state.status === 'paused';
     const palette = PALETTES[this.colorScheme];
     const isTransition = state.hasPrompt;
+    const hasUpdatePrompt = state.updatePromptState !== 'none';
     const style = isPaused
       ? palette.pause
       : isTransition && state.promptNextMode
@@ -483,7 +583,10 @@ export class DoroUi {
               : 'LONG BREAK';
 
     let statusText: string;
-    if (state.hasPrompt && state.promptNextMode) {
+    if (hasUpdatePrompt) {
+      // Update prompts take priority over timer status
+      statusText = getUpdatePromptText(state.updatePromptState, state.updateCheckResult, cols);
+    } else if (state.hasPrompt && state.promptNextMode) {
       statusText = getTransitionStatusText(
         state.promptNextMode,
         state.promptCountdownSeconds,
@@ -520,11 +623,13 @@ export class DoroUi {
         ? cols < 10
           ? `→${MODE_LABELS_SHORT[state.promptNextMode]}`
           : `doro Done → ${MODE_LABELS_SHORT[state.promptNextMode]}`
-        : cols >= 15
-          ? `doro ${time}`
-          : cols >= 10
-            ? `d ${time}`
-            : time;
+        : hasUpdatePrompt
+          ? 'doro Update'
+          : cols >= 15
+            ? `doro ${time}`
+            : cols >= 10
+              ? `d ${time}`
+              : time;
     this.modeBannerBox.setContent(
       buildProgressRow(
         bannerText,

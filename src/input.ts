@@ -27,6 +27,9 @@ export type ControlCommand =
   | 'startWork'
   | 'startShort'
   | 'startLong'
+  | 'checkUpdate'
+  | 'updateYes'
+  | 'updateNo'
   | 'none';
 
 export function resolveControlCommand(event: InputEvent): ControlCommand {
@@ -82,11 +85,28 @@ export function resolveControlCommand(event: InputEvent): ControlCommand {
     return 'startLong';
   }
 
+  if (event.keyName === 'u' && (event.shift || event.ch === 'U' || event.keyFull === 'S-u')) {
+    return 'checkUpdate';
+  }
+
+  if (event.keyName === 'y' || lowerChar === 'y') {
+    return 'updateYes';
+  }
+
+  if (event.keyName === 'n' || lowerChar === 'n') {
+    return 'updateNo';
+  }
+
   return 'none';
 }
 
 export function isAllowedWhenLocked(command: ControlCommand): boolean {
-  return command === 'quit' || command === 'toggleLock' || command === 'pauseResume';
+  return (
+    command === 'quit' ||
+    command === 'toggleLock' ||
+    command === 'pauseResume' ||
+    command === 'checkUpdate'
+  );
 }
 
 export function isPromptConfirmEvent(event: InputEvent, command: ControlCommand): boolean {
@@ -99,4 +119,8 @@ export function isPromptConfirmEvent(event: InputEvent, command: ControlCommand)
   }
 
   return event.type === 'mouse' || event.type === 'key';
+}
+
+export function isUpdatePromptEvent(command: ControlCommand): boolean {
+  return command === 'updateYes' || command === 'updateNo';
 }
