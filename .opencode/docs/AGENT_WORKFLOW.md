@@ -24,7 +24,7 @@ This document outlines the standard operating procedures for all AI agents worki
 
 ## 2. Planning
 
-- **One Plan, One Feature**: Before implementation, the agent MUST create a plan file for a **single feature** inside the `./opencode/plans/` directory, following the structure in `file://./opencode/plans/TEMPLATE.md`.
+- **One Plan, One Feature**: Before implementation, the agent MUST create a plan file for a **single feature** inside the `_plans/` directory, following the structure in `file://_plans/TEMPLATE.md`.
 - **Plan as a Living Document**: The plan is a living document that must be updated after each commit. It must follow the metadata-first format defined in the template.
 - **User Approval**: The agent must wait for explicit user approval of the plan (e.g., the user saying "nice" or "proceed") before beginning implementation.
 
