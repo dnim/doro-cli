@@ -8,65 +8,30 @@
 
 ---
 
-### Problem Statement
+### Acceptance Criteria
 
-AI agents consistently commit code without explicit user approval despite clear instructions not to do so. This violates workflow requirements and can lead to unwanted commits in the repository.
+- Documentation clearly explains existing OpenCode commit protections
+- Workflow instructions are explicit about pre-commit approval requirements
+- Agents understand how to properly request commit approval
+- Manual human commits work without friction
+- Clear guidance on troubleshooting commit permission issues
 
-### Proposed Solutions (Research Findings)
+### Research Findings
 
-1. **Git Hooks Approach**:
-   - Create a `pre-commit` hook that prompts for approval
-   - Hook checks if commit is being made by an AI agent (via commit message patterns or environment variables)
-   - Requires user confirmation via interactive prompt before allowing commit
+**OpenCode already prevents unauthorized commits via:**
+1. `opencode.json` permission system: `"git commit *": "deny"` for plan/general agents
+2. Environment variables: `OPENCODE=1`, `OPENCODE_RUN_ID`, `OPENCODE_PROCESS_ROLE=worker`
+3. Workflow requirement: `.opencode/docs/AGENT_WORKFLOW.md:34` mandates pre-commit approval
 
-2. **Wrapper Script Approach**:
-   - Replace git command with a wrapper script that intercepts commits
-   - Script prompts for approval before executing actual git commit
-   - Can be configured per-repository or globally
+**Root issue:** Agent compliance with existing instructions, not missing safeguards.
 
-3. **Interactive Commit Tool**:
-   - Create a specialized commit tool that always requires approval
-   - Tool displays proposed commit message and asks for confirmation
-   - Integrates with existing workflow via git aliases
+### Checklist
 
-4. **Environment-Based Protection**:
-   - Use environment variables to detect automated vs manual commits
-   - Implement approval gates when automated context is detected
-
-### Implementation Plan
-
-#### Phase 1: Git Hook Solution
-
-- [ ] Create `pre-commit` hook that detects AI agent commits
-- [ ] Implement interactive approval prompt
-- [ ] Add hook installation script to project
-
-#### Phase 2: Integration with OpenCode
-
-- [ ] Research OpenCode-specific integration points
-- [ ] Implement approval mechanism within OpenCode workflow
-- [ ] Test with current doro-cli project
-
-#### Phase 3: Documentation and Best Practices
-
-- [ ] Document the approval system setup
-- [ ] Create guidelines for AI agent commit workflows
-- [ ] Provide template hooks for other projects
-
-### Current Issue: Sound Indicator Missing
-
-Additionally, the sound indicator is not displaying on medium-sized screens as shown in the provided image. This needs to be addressed in the existing UI fix plan.
-
-### Research Sources
-
-- Git hooks documentation: https://git-scm.com/docs/githooks
-- Stack Overflow discussion on hooks in repositories
-- GitHub CODEOWNERS and approval mechanisms
-- Various npm/composer hook management tools
-
-### Next Steps
-
-1. Implement and test pre-commit hook solution
-2. Research OpenCode's internal commit mechanisms
-3. Create user-friendly approval interface
-4. Test with current workflow and iterate based on findings
+- [x] **(Mandatory)** Research OpenCode-specific integration points and commit mechanisms
+- [x] **(Decision)** Evaluate strategy: OpenCode's existing permission system is sufficient
+- [ ] **(Mandatory)** Update workflow documentation to clarify existing protections
+- [ ] **(Mandatory)** Add explicit guidance for agents on commit approval workflow
+- [ ] **(Mandatory)** Document troubleshooting steps for commit permission issues
+- [ ] **(Optional)** Add examples of proper commit request patterns
+- [ ] **(Mandatory)** Test documentation with current OpenCode setup
+- [ ] **(Mandatory)** Verify changes by running the type checker and unit tests
