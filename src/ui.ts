@@ -85,10 +85,11 @@ function getHelpText(cols: number): string {
  * everything to the right gets `baseBg`.
  */
 /**
- * Returns a responsive transition status line that fits within `cols`.
- * Falls back to shorter variants as width shrinks.
+ * Returns a responsive running/paused status line that fits within `cols`.
+ * Includes the current status plus lock and volume indicators, and falls back
+ * to shorter variants as width shrinks.
  */
-function getRunningStatusText(
+export function getRunningStatusText(
   status: TimerStatus,
   isLocked: boolean,
   volumeMode: 'normal' | 'quiet' | 'muted',
@@ -98,12 +99,13 @@ function getRunningStatusText(
   const lock = isLocked ? 'LOCK' : 'OPEN';
   const muteStrLong = volumeMode === 'muted' ? 'MUTED' : volumeMode === 'quiet' ? 'QUIET' : 'SOUND';
   const muteStrShort = volumeMode === 'muted' ? 'MUT' : volumeMode === 'quiet' ? 'SHH' : 'SND';
-  const lockIcon = isLocked ? 'L' : '-';
+  const lockIcon = isLocked ? '⊘' : '○';
+  const volumeIcon = volumeMode === 'muted' ? '✕' : volumeMode === 'quiet' ? '♪' : '♫';
   const candidates = [
     `${s} | ${isLocked ? 'LOCKED' : 'OPEN'} | ${muteStrLong}`,
     `${s} | ${lock} | ${muteStrShort}`,
-    `${s} | ${lock}`,
-    `${s} ${lockIcon}`,
+    `${s} ${lockIcon} ${volumeIcon}`,
+    `${lockIcon} ${volumeIcon}`,
     lockIcon
   ];
   for (const c of candidates) {

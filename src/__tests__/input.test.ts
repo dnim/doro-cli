@@ -41,13 +41,15 @@ describe('input mapping', () => {
     expect(resolveControlCommand(keyEvent('\u0003', 'c', 'C-c', false, true))).toBe('quit');
   });
 
-  it('allows only quit and toggle lock when locked', () => {
+  it('allows only quit, pause, and toggle lock when locked', () => {
     expect(isAllowedWhenLocked('quit')).toBe(true);
     expect(isAllowedWhenLocked('toggleLock')).toBe(true);
-    expect(isAllowedWhenLocked('toggleColorScheme')).toBe(true);
-    expect(isAllowedWhenLocked('toggleMute')).toBe(true);
-    expect(isAllowedWhenLocked('resetSettings')).toBe(true);
-    expect(isAllowedWhenLocked('pauseResume')).toBe(false);
+    expect(isAllowedWhenLocked('pauseResume')).toBe(true);
+    expect(isAllowedWhenLocked('toggleColorScheme')).toBe(false);
+    expect(isAllowedWhenLocked('toggleMute')).toBe(false);
+    expect(isAllowedWhenLocked('resetSettings')).toBe(false);
+    expect(isAllowedWhenLocked('startWork')).toBe(false);
+    expect(isAllowedWhenLocked('resetRun')).toBe(false);
   });
 
   it('treats any non-quit key and mouse as prompt confirm', () => {

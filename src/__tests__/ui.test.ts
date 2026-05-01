@@ -1,4 +1,4 @@
-import { DoroUi } from '../ui';
+import { DoroUi, getRunningStatusText } from '../ui';
 import blessed from 'blessed';
 import { enableMouse, disableMouse } from '../mouse';
 
@@ -190,5 +190,25 @@ describe('DoroUi', () => {
 
     expect(disableMouse).toHaveBeenCalledTimes(1);
     expect(mockScreen.destroy).toHaveBeenCalledTimes(1);
+  });
+
+  it('should show lock icon at minimal width', () => {
+    // At width 1, only the lock icon fits
+    expect(getRunningStatusText('running', false, 'muted', 1)).toBe('○');
+    expect(getRunningStatusText('running', true, 'muted', 1)).toBe('⊘');
+  });
+
+  it('should show both lock and volume icons at super tiny widths', () => {
+    // At width 5, both icons fit but not the running label
+    expect(getRunningStatusText('running', true, 'muted', 5)).toBe('⊘ ✕');
+    expect(getRunningStatusText('running', true, 'quiet', 5)).toBe('⊘ ♪');
+    expect(getRunningStatusText('running', true, 'normal', 5)).toBe('⊘ ♫');
+  });
+
+  it('should show all three indicators at medium widths', () => {
+    // At width 11, compact icons with running label fits
+    expect(getRunningStatusText('running', false, 'muted', 11)).toBe('RUNNING ○ ✕');
+    expect(getRunningStatusText('running', false, 'quiet', 11)).toBe('RUNNING ○ ♪');
+    expect(getRunningStatusText('running', false, 'normal', 11)).toBe('RUNNING ○ ♫');
   });
 });

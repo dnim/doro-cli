@@ -139,6 +139,28 @@ test.describe('Doro CLI Visual Regression', () => {
               `${theme}-${size.name}-done.png`
             );
           });
+
+          if (size.name === 'tiny' || size.name === 'ultra-small') {
+            test('quiet volume mode', async ({ page }) => {
+              await setupTerminal(page, size.cols, size.rows, theme);
+              await page.evaluate(() => (window as any).sendPtyData('m')); // Toggle to quiet
+              await page.waitForTimeout(1000);
+              await expect(page.locator('#terminal-container')).toHaveScreenshot(
+                `${theme}-${size.name}-quiet.png`
+              );
+            });
+
+            test('muted volume mode', async ({ page }) => {
+              await setupTerminal(page, size.cols, size.rows, theme);
+              await page.evaluate(() => (window as any).sendPtyData('m')); // Toggle to quiet
+              await page.waitForTimeout(500);
+              await page.evaluate(() => (window as any).sendPtyData('m')); // Toggle to muted
+              await page.waitForTimeout(1000);
+              await expect(page.locator('#terminal-container')).toHaveScreenshot(
+                `${theme}-${size.name}-muted.png`
+              );
+            });
+          }
         });
       }
     });
