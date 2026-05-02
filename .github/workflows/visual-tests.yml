@@ -44,19 +44,19 @@ jobs:
       
     - name: Commit Updated Snapshots
       if: failure() || github.event.inputs.update-snapshots == 'true'
-      uses: stefanzweifel/git-auto-commit-action@v5
+      uses: stefanzweifel/git-auto-commit-action@v7
       with:
         commit_message: "chore(vis-reg): update baseline snapshots [skip ci]"
         file_pattern: 'tests/snapshots/visual.spec.mts-snapshots/*.png'
       
-    - uses: actions/upload-artifact@v6
+    - uses: actions/upload-artifact@v7
       if: failure()
       with:
         name: playwright-report
         path: playwright-report/
         retention-days: 30
     
-    - uses: actions/upload-artifact@v6
+    - uses: actions/upload-artifact@v7
       if: failure()
       with:
         name: test-results
