@@ -128,6 +128,19 @@ describe('DoroApp', () => {
       colorScheme: 'modern'
     });
 
+    // Mock resetCurrentAndRun to return a valid result
+    mockTimerStateMachine.resetCurrentAndRun.mockReturnValue({
+      state: {
+        mode: 'work',
+        status: 'running',
+        remainingSeconds: 1500,
+        isLocked: false,
+        switchPrompt: null,
+        completedWorkSessions: 0
+      },
+      switchedToMode: 'work'
+    });
+
     app = new DoroApp({
       volumeMode: 'normal',
       colorScheme: 'modern'
@@ -511,6 +524,164 @@ describe('DoroApp', () => {
       expect(mockShutdown).toHaveBeenCalledTimes(1);
 
       mockOn.mockRestore();
+    });
+  });
+
+  describe('UI event callbacks', () => {
+    it('should handle onKey callback via DoroUi constructor', () => {
+      const mockHandleInput = jest.spyOn(app as any, 'handleInput');
+      (resolveControlCommand as jest.Mock).mockReturnValue(null); // Return null for no command
+
+      // Get the onKey callback from the mocked DoroUi constructor
+      const onKeyCallback = (mockDoroUi as any).onKey;
+      expect(onKeyCallback).toBeDefined();
+
+      // Simulate a key press via the callback
+      onKeyCallback('q', { name: 'q', full: 'q', shift: false, ctrl: false });
+
+      expect(mockHandleInput).toHaveBeenCalledWith({
+        type: 'key',
+        ch: 'q',
+        keyName: 'q',
+        keyFull: 'q',
+        shift: false,
+        ctrl: false
+      });
+    });
+
+    it('should handle onAnyClick callback via DoroUi constructor', () => {
+      const mockHandleInput = jest.spyOn(app as any, 'handleInput');
+      (resolveControlCommand as jest.Mock).mockReturnValue(null); // Return null for no command
+
+      // Get the onAnyClick callback from the mocked DoroUi constructor
+      const onClickCallback = (mockDoroUi as any).onAnyClick;
+      expect(onClickCallback).toBeDefined();
+
+      // Simulate a mouse click via the callback
+      onClickCallback();
+
+      expect(mockHandleInput).toHaveBeenCalledWith({ type: 'mouse' });
+    });
+
+    it('should handle onResize callback via DoroUi constructor', () => {
+      const mockHandleInput = jest.spyOn(app as any, 'handleInput');
+
+      // Get the onResize callback from the mocked DoroUi constructor
+      const onResizeCallback = (mockDoroUi as any).onResize;
+      expect(onResizeCallback).toBeDefined();
+
+      // Simulate a resize via the callback
+      onResizeCallback();
+
+      expect(mockHandleInput).toHaveBeenCalledWith({ type: 'resize' });
+    });
+  });
+
+  describe('additional input handling', () => {
+    it('should handle quit command', () => {
+      const mockShutdown = jest.spyOn(app as any, 'shutdown').mockImplementation();
+      (resolveControlCommand as jest.Mock).mockReturnValue('quit');
+
+      (app as any).handleInput({
+        type: 'key',
+        ch: 'q',
+        keyName: 'q',
+        keyFull: 'q',
+        shift: false,
+        ctrl: false
+      });
+
+      expect(mockShutdown).toHaveBeenCalledTimes(1);
+    });
+
+    it('should handle resize events by calling render', () => {
+      const mockRender = jest.spyOn(mockDoroUi, 'render');
+
+      (app as any).handleInput({ type: 'resize' });
+
+      expect(mockRender).toHaveBeenCalledTimes(1);
+    });
+
+    it('should ignore input when exiting', () => {
+      const mockRender = jest.spyOn(mockDoroUi, 'render');
+      (app as any).isExiting = true;
+
+      (app as any).handleInput({ type: 'resize' });
+
+      expect(mockRender).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('stepClock edge cases', () => {
+    it('should return early when isExiting is true', () => {
+      const mockTick = jest.spyOn(mockTimerStateMachine, 'tick');
+      (app as any).isExiting = true;
+
+      (app as any).stepClock();
+
+      expect(mockTick).not.toHaveBeenCalled();
+    });
+
+    it('should handle switchedRunning when not in running status', () => {
+      mockTimerStateMachine.getState.mockReturnValue({
+        mode: 'work',
+        status: 'paused',
+        remainingSeconds: 300,
+        isLocked: false,
+        switchPrompt: null,
+        completedWorkSessions: 0
+      });
+
+      mockTimerStateMachine.tick.mockReturnValue({
+        state: {
+          mode: 'short',
+          status: 'running',
+          remainingSeconds: 300,
+          isLocked: false,
+          switchPrompt: null,
+          completedWorkSessions: 1
+        },
+        startedPrompt: false,
+        switchedRunning: true,
+        switchedToMode: 'short',
+        completedMode: null
+      });
+
+      const mockPlayModeClip = jest.spyOn(app as any, 'playModeClip');
+
+      (app as any).stepClock();
+
+      expect(mockPlayModeClip).toHaveBeenCalledWith('short');
+    });
+  });
+
+  describe('debugNearEnd during switchPrompt', () => {
+    it('should handle debugNearEnd command during switchPrompt', () => {
+      (resolveControlCommand as jest.Mock).mockReturnValue('debugNearEnd');
+
+      mockTimerStateMachine.getState.mockReturnValue({
+        mode: 'work',
+        status: 'switchPrompt',
+        remainingSeconds: 0,
+        isLocked: false,
+        switchPrompt: {
+          nextMode: 'short',
+          deadlineTs: Date.now() + 5000
+        },
+        completedWorkSessions: 1
+      });
+
+      (app as any).handleInput({
+        type: 'key',
+        ch: 'D',
+        keyName: 'd',
+        keyFull: 'S-d',
+        shift: true,
+        ctrl: false
+      });
+
+      expect(mockTimerStateMachine.debugJumpToNearEnd).toHaveBeenCalledWith(3);
+      expect(mockDoroUi.render).toHaveBeenCalled();
     });
   });
 });

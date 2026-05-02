@@ -67,7 +67,8 @@ test.describe('Doro CLI Visual Regression', () => {
         ...process.env,
         TERM: 'xterm-256color',
         COLORTERM: 'truecolor',
-        XDG_CONFIG_HOME: testConfigDir
+        XDG_CONFIG_HOME: testConfigDir,
+        DORO_TEST_MODE: '1' // Enable test mode for deterministic update states
       }
     });
 
@@ -166,9 +167,9 @@ test.describe('Doro CLI Visual Regression', () => {
           test('update available prompt', async ({ page }) => {
             await setupTerminal(page, size.cols, size.rows, theme);
 
-            // Trigger Shift+U to show update prompt
-            await page.evaluate(() => (window as any).sendPtyData('\u001B[1;2u')); // Shift+U sequence
-            await page.waitForTimeout(1500);
+            // Use deterministic test command for update available state
+            await page.evaluate(() => (window as any).sendPtyData('\u001B[test-update-available]'));
+            await page.waitForTimeout(1000);
 
             await expect(page.locator('#terminal-container')).toHaveScreenshot(
               `${theme}-${size.name}-update-available.png`
@@ -178,10 +179,7 @@ test.describe('Doro CLI Visual Regression', () => {
           test('update copy success state', async ({ page }) => {
             await setupTerminal(page, size.cols, size.rows, theme);
 
-            // Simulate accepting an update (this would show copy success state in real app)
-            // For VRT purposes, we'll create a test mode that simulates this state
             await page.evaluate(() => {
-              // Send a special test command that triggers copy success state
               (window as any).sendPtyData('\u001B[test-update-copy-success]');
             });
             await page.waitForTimeout(1000);

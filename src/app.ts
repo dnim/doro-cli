@@ -159,6 +159,39 @@ export class DoroApp {
       return;
     }
 
+    // Handle test mode commands for VRT deterministic states
+    if (process.env.DORO_TEST_MODE === '1' && event.type === 'key' && event.keyName === 'escape') {
+      if (event.ch === '\u001B[test-update-available]') {
+        this.updatePromptState = 'available';
+        this.updateCheckResult = {
+          isAvailable: true,
+          latestVersion: '1.3.0',
+          currentVersion: '1.2.1'
+        };
+        this.render();
+        return;
+      }
+      if (event.ch === '\u001B[test-update-copy-success]') {
+        this.updatePromptState = 'copySuccess';
+        this.render();
+        return;
+      }
+      if (event.ch === '\u001B[test-update-copy-fallback]') {
+        this.updatePromptState = 'copyFallback';
+        this.render();
+        return;
+      }
+      if (event.ch === '\u001B[test-update-skipped]') {
+        this.updatePromptState = 'skipped';
+        this.updateCheckResult = {
+          isAvailable: false,
+          currentVersion: '1.2.1'
+        };
+        this.render();
+        return;
+      }
+    }
+
     const command = resolveControlCommand(event);
 
     if (command === 'quit') {

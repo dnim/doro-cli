@@ -216,7 +216,7 @@ describe('update functionality', () => {
 
   describe('getUpdateCommand', () => {
     it('should return npm install command', () => {
-      expect(getUpdateCommand()).toBe('npm install -g doro-cli@latest');
+      expect(getUpdateCommand()).toBe('npm install -g doro-cli@latest && doro');
     });
   });
 
@@ -265,7 +265,7 @@ describe('update functionality', () => {
       const result = await resultPromise;
 
       expect(result.success).toBe(true);
-      expect(result.command).toBe('npm install -g doro-cli@latest');
+      expect(result.command).toBe('npm install -g doro-cli@latest && doro');
       expect(mockSpawn).toHaveBeenCalledWith('pbcopy', []);
 
       Object.defineProperty(process, 'platform', { value: originalPlatform });

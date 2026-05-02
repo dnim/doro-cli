@@ -30,9 +30,11 @@ export function getCurrentVersion(): string {
  * Fetches the latest version from npm registry
  */
 export async function fetchLatestVersion(): Promise<string | null> {
+  let timeoutId: NodeJS.Timeout | null = null;
+
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+    timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
 
     const response = await fetch('https://registry.npmjs.org/doro-cli/latest', {
       signal: controller.signal,
@@ -40,8 +42,6 @@ export async function fetchLatestVersion(): Promise<string | null> {
         Accept: 'application/json'
       }
     });
-
-    clearTimeout(timeoutId);
 
     if (!response.ok) {
       return null;
@@ -51,6 +51,10 @@ export async function fetchLatestVersion(): Promise<string | null> {
     return data.version || null;
   } catch {
     return null;
+  } finally {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
   }
 }
 
@@ -135,7 +139,7 @@ export async function checkForUpdates(): Promise<UpdateCheckResult> {
  * Gets the update command for the current platform
  */
 export function getUpdateCommand(): string {
-  return 'npm install -g doro-cli@latest';
+  return 'npm install -g doro-cli@latest && doro';
 }
 
 /**
