@@ -75,8 +75,29 @@ describe('input mapping', () => {
   it('identifies update prompt events correctly', () => {
     expect(isUpdatePromptEvent('updateYes')).toBe(true);
     expect(isUpdatePromptEvent('updateNo')).toBe(true);
+    expect(isUpdatePromptEvent('testUpdateAvailable')).toBe(true);
+    expect(isUpdatePromptEvent('testUpdateCopySuccess')).toBe(true);
+    expect(isUpdatePromptEvent('testUpdateCopyFallback')).toBe(true);
+    expect(isUpdatePromptEvent('testUpdateSkipped')).toBe(true);
     expect(isUpdatePromptEvent('checkUpdate')).toBe(false);
     expect(isUpdatePromptEvent('quit')).toBe(false);
     expect(isUpdatePromptEvent('pauseResume')).toBe(false);
+  });
+
+  it('maps test mode update commands correctly', () => {
+    const originalEnv = process.env.DORO_TEST_MODE;
+    process.env.DORO_TEST_MODE = '1';
+
+    expect(resolveControlCommand(keyEvent('1', '1'))).toBe('testUpdateAvailable');
+    expect(resolveControlCommand(keyEvent('2', '2'))).toBe('testUpdateCopySuccess');
+    expect(resolveControlCommand(keyEvent('3', '3'))).toBe('testUpdateCopyFallback');
+    expect(resolveControlCommand(keyEvent('4', '4'))).toBe('testUpdateSkipped');
+
+    process.env.DORO_TEST_MODE = originalEnv;
+  });
+
+  it('handles non-key events correctly', () => {
+    expect(resolveControlCommand({ type: 'mouse' })).toBe('none');
+    expect(resolveControlCommand({ type: 'resize' })).toBe('none');
   });
 });

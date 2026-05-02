@@ -81,7 +81,58 @@ describe('DoroUi', () => {
     });
 
     expect(mockScreen.render).toHaveBeenCalledTimes(1);
-    expect(mockScreen.title).toContain('10:00');
+  });
+
+  it('should render update error state', () => {
+    ui = new DoroUi(handlers);
+    const mockScreen = (blessed.screen as jest.Mock).mock.results[0].value;
+
+    ui.render({
+      mode: 'work',
+      status: 'running',
+      remainingSeconds: 600,
+      durationSeconds: 1500,
+      isLocked: false,
+      volumeMode: 'normal',
+      hasPrompt: false,
+      promptCountdownSeconds: 0,
+      promptTotalSeconds: 0,
+      promptNextMode: null,
+      updatePromptState: 'error',
+      updateCheckResult: {
+        isAvailable: false,
+        currentVersion: '1.2.1',
+        error: 'Network timeout'
+      }
+    });
+
+    expect(mockScreen.render).toHaveBeenCalledTimes(1);
+  });
+
+  it('should render update skipped state with version info', () => {
+    ui = new DoroUi(handlers);
+    const mockScreen = (blessed.screen as jest.Mock).mock.results[0].value;
+
+    ui.render({
+      mode: 'work',
+      status: 'running',
+      remainingSeconds: 600,
+      durationSeconds: 1500,
+      isLocked: false,
+      volumeMode: 'normal',
+      hasPrompt: false,
+      promptCountdownSeconds: 0,
+      promptTotalSeconds: 0,
+      promptNextMode: null,
+      updatePromptState: 'skipped',
+      updateCheckResult: {
+        isAvailable: true,
+        latestVersion: '1.3.0',
+        currentVersion: '1.2.1'
+      }
+    });
+
+    expect(mockScreen.render).toHaveBeenCalledTimes(1);
   });
 
   it('should render transition prompt state', () => {

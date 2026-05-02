@@ -1,5 +1,13 @@
 import { type Settings } from './config';
 
+export type UpdatePromptState =
+  | 'none'
+  | 'available'
+  | 'copySuccess'
+  | 'copyFallback'
+  | 'skipped'
+  | 'error';
+
 export type UpdateCheckResult = {
   isAvailable: boolean;
   latestVersion?: string;
@@ -216,6 +224,31 @@ export async function copyToClipboard(text: string): Promise<ClipboardResult> {
     });
 
     proc.on('close', (code: number) => {
+      // If xclip fails on Linux, try xsel
+      if (process.platform === 'linux' && clipboardCmd === 'xclip' && code !== 0) {
+        const procXsel = spawn('xsel', ['--clipboard', '--input']);
+
+        procXsel.on('error', () => {
+          resolve({
+            success: false,
+            command,
+            error: 'No clipboard utility found (tried xclip, xsel)'
+          });
+        });
+
+        procXsel.on('close', (code: number) => {
+          resolve({
+            success: code === 0,
+            command,
+            error: code !== 0 ? 'xsel failed' : undefined
+          });
+        });
+
+        procXsel.stdin.write(text);
+        procXsel.stdin.end();
+        return;
+      }
+
       resolve({
         success: code === 0,
         command,

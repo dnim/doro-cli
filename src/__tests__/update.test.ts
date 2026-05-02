@@ -364,5 +364,95 @@ describe('update functionality', () => {
 
       Object.defineProperty(process, 'platform', { value: originalPlatform });
     });
+
+    it('should try xsel fallback when xclip exits non-zero on Linux', async () => {
+      const originalPlatform = process.platform;
+      Object.defineProperty(process, 'platform', { value: 'linux' });
+
+      const mockXclipProc = {
+        on: jest.fn(),
+        stdin: { write: jest.fn(), end: jest.fn() },
+        stderr: { on: jest.fn() }
+      };
+
+      const mockXselProc = {
+        on: jest.fn(),
+        stdin: { write: jest.fn(), end: jest.fn() },
+        stderr: { on: jest.fn() }
+      };
+
+      // First call returns xclip proc, second returns xsel
+      mockSpawn.mockReturnValueOnce(mockXclipProc).mockReturnValueOnce(mockXselProc);
+
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const { copyToClipboard: mockedCopyToClipboard } = require('../update');
+      const resultPromise = mockedCopyToClipboard('test text');
+
+      // Simulate xclip non-zero exit (not error event)
+      const xclipCloseHandler = mockXclipProc.on.mock.calls.find(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (call: any[]) => call[0] === 'close'
+      )[1];
+      xclipCloseHandler(1); // Non-zero exit code triggers xsel fallback
+
+      // Simulate xsel success
+      const xselCloseHandler = mockXselProc.on.mock.calls.find(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (call: any[]) => call[0] === 'close'
+      )[1];
+      xselCloseHandler(0);
+
+      const result = await resultPromise;
+
+      expect(result.success).toBe(true);
+      expect(mockSpawn).toHaveBeenCalledWith('xclip', ['-selection', 'clipboard']);
+      expect(mockSpawn).toHaveBeenCalledWith('xsel', ['--clipboard', '--input']);
+
+      Object.defineProperty(process, 'platform', { value: originalPlatform });
+    });
+
+    it('should handle both xclip and xsel failing on Linux', async () => {
+      const originalPlatform = process.platform;
+      Object.defineProperty(process, 'platform', { value: 'linux' });
+
+      const mockXclipProc = {
+        on: jest.fn(),
+        stdin: { write: jest.fn(), end: jest.fn() },
+        stderr: { on: jest.fn() }
+      };
+
+      const mockXselProc = {
+        on: jest.fn(),
+        stdin: { write: jest.fn(), end: jest.fn() },
+        stderr: { on: jest.fn() }
+      };
+
+      mockSpawn.mockReturnValueOnce(mockXclipProc).mockReturnValueOnce(mockXselProc);
+
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const { copyToClipboard: mockedCopyToClipboard } = require('../update');
+      const resultPromise = mockedCopyToClipboard('test text');
+
+      // Simulate xclip failure (non-zero exit)
+      const xclipCloseHandler = mockXclipProc.on.mock.calls.find(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (call: any[]) => call[0] === 'close'
+      )[1];
+      xclipCloseHandler(1);
+
+      // Simulate xsel failure
+      const xselCloseHandler = mockXselProc.on.mock.calls.find(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (call: any[]) => call[0] === 'close'
+      )[1];
+      xselCloseHandler(1);
+
+      const result = await resultPromise;
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('xsel failed');
+
+      Object.defineProperty(process, 'platform', { value: originalPlatform });
+    });
   });
 });

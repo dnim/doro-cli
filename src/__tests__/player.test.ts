@@ -321,4 +321,18 @@ describe('Audio Player', () => {
     const dummyBuffer = Buffer.from('dummy');
     await playClip(dummyBuffer);
   });
+
+  it('should skip audio in test mode', async () => {
+    const originalTestMode = process.env.DORO_TEST_MODE;
+    process.env.DORO_TEST_MODE = '1';
+
+    const dummyBuffer = Buffer.from('dummy');
+    await playClip(dummyBuffer);
+
+    // Should not spawn any processes in test mode
+    expect(mockSpawn).not.toHaveBeenCalled();
+    expect(mockFsWriteFile).not.toHaveBeenCalled();
+
+    process.env.DORO_TEST_MODE = originalTestMode;
+  });
 });

@@ -24,10 +24,9 @@ import {
   getUpdateCommand,
   isCheckDue,
   shouldPromptForVersion,
-  type UpdateCheckResult
+  type UpdateCheckResult,
+  type UpdatePromptState
 } from './update';
-
-export type UpdatePromptState = 'none' | 'available' | 'copySuccess' | 'copyFallback' | 'skipped';
 
 export class DoroApp {
   private readonly machine: TimerStateMachine;
@@ -415,10 +414,14 @@ export class DoroApp {
   }
 
   private persistSettings(): void {
-    void saveSettings({
-      volumeMode: this.volumeMode,
-      colorScheme: this.ui.getColorScheme()
-    });
+    void (async () => {
+      const currentSettings = await loadSettings();
+      await saveSettings({
+        ...currentSettings,
+        volumeMode: this.volumeMode,
+        colorScheme: this.ui.getColorScheme()
+      });
+    })();
   }
 
   private async handleResetSettings(): Promise<void> {
@@ -494,7 +497,21 @@ export class DoroApp {
       this.isCheckingUpdate = true;
       const result = await checkForUpdates();
 
-      if (result.isAvailable && result.latestVersion) {
+      if (result.error) {
+        // Update check failed - show error message
+        this.updateCheckResult = result;
+        this.updatePromptState = 'error';
+        this.render();
+
+        // Auto-clear the error message after a few seconds
+        setTimeout(() => {
+          if (this.updatePromptState === 'error') {
+            this.updatePromptState = 'none';
+            this.updateCheckResult = null;
+            this.render();
+          }
+        }, 3000);
+      } else if (result.isAvailable && result.latestVersion) {
         this.updateCheckResult = result;
         this.updatePromptState = 'available';
         this.render();

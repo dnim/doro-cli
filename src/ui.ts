@@ -1,9 +1,7 @@
 import blessed from 'blessed';
 import { MODE_LABELS, MODE_LABELS_SHORT, type TimerMode, type TimerStatus } from './constants';
 import { enableMouse, disableMouse } from './mouse';
-import type { UpdateCheckResult } from './update';
-
-export type UpdatePromptState = 'none' | 'available' | 'copySuccess' | 'copyFallback' | 'skipped';
+import type { UpdateCheckResult, UpdatePromptState } from './update';
 
 type UiRenderState = {
   mode: TimerMode;
@@ -277,6 +275,23 @@ function getUpdatePromptText(
       }
       return 'Skipped.';
     }
+  }
+
+  if (updatePromptState === 'error') {
+    const errorMsg = updateCheckResult?.error || 'Update check failed';
+    const candidates = [
+      `Update check failed: ${errorMsg}. Press U to retry.`,
+      `Update check failed: ${errorMsg}`,
+      'Update check failed. Press U to retry.',
+      'Update check failed.',
+      'Check failed.'
+    ];
+    for (const c of candidates) {
+      if (c.length <= cols) {
+        return c;
+      }
+    }
+    return 'Error.';
   }
 
   return '';
