@@ -45,12 +45,12 @@ Install Node.js inside a mobile Linux environment and run doro-cli directly on t
 
 | Aspect | Detail |
 |---|---|
-| **Android** | Termux supports Node.js ≥18 via `pkg install nodejs`. Node 22 packages are available via the `termux-packages` nightly channel. |
+| **Android** | Termux supports Node.js via `pkg install nodejs`. As of early 2025, Termux stable ships Node 20.x; Node 22 availability should be verified against the current Termux package index before recommending it. |
 | **iOS** | iSH (Alpine Linux userspace) can run Node.js but performance is limited; not recommended for production use. |
 | **Code changes** | Possibly none for core timer; audio will silently fail on Termux (acceptable). May need a `--no-audio` flag or graceful silence. |
-| **Packaging** | `@yao-pkg/pkg` (already a devDependency) can produce a self-contained binary, removing the Node.js install requirement. |
+| **Packaging** | `@yao-pkg/pkg` (already a devDependency) can produce a self-contained binary targeting `node22-linux-arm64`, removing the Node.js install requirement. |
 | **Pros** | Fully offline, runs on-device, no server required |
-| **Cons** | Node 22 on Termux is not yet stable on all Android versions; audio is a no-op; small terminal size needs testing (the responsive layout already handles this) |
+| **Cons** | Node 22 may require Termux nightly/unstable repos (verify before documenting); audio is a no-op; small terminal size handling is assumed to work based on existing responsive design — this should be tested on a real device during implementation. |
 
 **Best for**: Android users comfortable with a terminal.
 
@@ -86,11 +86,11 @@ The server:
 **Dependencies needed:**
 
 - `node-pty` — already a devDependency; promote to `dependencies`.
-- `ws` — lightweight WebSocket server (~55 kB, no sub-dependencies). Alternatively use Node.js 22's native `WebSocketServer` (available as of Node 22.4, no extra package needed). ✅
+- `ws` — lightweight WebSocket server (~55 kB, no sub-dependencies). Note: Node.js 22 ships experimental _client-side_ WebSocket support (`--experimental-websocket`) but does not include a built-in WebSocket _server_ API. The `ws` package is required for the server side.
 
 | Aspect | Detail |
 |---|---|
-| **New npm packages** | None if Node 22 native WebSocket is used; or `ws` (~55 kB) |
+| **New npm packages** | `ws` for WebSocket server (or verify if a future Node.js LTS ships a built-in server API) |
 | **Audio** | Works on the server; the mobile browser receives xterm output only (no audio forwarded — acceptable) |
 | **Pros** | Any browser on the LAN works (no app install on mobile); reuses existing xterm + node-pty infra; single codebase |
 | **Cons** | Requires the serve host to run Node.js; LAN-only without extra tunneling (ngrok, Tailscale) |
