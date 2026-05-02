@@ -45,8 +45,55 @@ type Palette = {
   pause: ModeStyle;
 };
 
-const HELP_TEXT_WIDE =
-  'q quit  p pause  r reset  c colors  m mute  w work  s short  l long  L lock  U update';
+/** Strips all blessed tag markers (e.g. `{bold}`, `{/bold}`, `{#fff-bg}`) from a string. */
+function stripBlessedTags(s: string): string {
+  return s.replace(/\{[^}]+\}/g, '');
+}
+
+/**
+ * Splits a string containing blessed markup tags at a given VISIBLE character position.
+ * Tags are skipped over without counting toward the position.
+ * Returns `[left, right]` where left contains the first `n` visible characters.
+ */
+function splitAtVisible(s: string, n: number): [string, string] {
+  if (n <= 0) {
+    return ['', s];
+  }
+  let visible = 0;
+  let i = 0;
+  while (i < s.length) {
+    if (s[i] === '{') {
+      const close = s.indexOf('}', i);
+      if (close !== -1) {
+        i = close + 1;
+        continue;
+      }
+    }
+    visible++;
+    if (visible >= n) {
+      return [s.slice(0, i + 1), s.slice(i + 1)];
+    }
+    i++;
+  }
+  return [s, ''];
+}
+
+// Wide format: [key, remaining letters] pairs — key rendered in bold, rest appended.
+// Lock uses uppercase 'L' and Update uses uppercase 'U' to distinguish them from 'l'/'u'.
+const HELP_KEYS_WIDE: [string, string][] = [
+  ['q', 'uit'],
+  ['p', 'ause'],
+  ['r', 'eset'],
+  ['c', 'olors'],
+  ['m', 'ute'],
+  ['w', 'ork'],
+  ['s', 'hort'],
+  ['l', 'ong'],
+  ['L', 'ock'],
+  ['U', 'pdate']
+];
+const HELP_TEXT_WIDE = HELP_KEYS_WIDE.map(([k, rest]) => `{bold}${k}{/bold}${rest}`).join('  ');
+const HELP_TEXT_WIDE_VIS_LEN = stripBlessedTags(HELP_TEXT_WIDE).length;
 const HELP_TEXT_NARROW = 'q:✕  p:⏸  r:↺  c:✦  m:♪  w/s/l  L:⊟  U:⬆';
 const HELP_TEXT_ULTRA = 'q p r c m w s l L U';
 
@@ -61,7 +108,7 @@ function getHelpText(cols: number): string {
   if (cols <= 0) {
     return '';
   }
-  if (HELP_TEXT_WIDE.length <= cols) {
+  if (HELP_TEXT_WIDE_VIS_LEN <= cols) {
     return HELP_TEXT_WIDE;
   }
   if (HELP_TEXT_NARROW.length <= cols) {
@@ -248,14 +295,40 @@ function buildProgressRow(
     return '';
   }
   const fw = Math.max(0, Math.min(fillWidth, cols));
-  const textLen = Math.min(visibleText.length, cols);
-  const safeText = visibleText.slice(0, textLen);
+  // Use visible (tag-stripped) length for layout so markup tags don't skew centering.
+  const plainText = stripBlessedTags(visibleText);
+  const textLen = Math.min(plainText.length, cols);
+  // Truncate visibleText to the first textLen visible characters.
+  const [safeText] = splitAtVisible(visibleText, textLen);
   const totalPad = cols - textLen;
   const padLeft = Math.floor(totalPad / 2);
   const padRight = totalPad - padLeft;
-  const full = ' '.repeat(padLeft) + safeText + ' '.repeat(padRight);
-  const p1 = full.substring(0, fw);
-  const p2 = full.substring(fw);
+
+  // Build p1 (fill region) and p2 (base region) by partitioning the padded row.
+  // Layout positions: [0, padLeft) = left spaces, [padLeft, padLeft+textLen) = text, [padLeft+textLen, cols) = right spaces
+  let p1 = '';
+  let p2 = '';
+  if (fw <= 0) {
+    p2 = ' '.repeat(padLeft) + safeText + ' '.repeat(padRight);
+  } else if (fw >= cols) {
+    p1 = ' '.repeat(padLeft) + safeText + ' '.repeat(padRight);
+  } else if (fw <= padLeft) {
+    // Split is within the left padding
+    p1 = ' '.repeat(fw);
+    p2 = ' '.repeat(padLeft - fw) + safeText + ' '.repeat(padRight);
+  } else if (fw >= padLeft + textLen) {
+    // Split is within the right padding
+    const rightFill = fw - padLeft - textLen;
+    p1 = ' '.repeat(padLeft) + safeText + ' '.repeat(rightFill);
+    p2 = ' '.repeat(padRight - rightFill);
+  } else {
+    // Split is within the text itself
+    const textSplit = fw - padLeft;
+    const [textLeft, textRight] = splitAtVisible(safeText, textSplit);
+    p1 = ' '.repeat(padLeft) + textLeft;
+    p2 = textRight + ' '.repeat(padRight);
+  }
+
   const bO = bold ? '{bold}' : '';
   const bC = bold ? '{/bold}' : '';
   let content = '';
