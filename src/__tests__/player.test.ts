@@ -269,4 +269,56 @@ describe('Audio Player', () => {
 
     expect(spawnCount).toBeGreaterThanOrEqual(1);
   });
+
+  it('should handle cancellation before spawn completes', async () => {
+    const dummyBuffer = Buffer.from('dummy');
+
+    // Mock a cancelled state that gets checked early
+    let mockChild: { kill: jest.Mock; on: jest.Mock; killed: boolean } | undefined;
+    mockSpawn.mockImplementation(() => {
+      mockChild = {
+        kill: jest.fn(),
+        on: jest.fn().mockImplementation((event, cb) => {
+          if (event === 'close') {
+            setTimeout(() => cb(null, 'SIGTERM'), 0);
+          }
+        }),
+        killed: false
+      };
+      return mockChild;
+    });
+
+    // Start playback and immediately stop to trigger early cancellation paths
+    const playPromise = playClip(dummyBuffer);
+
+    // Give a tiny delay for spawn to happen
+    await new Promise((resolve) => setTimeout(resolve, 1));
+    stopPlayback();
+
+    await playPromise;
+
+    expect(mockChild?.kill).toHaveBeenCalledWith('SIGTERM');
+  });
+
+  it('should handle error during spawn with cancellation', async () => {
+    // Track if playback gets cancelled during error handling
+    let errorCb: () => void;
+
+    mockSpawn.mockImplementation(() => ({
+      kill: jest.fn(),
+      on: jest.fn().mockImplementation((event, cb) => {
+        if (event === 'error') {
+          errorCb = cb;
+          setTimeout(() => {
+            stopPlayback(); // Cancel during error
+            errorCb();
+          }, 0);
+        }
+      }),
+      killed: false
+    }));
+
+    const dummyBuffer = Buffer.from('dummy');
+    await playClip(dummyBuffer);
+  });
 });

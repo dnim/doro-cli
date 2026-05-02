@@ -43,16 +43,22 @@ This document outlines the standard operating procedures for all AI agents worki
 
 ### Proper Commit Workflow for Agents
 
-1. **Request Approval**: Before committing, the agent MUST ask the user explicitly:
+1. **Run Pre-commit Checks**: Before requesting approval, the agent MUST run all necessary checks:
+   - `npm run typecheck` - Verify TypeScript compilation
+   - `npm run lint:local` - Check code style and formatting
+   - `npm run test:unit` - Run unit tests with coverage
+   - Address any failures before proceeding
+
+2. **Request Approval**: After all checks pass, the agent MUST ask the user explicitly:
    - Present the proposed commit message
    - Show what changes will be included (`git status`, `git diff`)
    - Wait for explicit user confirmation (e.g., "yes", "proceed", "commit")
 
-2. **User Executes Commit**: After approval, the **user** runs the commit command:
+3. **User Executes Commit**: After approval, the **user** runs the commit command:
    - User types: `git commit -m "the agreed message"`
    - OR user can modify the message and commit manually
 
-3. **Agent Never Commits Directly**: Agents must never attempt `git commit` commands
+4. **Agent Never Commits Directly**: Agents must never attempt `git commit` commands
    - Such attempts will be blocked by OpenCode's permission system
    - Instead, agents should guide users through the commit process
 
@@ -79,6 +85,13 @@ I've completed the feature implementation. Here are the changes ready to commit:
 
 Please review and run: `git commit -m "Add dark mode toggle to settings page"`
 ```
+
+### Commit Message Formatting
+
+**Always format the final commit command for easy copy-paste**:
+- Provide the complete command: `git commit -m "commit message"`
+- Use proper conventional commit format when applicable (feat/fix/chore/docs)
+- Example: `git commit -m "fix(update-notifier): stabilize VRT test commands and refresh snapshots"`
 
 ## 4. CI/CD
 

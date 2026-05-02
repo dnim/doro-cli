@@ -30,6 +30,10 @@ export type ControlCommand =
   | 'checkUpdate'
   | 'updateYes'
   | 'updateNo'
+  | 'testUpdateAvailable'
+  | 'testUpdateCopySuccess'
+  | 'testUpdateCopyFallback'
+  | 'testUpdateSkipped'
   | 'none';
 
 export function resolveControlCommand(event: InputEvent): ControlCommand {
@@ -91,12 +95,17 @@ export function resolveControlCommand(event: InputEvent): ControlCommand {
 
   // Test mode commands for VRT (only in test environment)
   if (process.env.DORO_TEST_MODE === '1') {
-    if (event.keyName === 'escape' && event.ch.startsWith('\u001B[test-update-')) {
-      const testCommand = event.ch.slice(2, -1); // Extract test command
-      if (testCommand === 'test-update-available') {
-        return 'checkUpdate';
-      }
-      // Other test commands are handled in app.ts
+    if (event.keyName === '1' || event.ch === '1') {
+      return 'testUpdateAvailable';
+    }
+    if (event.keyName === '2' || event.ch === '2') {
+      return 'testUpdateCopySuccess';
+    }
+    if (event.keyName === '3' || event.ch === '3') {
+      return 'testUpdateCopyFallback';
+    }
+    if (event.keyName === '4' || event.ch === '4') {
+      return 'testUpdateSkipped';
     }
   }
 
@@ -133,5 +142,12 @@ export function isPromptConfirmEvent(event: InputEvent, command: ControlCommand)
 }
 
 export function isUpdatePromptEvent(command: ControlCommand): boolean {
-  return command === 'updateYes' || command === 'updateNo';
+  return (
+    command === 'updateYes' ||
+    command === 'updateNo' ||
+    command === 'testUpdateAvailable' ||
+    command === 'testUpdateCopySuccess' ||
+    command === 'testUpdateCopyFallback' ||
+    command === 'testUpdateSkipped'
+  );
 }

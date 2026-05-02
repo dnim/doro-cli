@@ -167,8 +167,8 @@ test.describe('Doro CLI Visual Regression', () => {
           test('update available prompt', async ({ page }) => {
             await setupTerminal(page, size.cols, size.rows, theme);
 
-            // Use deterministic test command for update available state
-            await page.evaluate(() => (window as any).sendPtyData('\u001B[test-update-available]'));
+            // Use deterministic test key 1 for update available state
+            await page.evaluate(() => (window as any).sendPtyData('1'));
             await page.waitForTimeout(1000);
 
             await expect(page.locator('#terminal-container')).toHaveScreenshot(
@@ -180,7 +180,7 @@ test.describe('Doro CLI Visual Regression', () => {
             await setupTerminal(page, size.cols, size.rows, theme);
 
             await page.evaluate(() => {
-              (window as any).sendPtyData('\u001B[test-update-copy-success]');
+              (window as any).sendPtyData('2');
             });
             await page.waitForTimeout(1000);
 
@@ -193,7 +193,7 @@ test.describe('Doro CLI Visual Regression', () => {
             await setupTerminal(page, size.cols, size.rows, theme);
 
             await page.evaluate(() => {
-              (window as any).sendPtyData('\u001B[test-update-copy-fallback]');
+              (window as any).sendPtyData('3');
             });
             await page.waitForTimeout(1000);
 
@@ -206,7 +206,7 @@ test.describe('Doro CLI Visual Regression', () => {
             await setupTerminal(page, size.cols, size.rows, theme);
 
             await page.evaluate(() => {
-              (window as any).sendPtyData('\u001B[test-update-skipped]');
+              (window as any).sendPtyData('4');
             });
             await page.waitForTimeout(1000);
 
