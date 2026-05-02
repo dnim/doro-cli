@@ -363,4 +363,245 @@ describe('DoroUi', () => {
 
     expect(mockScreen.render).toHaveBeenCalledTimes(1);
   });
+
+  it('should use narrow help text at medium screen width', () => {
+    ui = new DoroUi(handlers);
+    const mockScreen = (blessed.screen as jest.Mock).mock.results[0].value;
+    mockScreen.cols = 50;
+
+    ui.render({
+      mode: 'work',
+      status: 'running',
+      remainingSeconds: 600,
+      durationSeconds: 1500,
+      isLocked: false,
+      volumeMode: 'normal',
+      hasPrompt: false,
+      promptCountdownSeconds: 0,
+      promptTotalSeconds: 0,
+      promptNextMode: null,
+      updatePromptState: 'none',
+      updateCheckResult: null
+    });
+
+    expect(mockScreen.render).toHaveBeenCalledTimes(1);
+    mockScreen.cols = 80; // Restore
+  });
+
+  it('should use ultra help text at small screen width', () => {
+    ui = new DoroUi(handlers);
+    const mockScreen = (blessed.screen as jest.Mock).mock.results[0].value;
+    mockScreen.cols = 19;
+
+    ui.render({
+      mode: 'work',
+      status: 'running',
+      remainingSeconds: 600,
+      durationSeconds: 1500,
+      isLocked: false,
+      volumeMode: 'normal',
+      hasPrompt: false,
+      promptCountdownSeconds: 0,
+      promptTotalSeconds: 0,
+      promptNextMode: null,
+      updatePromptState: 'none',
+      updateCheckResult: null
+    });
+
+    expect(mockScreen.render).toHaveBeenCalledTimes(1);
+    mockScreen.cols = 80; // Restore
+  });
+
+  it('should drop low-priority tokens at very tiny screen width', () => {
+    ui = new DoroUi(handlers);
+    const mockScreen = (blessed.screen as jest.Mock).mock.results[0].value;
+    mockScreen.cols = 10;
+
+    ui.render({
+      mode: 'work',
+      status: 'running',
+      remainingSeconds: 600,
+      durationSeconds: 1500,
+      isLocked: false,
+      volumeMode: 'normal',
+      hasPrompt: false,
+      promptCountdownSeconds: 0,
+      promptTotalSeconds: 0,
+      promptNextMode: null,
+      updatePromptState: 'none',
+      updateCheckResult: null
+    });
+
+    expect(mockScreen.render).toHaveBeenCalledTimes(1);
+    mockScreen.cols = 80; // Restore
+  });
+
+  it('should render buildProgressRow with fill within left padding', () => {
+    // Very low progress ratio → fw < padLeft for centered text
+    ui = new DoroUi(handlers);
+    const mockScreen = (blessed.screen as jest.Mock).mock.results[0].value;
+    mockScreen.cols = 80;
+
+    ui.render({
+      mode: 'work',
+      status: 'running',
+      remainingSeconds: 1439, // ~4% elapsed → fw ≈ 3, well inside left padding
+      durationSeconds: 1500,
+      isLocked: false,
+      volumeMode: 'normal',
+      hasPrompt: false,
+      promptCountdownSeconds: 0,
+      promptTotalSeconds: 0,
+      promptNextMode: null,
+      updatePromptState: 'none',
+      updateCheckResult: null
+    });
+
+    expect(mockScreen.render).toHaveBeenCalledTimes(1);
+  });
+
+  it('should render buildProgressRow with fill spanning into right padding', () => {
+    // Very high progress ratio → fw > padLeft + textLen
+    ui = new DoroUi(handlers);
+    const mockScreen = (blessed.screen as jest.Mock).mock.results[0].value;
+    mockScreen.cols = 80;
+
+    ui.render({
+      mode: 'work',
+      status: 'running',
+      remainingSeconds: 150, // 90% elapsed → fw ≈ 72
+      durationSeconds: 1500,
+      isLocked: false,
+      volumeMode: 'normal',
+      hasPrompt: false,
+      promptCountdownSeconds: 0,
+      promptTotalSeconds: 0,
+      promptNextMode: null,
+      updatePromptState: 'none',
+      updateCheckResult: null
+    });
+
+    expect(mockScreen.render).toHaveBeenCalledTimes(1);
+  });
+
+  it('should render update available without latestVersion (empty status text)', () => {
+    ui = new DoroUi(handlers);
+    const mockScreen = (blessed.screen as jest.Mock).mock.results[0].value;
+
+    ui.render({
+      mode: 'work',
+      status: 'running',
+      remainingSeconds: 600,
+      durationSeconds: 1500,
+      isLocked: false,
+      volumeMode: 'normal',
+      hasPrompt: false,
+      promptCountdownSeconds: 0,
+      promptTotalSeconds: 0,
+      promptNextMode: null,
+      updatePromptState: 'available',
+      updateCheckResult: { isAvailable: true, currentVersion: '1.2.0' } // no latestVersion
+    });
+
+    expect(mockScreen.render).toHaveBeenCalledTimes(1);
+  });
+
+  it('should render update prompt fallback text at very narrow screens', () => {
+    ui = new DoroUi(handlers);
+    const mockScreen = (blessed.screen as jest.Mock).mock.results[0].value;
+    mockScreen.cols = 5;
+
+    const baseState = {
+      mode: 'work' as const,
+      status: 'running' as const,
+      remainingSeconds: 600,
+      durationSeconds: 1500,
+      isLocked: false,
+      volumeMode: 'normal' as const,
+      hasPrompt: false,
+      promptCountdownSeconds: 0,
+      promptTotalSeconds: 0,
+      promptNextMode: null
+    };
+
+    // copySuccess fallback (shortest = 'Copied!' = 7 > 5)
+    ui.render({
+      ...baseState,
+      updatePromptState: 'copySuccess',
+      updateCheckResult: null
+    });
+    expect(mockScreen.render).toHaveBeenCalledTimes(1);
+    mockScreen.render.mockClear();
+
+    // copyFallback fallback (shortest candidate = 32 > 5)
+    ui.render({
+      ...baseState,
+      updatePromptState: 'copyFallback',
+      updateCheckResult: null
+    });
+    expect(mockScreen.render).toHaveBeenCalledTimes(1);
+    mockScreen.render.mockClear();
+
+    // skipped (no update, shortest = 'Latest.' = 7 > 5)
+    ui.render({
+      ...baseState,
+      updatePromptState: 'skipped',
+      updateCheckResult: { isAvailable: false, currentVersion: '1.2.0' }
+    });
+    expect(mockScreen.render).toHaveBeenCalledTimes(1);
+    mockScreen.render.mockClear();
+
+    // skipped (update was available, shortest = 'Skipped.' = 8 > 5)
+    ui.render({
+      ...baseState,
+      updatePromptState: 'skipped',
+      updateCheckResult: { isAvailable: true, latestVersion: '1.3.0', currentVersion: '1.2.0' }
+    });
+    expect(mockScreen.render).toHaveBeenCalledTimes(1);
+    mockScreen.render.mockClear();
+
+    // error fallback (shortest = 'Error.' = 6 > 5)
+    ui.render({
+      ...baseState,
+      updatePromptState: 'error',
+      updateCheckResult: { isAvailable: false, currentVersion: '1.2.0', error: 'net fail' }
+    });
+    expect(mockScreen.render).toHaveBeenCalledTimes(1);
+    mockScreen.render.mockClear();
+
+    // available fallback (shortest = 'y/n?' = 4 > 3) - use cols=3
+    mockScreen.cols = 3;
+    ui.render({
+      ...baseState,
+      updatePromptState: 'available',
+      updateCheckResult: { isAvailable: true, latestVersion: '1.3.0', currentVersion: '1.2.0' }
+    });
+    expect(mockScreen.render).toHaveBeenCalledTimes(1);
+
+    mockScreen.cols = 80; // Restore
+  });
+
+  it('should return empty transition status text when terminal is too narrow', () => {
+    ui = new DoroUi(handlers);
+    const mockScreen = (blessed.screen as jest.Mock).mock.results[0].value;
+    mockScreen.cols = 1; // Even '1s' (2 chars) doesn't fit
+
+    ui.render({
+      mode: 'work',
+      status: 'switchPrompt',
+      remainingSeconds: 0,
+      durationSeconds: 1500,
+      isLocked: false,
+      volumeMode: 'normal',
+      hasPrompt: true,
+      promptCountdownSeconds: 1,
+      promptTotalSeconds: 5,
+      promptNextMode: 'short',
+      updatePromptState: 'none',
+      updateCheckResult: null
+    });
+
+    expect(mockScreen.render).toHaveBeenCalledTimes(1);
+    mockScreen.cols = 80; // Restore
+  });
 });

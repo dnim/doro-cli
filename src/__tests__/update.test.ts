@@ -454,5 +454,184 @@ describe('update functionality', () => {
 
       Object.defineProperty(process, 'platform', { value: originalPlatform });
     });
+
+    it('should copy to clipboard on Windows', async () => {
+      const originalPlatform = process.platform;
+      Object.defineProperty(process, 'platform', { value: 'win32' });
+
+      const mockProc = {
+        on: jest.fn(),
+        stdin: { write: jest.fn(), end: jest.fn() },
+        stderr: { on: jest.fn() }
+      };
+      mockSpawn.mockReturnValue(mockProc);
+
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const { copyToClipboard: mockedCopyToClipboard } = require('../update');
+      const resultPromise = mockedCopyToClipboard('test text');
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const onCloseHandler = mockProc.on.mock.calls.find((call: any[]) => call[0] === 'close')[1];
+      onCloseHandler(0);
+
+      const result = await resultPromise;
+
+      expect(result.success).toBe(true);
+      expect(mockSpawn).toHaveBeenCalledWith('clip', []);
+
+      Object.defineProperty(process, 'platform', { value: originalPlatform });
+    });
+
+    it('should handle process error on non-Linux platform', async () => {
+      const originalPlatform = process.platform;
+      Object.defineProperty(process, 'platform', { value: 'darwin' });
+
+      const mockProc = {
+        on: jest.fn(),
+        stdin: { write: jest.fn(), end: jest.fn() },
+        stderr: { on: jest.fn() }
+      };
+      mockSpawn.mockReturnValue(mockProc);
+
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const { copyToClipboard: mockedCopyToClipboard } = require('../update');
+      const resultPromise = mockedCopyToClipboard('test text');
+
+      // Simulate process error (e.g. pbcopy not found)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const onErrorHandler = mockProc.on.mock.calls.find((call: any[]) => call[0] === 'error')[1];
+      onErrorHandler(new Error('pbcopy not found'));
+
+      const result = await resultPromise;
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('pbcopy not found');
+
+      Object.defineProperty(process, 'platform', { value: originalPlatform });
+    });
+
+    it('should handle xsel error in the xclip error fallback path', async () => {
+      const originalPlatform = process.platform;
+      Object.defineProperty(process, 'platform', { value: 'linux' });
+
+      const mockXclipProc = {
+        on: jest.fn(),
+        stdin: { write: jest.fn(), end: jest.fn() },
+        stderr: { on: jest.fn() }
+      };
+      const mockXselProc = {
+        on: jest.fn(),
+        stdin: { write: jest.fn(), end: jest.fn() },
+        stderr: { on: jest.fn() }
+      };
+
+      mockSpawn.mockReturnValueOnce(mockXclipProc).mockReturnValueOnce(mockXselProc);
+
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const { copyToClipboard: mockedCopyToClipboard } = require('../update');
+      const resultPromise = mockedCopyToClipboard('test text');
+
+      // Simulate xclip error → triggers xsel fallback
+      const xclipErrorHandler = mockXclipProc.on.mock.calls.find(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (call: any[]) => call[0] === 'error'
+      )[1];
+      xclipErrorHandler(new Error('xclip not found'));
+
+      // Simulate xsel also erroring
+
+      const xselErrorHandler = mockXselProc.on.mock.calls.find(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (call: any[]) => call[0] === 'error'
+      )[1];
+      xselErrorHandler(new Error('xsel not found'));
+
+      const result = await resultPromise;
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('No clipboard utility found (tried xclip, xsel)');
+
+      Object.defineProperty(process, 'platform', { value: originalPlatform });
+    });
+
+    it('should handle xsel error in the xclip non-zero exit fallback path', async () => {
+      const originalPlatform = process.platform;
+      Object.defineProperty(process, 'platform', { value: 'linux' });
+
+      const mockXclipProc = {
+        on: jest.fn(),
+        stdin: { write: jest.fn(), end: jest.fn() },
+        stderr: { on: jest.fn() }
+      };
+      const mockXselProc = {
+        on: jest.fn(),
+        stdin: { write: jest.fn(), end: jest.fn() },
+        stderr: { on: jest.fn() }
+      };
+
+      mockSpawn.mockReturnValueOnce(mockXclipProc).mockReturnValueOnce(mockXselProc);
+
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const { copyToClipboard: mockedCopyToClipboard } = require('../update');
+      const resultPromise = mockedCopyToClipboard('test text');
+
+      // Simulate xclip non-zero exit → triggers xsel fallback via 'close' handler
+      const xclipCloseHandler = mockXclipProc.on.mock.calls.find(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (call: any[]) => call[0] === 'close'
+      )[1];
+      xclipCloseHandler(1);
+
+      // Simulate xsel erroring (via error event, not close)
+
+      const xselErrorHandler = mockXselProc.on.mock.calls.find(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (call: any[]) => call[0] === 'error'
+      )[1];
+      xselErrorHandler(new Error('xsel not found'));
+
+      const result = await resultPromise;
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('No clipboard utility found (tried xclip, xsel)');
+
+      Object.defineProperty(process, 'platform', { value: originalPlatform });
+    });
+
+    it('should capture stderr and use it in error message on close', async () => {
+      const originalPlatform = process.platform;
+      Object.defineProperty(process, 'platform', { value: 'darwin' });
+
+      const mockProc = {
+        on: jest.fn(),
+        stdin: { write: jest.fn(), end: jest.fn() },
+        stderr: { on: jest.fn() }
+      };
+      mockSpawn.mockReturnValue(mockProc);
+
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const { copyToClipboard: mockedCopyToClipboard } = require('../update');
+      const resultPromise = mockedCopyToClipboard('test text');
+
+      // Simulate stderr data output
+
+      const stderrDataHandler = mockProc.stderr.on.mock.calls.find(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (call: any[]) => call[0] === 'data'
+      )[1];
+      stderrDataHandler(Buffer.from('clipboard error output'));
+
+      // Simulate non-zero close (so error message uses stderr content)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const onCloseHandler = mockProc.on.mock.calls.find((call: any[]) => call[0] === 'close')[1];
+      onCloseHandler(1);
+
+      const result = await resultPromise;
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('clipboard error output');
+
+      Object.defineProperty(process, 'platform', { value: originalPlatform });
+    });
   });
 });
