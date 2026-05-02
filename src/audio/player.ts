@@ -82,6 +82,11 @@ export function stopPlayback(): void {
 }
 
 export async function playClip(buffer: Buffer): Promise<void> {
+  // Skip all audio in test mode
+  if (process.env.DORO_TEST_MODE === '1') {
+    return;
+  }
+
   stopPlayback();
   const playback: PlaybackState = {
     cancelled: false,
