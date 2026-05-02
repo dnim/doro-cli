@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-05-01
+
+### Added
+
+- Volume indicator visibility even at 1-character terminal width with compact Unicode icons (⊘○ for lock, ✕♪♫ for volume).
+- Visual regression tests for volume states at tiny and ultra-small terminal sizes.
+- Strict commit approval system for AI agents to prevent unauthorized commits.
+- Main branch protection via pre-commit hooks.
+
+### Fixed
+
+- Lock mode behavior to only allow quit, pause/unpause, and unlock operations.
+- Volume indicator prioritization over lock state in ultra-tiny terminal widths.
+- Blocked color scheme and volume changes when timer is locked.
+
+### Changed
+
+- AI agent workflow to require explicit user approval before committing changes.
+- Configuration file protection for critical project files (.opencode/**, .husky/**, opencode.json).
+
 ## [1.2.1] - 2026-04-30
 
 ### Changed
