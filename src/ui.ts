@@ -189,18 +189,18 @@ function getUpdatePromptText(
 
   if (updatePromptState === 'copyFallback') {
     const candidates = [
-      'Run this command after doro exits: npm install -g doro-cli@latest',
-      'Run after exit: npm install -g doro-cli@latest',
-      'Run: npm install -g doro-cli@latest',
-      'Run: npm i -g doro-cli@latest',
-      'npm i -g doro-cli@latest'
+      'Run this command after doro exits: npm install -g doro-cli@latest && doro',
+      'Run after exit: npm install -g doro-cli@latest && doro',
+      'Run: npm install -g doro-cli@latest && doro',
+      'Run: npm i -g doro-cli@latest && doro',
+      'npm i -g doro-cli@latest && doro'
     ];
     for (const c of candidates) {
       if (c.length <= cols) {
         return c;
       }
     }
-    return 'npm i -g doro-cli@latest';
+    return 'npm i -g doro-cli@latest && doro';
   }
 
   if (updatePromptState === 'skipped') {
@@ -568,19 +568,21 @@ export class DoroUi {
     const progressWidth = Math.round(cols * progressRatio);
     const compactHeight = rows < 10;
 
-    const bannerText = state.hasPrompt
-      ? 'Done'
-      : isPaused
-        ? 'PAUSED'
-        : state.mode === 'work'
-          ? 'WORK'
-          : state.mode === 'short'
-            ? cols < 14
-              ? 'SHORT'
-              : 'SHORT BREAK'
-            : cols < 13
-              ? 'LONG'
-              : 'LONG BREAK';
+    const bannerText = isPaused
+      ? 'PAUSED'
+      : state.hasPrompt
+        ? 'Done'
+        : hasUpdatePrompt && cols <= 16
+          ? 'UPDATE'
+          : state.mode === 'work'
+            ? 'WORK'
+            : state.mode === 'short'
+              ? cols < 14
+                ? 'SHORT'
+                : 'SHORT BREAK'
+              : cols < 13
+                ? 'LONG'
+                : 'LONG BREAK';
 
     let statusText: string;
     if (hasUpdatePrompt) {

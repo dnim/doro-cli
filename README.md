@@ -80,6 +80,7 @@ doro
 |      `L`       | Lock / Unlock Hotkeys     |
 |   `Shift+R`    | Reset All Settings        |
 |   `Shift+D`    | Debug: Fast-forward timer |
+|   `Shift+U`    | Check for Updates         |
 
 ## Configuration
 

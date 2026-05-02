@@ -175,4 +175,165 @@ describe('TimerStateMachine', () => {
     expect(remainingMs).toBeLessThanOrEqual(3000);
     expect(remainingMs).toBeGreaterThan(0);
   });
+
+  describe('toggleLock', () => {
+    it('toggles isLocked state', () => {
+      const machine = new TimerStateMachine({
+        workSeconds: 10,
+        shortRestSeconds: 3,
+        longRestSeconds: 6,
+        longRestEveryWorkSessions: 3,
+        switchConfirmSeconds: 5
+      });
+
+      const initialState = machine.getState();
+      expect(initialState.isLocked).toBe(false);
+
+      const lockedState = machine.toggleLock();
+      expect(lockedState.isLocked).toBe(true);
+
+      const unlockedState = machine.toggleLock();
+      expect(unlockedState.isLocked).toBe(false);
+    });
+  });
+
+  describe('togglePause', () => {
+    it('toggles between running and paused states', () => {
+      const machine = new TimerStateMachine({
+        workSeconds: 10,
+        shortRestSeconds: 3,
+        longRestSeconds: 6,
+        longRestEveryWorkSessions: 3,
+        switchConfirmSeconds: 5
+      });
+
+      machine.startMode('work');
+      const runningState = machine.getState();
+      expect(runningState.status).toBe('running');
+
+      const pausedState = machine.togglePause();
+      expect(pausedState.status).toBe('paused');
+
+      const resumedState = machine.togglePause();
+      expect(resumedState.status).toBe('running');
+    });
+
+    it('does nothing when in switchPrompt status', () => {
+      const machine = new TimerStateMachine({
+        workSeconds: 1,
+        shortRestSeconds: 3,
+        longRestSeconds: 6,
+        longRestEveryWorkSessions: 3,
+        switchConfirmSeconds: 5
+      });
+
+      machine.startMode('work');
+      machine.tick(1000); // Complete work, enter switchPrompt
+
+      const beforeState = machine.getState();
+      expect(beforeState.status).toBe('switchPrompt');
+
+      const afterState = machine.togglePause();
+      expect(afterState.status).toBe('switchPrompt');
+    });
+  });
+
+  describe('forceQuitState', () => {
+    it('returns current state without modification', () => {
+      const machine = new TimerStateMachine({
+        workSeconds: 10,
+        shortRestSeconds: 3,
+        longRestSeconds: 6,
+        longRestEveryWorkSessions: 3,
+        switchConfirmSeconds: 5
+      });
+
+      const beforeState = machine.getState();
+      const afterState = machine.forceQuitState();
+
+      expect(afterState).toEqual(beforeState);
+      expect(afterState.mode).toBe('work');
+      expect(afterState.status).toBe('paused');
+    });
+  });
+
+  describe('getConfig', () => {
+    it('returns the timer configuration', () => {
+      const config = {
+        workSeconds: 15,
+        shortRestSeconds: 4,
+        longRestSeconds: 8,
+        longRestEveryWorkSessions: 2,
+        switchConfirmSeconds: 3
+      };
+
+      const machine = new TimerStateMachine(config);
+      const returnedConfig = machine.getConfig();
+
+      expect(returnedConfig).toEqual(config);
+    });
+  });
+
+  describe('tick edge cases', () => {
+    it('returns unchanged state when not running and not in switchPrompt', () => {
+      const machine = new TimerStateMachine({
+        workSeconds: 10,
+        shortRestSeconds: 3,
+        longRestSeconds: 6,
+        longRestEveryWorkSessions: 3,
+        switchConfirmSeconds: 5
+      });
+
+      // Machine starts paused
+      const result = machine.tick(Date.now());
+
+      expect(result.startedPrompt).toBe(false);
+      expect(result.switchedRunning).toBe(false);
+      expect(result.switchedToMode).toBeNull();
+      expect(result.completedMode).toBeNull();
+      expect(result.state.status).toBe('paused');
+    });
+
+    it('returns unchanged state when in switchPrompt but deadline not reached', () => {
+      const machine = new TimerStateMachine({
+        workSeconds: 1,
+        shortRestSeconds: 3,
+        longRestSeconds: 6,
+        longRestEveryWorkSessions: 3,
+        switchConfirmSeconds: 60 // Long timeout
+      });
+
+      machine.startMode('work');
+      const firstTick = machine.tick(1000); // Complete work, enter switchPrompt
+      expect(firstTick.state.status).toBe('switchPrompt');
+
+      // Tick slightly ahead but before the 60-second deadline
+      // Deadline will be 1000 + 60*1000 = 61000, so tick at 2000 is safe
+      const result = machine.tick(2000);
+
+      expect(result.startedPrompt).toBe(false);
+      expect(result.switchedRunning).toBe(false);
+      expect(result.switchedToMode).toBeNull();
+      expect(result.completedMode).toBeNull();
+      expect(result.state.status).toBe('switchPrompt');
+    });
+  });
+
+  describe('confirmPromptAndSwitch edge cases', () => {
+    it('returns null switchedToMode when no prompt exists', () => {
+      const machine = new TimerStateMachine({
+        workSeconds: 10,
+        shortRestSeconds: 3,
+        longRestSeconds: 6,
+        longRestEveryWorkSessions: 3,
+        switchConfirmSeconds: 5
+      });
+
+      // No switchPrompt active
+      const result = machine.confirmPromptAndSwitch();
+
+      expect(result.switchedToMode).toBeNull();
+      expect(result.state.status).toBe('paused');
+    });
+  });
 });

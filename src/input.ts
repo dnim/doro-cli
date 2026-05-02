@@ -89,6 +89,17 @@ export function resolveControlCommand(event: InputEvent): ControlCommand {
     return 'checkUpdate';
   }
 
+  // Test mode commands for VRT (only in test environment)
+  if (process.env.DORO_TEST_MODE === '1') {
+    if (event.keyName === 'escape' && event.ch.startsWith('\u001B[test-update-')) {
+      const testCommand = event.ch.slice(2, -1); // Extract test command
+      if (testCommand === 'test-update-available') {
+        return 'checkUpdate';
+      }
+      // Other test commands are handled in app.ts
+    }
+  }
+
   if (event.keyName === 'y' || lowerChar === 'y') {
     return 'updateYes';
   }
