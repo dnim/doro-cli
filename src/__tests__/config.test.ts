@@ -33,7 +33,8 @@ describe('config', () => {
       const settings = await loadSettings();
       expect(settings).toEqual({
         volumeMode: 'normal',
-        colorScheme: 'modern'
+        colorScheme: 'modern',
+        checkIntervalHours: 24
       });
     });
 
@@ -45,7 +46,8 @@ describe('config', () => {
       const settings = await loadSettings();
       expect(settings).toEqual({
         volumeMode: 'quiet',
-        colorScheme: 'calm'
+        colorScheme: 'calm',
+        checkIntervalHours: 24
       });
     });
 
@@ -55,7 +57,8 @@ describe('config', () => {
       const settings = await loadSettings();
       expect(settings).toEqual({
         volumeMode: 'normal',
-        colorScheme: 'modern'
+        colorScheme: 'modern',
+        checkIntervalHours: 24
       });
     });
   });
@@ -97,7 +100,8 @@ describe('config', () => {
       const settings = await resetSettings();
       expect(settings).toEqual({
         volumeMode: 'normal',
-        colorScheme: 'modern'
+        colorScheme: 'modern',
+        checkIntervalHours: 24
       });
       expect(fs.promises.writeFile).toHaveBeenCalled();
     });

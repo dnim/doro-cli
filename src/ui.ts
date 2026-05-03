@@ -1,6 +1,7 @@
 import blessed from 'blessed';
 import { MODE_LABELS, MODE_LABELS_SHORT, type TimerMode, type TimerStatus } from './constants';
 import { enableMouse, disableMouse } from './mouse';
+import type { UpdateCheckResult, UpdatePromptState } from './update';
 
 type UiRenderState = {
   mode: TimerMode;
@@ -13,6 +14,8 @@ type UiRenderState = {
   promptTotalSeconds: number;
   hasPrompt: boolean;
   promptNextMode: TimerMode | null;
+  updatePromptState: UpdatePromptState;
+  updateCheckResult: UpdateCheckResult | null;
 };
 
 type UiHandlers = {
@@ -40,13 +43,60 @@ type Palette = {
   pause: ModeStyle;
 };
 
-const HELP_TEXT_WIDE =
-  'q quit  p pause  r reset  c colors  m mute  w work  s short  l long  L lock';
-const HELP_TEXT_NARROW = 'q:✕  p:⏸  r:↺  c:✦  m:♪  w/s/l  L:⊟';
-const HELP_TEXT_ULTRA = 'q p r c m w s l L';
+/** Strips all blessed tag markers (e.g. `{bold}`, `{/bold}`, `{#fff-bg}`) from a string. */
+function stripBlessedTags(s: string): string {
+  return s.replace(/\{[^}]+\}/g, '');
+}
+
+/**
+ * Splits a string containing blessed markup tags at a given VISIBLE character position.
+ * Tags are skipped over without counting toward the position.
+ * Returns `[left, right]` where left contains the first `n` visible characters.
+ */
+function splitAtVisible(s: string, n: number): [string, string] {
+  if (n <= 0) {
+    return ['', s];
+  }
+  let visible = 0;
+  let i = 0;
+  while (i < s.length) {
+    if (s[i] === '{') {
+      const close = s.indexOf('}', i);
+      if (close !== -1) {
+        i = close + 1;
+        continue;
+      }
+    }
+    visible++;
+    if (visible >= n) {
+      return [s.slice(0, i + 1), s.slice(i + 1)];
+    }
+    i++;
+  }
+  return [s, ''];
+}
+
+// Wide format: [key, remaining letters] pairs — key rendered in bold, rest appended.
+// Lock uses uppercase 'L' and Update uses uppercase 'U' to distinguish them from 'l'/'u'.
+const HELP_KEYS_WIDE: [string, string][] = [
+  ['q', 'uit'],
+  ['p', 'ause'],
+  ['r', 'eset'],
+  ['c', 'olors'],
+  ['m', 'ute'],
+  ['w', 'ork'],
+  ['s', 'hort'],
+  ['l', 'ong'],
+  ['L', 'ock'],
+  ['U', 'pdate']
+];
+const HELP_TEXT_WIDE = HELP_KEYS_WIDE.map(([k, rest]) => `{bold}${k}{/bold}${rest}`).join('  ');
+const HELP_TEXT_WIDE_VIS_LEN = stripBlessedTags(HELP_TEXT_WIDE).length;
+const HELP_TEXT_NARROW = 'q:✕  p:⏸  r:↺  c:✦  m:♪  w/s/l  L:⊟  U:⬆';
+const HELP_TEXT_ULTRA = 'q p r c m w s l L U';
 
 // Priority-ordered single-key tokens for sub-ultra fallback
-const HELP_TOKENS_PRIORITY = ['q', 'p', 'r', 'm', 'w', 's', 'l', 'c', 'L'];
+const HELP_TOKENS_PRIORITY = ['q', 'p', 'r', 'm', 'w', 's', 'l', 'c', 'L', 'U'];
 
 /**
  * Returns the widest help-legend string that fits within `cols` characters.
@@ -56,7 +106,7 @@ function getHelpText(cols: number): string {
   if (cols <= 0) {
     return '';
   }
-  if (HELP_TEXT_WIDE.length <= cols) {
+  if (HELP_TEXT_WIDE_VIS_LEN <= cols) {
     return HELP_TEXT_WIDE;
   }
   if (HELP_TEXT_NARROW.length <= cols) {
@@ -136,6 +186,117 @@ function getTransitionStatusText(nextMode: TimerMode, autoSec: number, cols: num
   return '';
 }
 
+/**
+ * Returns responsive update prompt text based on state and screen width
+ */
+function getUpdatePromptText(
+  updatePromptState: UpdatePromptState,
+  updateCheckResult: UpdateCheckResult | null,
+  cols: number
+): string {
+  if (updatePromptState === 'none') {
+    return '';
+  }
+
+  if (updatePromptState === 'available' && updateCheckResult?.latestVersion) {
+    const version = updateCheckResult.latestVersion;
+    const candidates = [
+      `Update available: v${version}  |  Press y to update, n to skip  |  U to check again`,
+      `Update available: v${version}  |  y=update, n=skip`,
+      `Update v${version} available  |  y/n?`,
+      `Update v${version}  |  y/n?`,
+      `v${version} y/n?`,
+      `y/n?`
+    ];
+    for (const c of candidates) {
+      if (c.length <= cols) {
+        return c;
+      }
+    }
+    return 'y/n?';
+  }
+
+  if (updatePromptState === 'copySuccess') {
+    const candidates = [
+      'Update command copied to clipboard! Run it in your terminal after doro exits.',
+      'Command copied to clipboard! Run after exit.',
+      'Copied to clipboard! Run after exit.',
+      'Copied! Run after exit.',
+      'Copied!'
+    ];
+    for (const c of candidates) {
+      if (c.length <= cols) {
+        return c;
+      }
+    }
+    return 'Copied!';
+  }
+
+  if (updatePromptState === 'copyFallback') {
+    const candidates = [
+      'Run this command after doro exits: npm install -g doro-cli@latest && doro',
+      'Run after exit: npm install -g doro-cli@latest && doro',
+      'Run: npm install -g doro-cli@latest && doro',
+      'Run: npm i -g doro-cli@latest && doro',
+      'npm i -g doro-cli@latest && doro'
+    ];
+    for (const c of candidates) {
+      if (c.length <= cols) {
+        return c;
+      }
+    }
+    return 'npm i -g doro-cli@latest && doro';
+  }
+
+  if (updatePromptState === 'skipped') {
+    if (!updateCheckResult?.isAvailable) {
+      const candidates = [
+        'No update available. You are running the latest version.',
+        'No update available.',
+        'Up to date.',
+        'Latest.'
+      ];
+      for (const c of candidates) {
+        if (c.length <= cols) {
+          return c;
+        }
+      }
+      return 'Latest.';
+    } else {
+      const candidates = [
+        `Update v${updateCheckResult.latestVersion} skipped. Press U to check again.`,
+        `v${updateCheckResult.latestVersion} skipped.`,
+        'Skipped.'
+      ];
+      for (const c of candidates) {
+        if (c.length <= cols) {
+          return c;
+        }
+      }
+      return 'Skipped.';
+    }
+  }
+
+  if (updatePromptState === 'error') {
+    const errorMsg = updateCheckResult?.error || 'Update check failed';
+    const candidates = [
+      `Update check failed: ${errorMsg}. Press U to retry.`,
+      `Update check failed: ${errorMsg}`,
+      'Update check failed. Press U to retry.',
+      'Update check failed.',
+      'Check failed.'
+    ];
+    for (const c of candidates) {
+      if (c.length <= cols) {
+        return c;
+      }
+    }
+    return 'Error.';
+  }
+
+  return '';
+}
+
 function buildProgressRow(
   visibleText: string,
   cols: number,
@@ -149,14 +310,40 @@ function buildProgressRow(
     return '';
   }
   const fw = Math.max(0, Math.min(fillWidth, cols));
-  const textLen = Math.min(visibleText.length, cols);
-  const safeText = visibleText.slice(0, textLen);
+  // Use visible (tag-stripped) length for layout so markup tags don't skew centering.
+  const plainText = stripBlessedTags(visibleText);
+  const textLen = Math.min(plainText.length, cols);
+  // Truncate visibleText to the first textLen visible characters.
+  const [safeText] = splitAtVisible(visibleText, textLen);
   const totalPad = cols - textLen;
   const padLeft = Math.floor(totalPad / 2);
   const padRight = totalPad - padLeft;
-  const full = ' '.repeat(padLeft) + safeText + ' '.repeat(padRight);
-  const p1 = full.substring(0, fw);
-  const p2 = full.substring(fw);
+
+  // Build p1 (fill region) and p2 (base region) by partitioning the padded row.
+  // Layout positions: [0, padLeft) = left spaces, [padLeft, padLeft+textLen) = text, [padLeft+textLen, cols) = right spaces
+  let p1 = '';
+  let p2 = '';
+  if (fw <= 0) {
+    p2 = ' '.repeat(padLeft) + safeText + ' '.repeat(padRight);
+  } else if (fw >= cols) {
+    p1 = ' '.repeat(padLeft) + safeText + ' '.repeat(padRight);
+  } else if (fw <= padLeft) {
+    // Split is within the left padding
+    p1 = ' '.repeat(fw);
+    p2 = ' '.repeat(padLeft - fw) + safeText + ' '.repeat(padRight);
+  } else if (fw >= padLeft + textLen) {
+    // Split is within the right padding
+    const rightFill = fw - padLeft - textLen;
+    p1 = ' '.repeat(padLeft) + safeText + ' '.repeat(rightFill);
+    p2 = ' '.repeat(padRight - rightFill);
+  } else {
+    // Split is within the text itself
+    const textSplit = fw - padLeft;
+    const [textLeft, textRight] = splitAtVisible(safeText, textSplit);
+    p1 = ' '.repeat(padLeft) + textLeft;
+    p2 = textRight + ' '.repeat(padRight);
+  }
+
   const bO = bold ? '{bold}' : '';
   const bC = bold ? '{/bold}' : '';
   let content = '';
@@ -456,6 +643,7 @@ export class DoroUi {
     const isPaused = state.status === 'paused';
     const palette = PALETTES[this.colorScheme];
     const isTransition = state.hasPrompt;
+    const hasUpdatePrompt = state.updatePromptState !== 'none';
     const style = isPaused
       ? palette.pause
       : isTransition && state.promptNextMode
@@ -468,22 +656,27 @@ export class DoroUi {
     const progressWidth = Math.round(cols * progressRatio);
     const compactHeight = rows < 10;
 
-    const bannerText = state.hasPrompt
-      ? 'Done'
-      : isPaused
-        ? 'PAUSED'
-        : state.mode === 'work'
-          ? 'WORK'
-          : state.mode === 'short'
-            ? cols < 14
-              ? 'SHORT'
-              : 'SHORT BREAK'
-            : cols < 13
-              ? 'LONG'
-              : 'LONG BREAK';
+    const bannerText = isPaused
+      ? 'PAUSED'
+      : state.hasPrompt
+        ? 'Done'
+        : hasUpdatePrompt && cols <= 16
+          ? 'UPDATE'
+          : state.mode === 'work'
+            ? 'WORK'
+            : state.mode === 'short'
+              ? cols < 14
+                ? 'SHORT'
+                : 'SHORT BREAK'
+              : cols < 13
+                ? 'LONG'
+                : 'LONG BREAK';
 
     let statusText: string;
-    if (state.hasPrompt && state.promptNextMode) {
+    if (hasUpdatePrompt) {
+      // Update prompts take priority over timer status
+      statusText = getUpdatePromptText(state.updatePromptState, state.updateCheckResult, cols);
+    } else if (state.hasPrompt && state.promptNextMode) {
       statusText = getTransitionStatusText(
         state.promptNextMode,
         state.promptCountdownSeconds,
@@ -520,11 +713,13 @@ export class DoroUi {
         ? cols < 10
           ? `→${MODE_LABELS_SHORT[state.promptNextMode]}`
           : `doro Done → ${MODE_LABELS_SHORT[state.promptNextMode]}`
-        : cols >= 15
-          ? `doro ${time}`
-          : cols >= 10
-            ? `d ${time}`
-            : time;
+        : hasUpdatePrompt
+          ? 'doro Update'
+          : cols >= 15
+            ? `doro ${time}`
+            : cols >= 10
+              ? `d ${time}`
+              : time;
     this.modeBannerBox.setContent(
       buildProgressRow(
         bannerText,

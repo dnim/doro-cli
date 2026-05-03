@@ -27,6 +27,13 @@ export type ControlCommand =
   | 'startWork'
   | 'startShort'
   | 'startLong'
+  | 'checkUpdate'
+  | 'updateYes'
+  | 'updateNo'
+  | 'testUpdateAvailable'
+  | 'testUpdateCopySuccess'
+  | 'testUpdateCopyFallback'
+  | 'testUpdateSkipped'
   | 'none';
 
 export function resolveControlCommand(event: InputEvent): ControlCommand {
@@ -82,11 +89,44 @@ export function resolveControlCommand(event: InputEvent): ControlCommand {
     return 'startLong';
   }
 
+  if (event.keyName === 'u' && (event.shift || event.ch === 'U' || event.keyFull === 'S-u')) {
+    return 'checkUpdate';
+  }
+
+  // Test mode commands for VRT (only in test environment)
+  if (process.env.DORO_TEST_MODE === '1') {
+    if (event.keyName === '1' || event.ch === '1') {
+      return 'testUpdateAvailable';
+    }
+    if (event.keyName === '2' || event.ch === '2') {
+      return 'testUpdateCopySuccess';
+    }
+    if (event.keyName === '3' || event.ch === '3') {
+      return 'testUpdateCopyFallback';
+    }
+    if (event.keyName === '4' || event.ch === '4') {
+      return 'testUpdateSkipped';
+    }
+  }
+
+  if (event.keyName === 'y' || lowerChar === 'y') {
+    return 'updateYes';
+  }
+
+  if (event.keyName === 'n' || lowerChar === 'n') {
+    return 'updateNo';
+  }
+
   return 'none';
 }
 
 export function isAllowedWhenLocked(command: ControlCommand): boolean {
-  return command === 'quit' || command === 'toggleLock' || command === 'pauseResume';
+  return (
+    command === 'quit' ||
+    command === 'toggleLock' ||
+    command === 'pauseResume' ||
+    command === 'checkUpdate'
+  );
 }
 
 export function isPromptConfirmEvent(event: InputEvent, command: ControlCommand): boolean {
@@ -99,4 +139,15 @@ export function isPromptConfirmEvent(event: InputEvent, command: ControlCommand)
   }
 
   return event.type === 'mouse' || event.type === 'key';
+}
+
+export function isUpdatePromptEvent(command: ControlCommand): boolean {
+  return (
+    command === 'updateYes' ||
+    command === 'updateNo' ||
+    command === 'testUpdateAvailable' ||
+    command === 'testUpdateCopySuccess' ||
+    command === 'testUpdateCopyFallback' ||
+    command === 'testUpdateSkipped'
+  );
 }

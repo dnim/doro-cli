@@ -67,7 +67,8 @@ test.describe('Doro CLI Visual Regression', () => {
         ...process.env,
         TERM: 'xterm-256color',
         COLORTERM: 'truecolor',
-        XDG_CONFIG_HOME: testConfigDir
+        XDG_CONFIG_HOME: testConfigDir,
+        DORO_TEST_MODE: '1' // Enable test mode for deterministic update states
       }
     });
 
@@ -161,6 +162,58 @@ test.describe('Doro CLI Visual Regression', () => {
               );
             });
           }
+
+          // Update prompt scenarios (4 states × 2 themes × 4 sizes = 32 snapshots)
+          test('update available prompt', async ({ page }) => {
+            await setupTerminal(page, size.cols, size.rows, theme);
+
+            // Use deterministic test key 1 for update available state
+            await page.evaluate(() => (window as any).sendPtyData('1'));
+            await page.waitForTimeout(1000);
+
+            await expect(page.locator('#terminal-container')).toHaveScreenshot(
+              `${theme}-${size.name}-update-available.png`
+            );
+          });
+
+          test('update copy success state', async ({ page }) => {
+            await setupTerminal(page, size.cols, size.rows, theme);
+
+            await page.evaluate(() => {
+              (window as any).sendPtyData('2');
+            });
+            await page.waitForTimeout(1000);
+
+            await expect(page.locator('#terminal-container')).toHaveScreenshot(
+              `${theme}-${size.name}-update-copy-success.png`
+            );
+          });
+
+          test('update copy fallback state', async ({ page }) => {
+            await setupTerminal(page, size.cols, size.rows, theme);
+
+            await page.evaluate(() => {
+              (window as any).sendPtyData('3');
+            });
+            await page.waitForTimeout(1000);
+
+            await expect(page.locator('#terminal-container')).toHaveScreenshot(
+              `${theme}-${size.name}-update-copy-fallback.png`
+            );
+          });
+
+          test('update skipped state', async ({ page }) => {
+            await setupTerminal(page, size.cols, size.rows, theme);
+
+            await page.evaluate(() => {
+              (window as any).sendPtyData('4');
+            });
+            await page.waitForTimeout(1000);
+
+            await expect(page.locator('#terminal-container')).toHaveScreenshot(
+              `${theme}-${size.name}-update-skipped.png`
+            );
+          });
         });
       }
     });

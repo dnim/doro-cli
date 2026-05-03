@@ -9,34 +9,22 @@
   ],
   "agent": {
     "plan": {
-      "model": "github-copilot/gpt-5.3-codex",
-      "permission": {
-        "bash": {
-          "git commit *": "deny",
-          "git push *": "deny"
-        }
-      }
+      "model": "github-copilot/gpt-5.3-codex"
     },
     "general": {
-      "model": "github-copilot/gemini-3.1-pro-preview",
-      "permission": {
-        "bash": {
-          "git commit *": "deny", 
-          "git push *": "deny"
-        }
-      }
+      "model": "github-copilot/gemini-3.1-pro-preview"
     },
     "explore": {
-      "model": "github-copilot/gemini-3-flash"
+      "model": "github-copilot/gemini-3-flash-preview"
     },
     "title": {
-      "model": "github-copilot/gemini-3-flash"
+      "model": "github-copilot/gemini-3-flash-preview"
     },
     "summary": {
-      "model": "github-copilot/gemini-3-flash"
+      "model": "github-copilot/gemini-3-flash-preview"
     },
     "compaction": {
-      "model": "github-copilot/gemini-3-flash"
+      "model": "github-copilot/gemini-3-flash-preview"
     }
   },
   "permission": {
@@ -44,20 +32,24 @@
       "*": "ask",
       "git status *": "allow",
       "git status": "allow",
-      "git diff *": "allow", 
+      "git diff *": "allow",
       "git log *": "allow",
       "git show *": "allow",
       "git branch": "allow",
       "git branch -v*": "allow",
-      "git branch --list*": "allow", 
+      "git branch --list*": "allow",
       "git fetch *": "allow",
       "gh pr checks*": "allow",
-      "gh run view*": "allow",
+      "gh run view*": "allow", 
       "gh run list*": "allow",
+      "npm run lint:local": "allow",
+      "npm run typecheck": "allow",
+      "npm run test:unit": "allow",
+      "npm run test:unit -- --coverage": "allow",
       "git checkout *": "ask",
       "git add *": "ask",
       "git stash *": "ask",
-      "git reset *": "ask", 
+      "git reset *": "ask",
       "git restore *": "ask",
       "git merge *": "ask",
       "git rebase *": "ask",

@@ -2,6 +2,7 @@ import { describe, expect, it } from '@jest/globals';
 import {
   isAllowedWhenLocked,
   isPromptConfirmEvent,
+  isUpdatePromptEvent,
   resolveControlCommand,
   type InputEvent
 } from '../input';
@@ -41,15 +42,27 @@ describe('input mapping', () => {
     expect(resolveControlCommand(keyEvent('\u0003', 'c', 'C-c', false, true))).toBe('quit');
   });
 
-  it('allows only quit, pause, and toggle lock when locked', () => {
+  it('maps update commands correctly', () => {
+    expect(resolveControlCommand(keyEvent('U', 'u', 'S-u', true))).toBe('checkUpdate');
+    expect(resolveControlCommand(keyEvent('u', 'u'))).toBe('none');
+    expect(resolveControlCommand(keyEvent('y', 'y'))).toBe('updateYes');
+    expect(resolveControlCommand(keyEvent('Y', 'y'))).toBe('updateYes');
+    expect(resolveControlCommand(keyEvent('n', 'n'))).toBe('updateNo');
+    expect(resolveControlCommand(keyEvent('N', 'n'))).toBe('updateNo');
+  });
+
+  it('allows only quit, pause, toggle lock, and update check when locked', () => {
     expect(isAllowedWhenLocked('quit')).toBe(true);
     expect(isAllowedWhenLocked('toggleLock')).toBe(true);
     expect(isAllowedWhenLocked('pauseResume')).toBe(true);
+    expect(isAllowedWhenLocked('checkUpdate')).toBe(true);
     expect(isAllowedWhenLocked('toggleColorScheme')).toBe(false);
     expect(isAllowedWhenLocked('toggleMute')).toBe(false);
     expect(isAllowedWhenLocked('resetSettings')).toBe(false);
     expect(isAllowedWhenLocked('startWork')).toBe(false);
     expect(isAllowedWhenLocked('resetRun')).toBe(false);
+    expect(isAllowedWhenLocked('updateYes')).toBe(false);
+    expect(isAllowedWhenLocked('updateNo')).toBe(false);
   });
 
   it('treats any non-quit key and mouse as prompt confirm', () => {
@@ -57,5 +70,34 @@ describe('input mapping', () => {
     expect(isPromptConfirmEvent(keyEvent('p', 'p'), 'pauseResume')).toBe(true);
     expect(isPromptConfirmEvent({ type: 'mouse' }, 'none')).toBe(true);
     expect(isPromptConfirmEvent(keyEvent('D', 'd', 'S-d', true), 'debugNearEnd')).toBe(false);
+  });
+
+  it('identifies update prompt events correctly', () => {
+    expect(isUpdatePromptEvent('updateYes')).toBe(true);
+    expect(isUpdatePromptEvent('updateNo')).toBe(true);
+    expect(isUpdatePromptEvent('testUpdateAvailable')).toBe(true);
+    expect(isUpdatePromptEvent('testUpdateCopySuccess')).toBe(true);
+    expect(isUpdatePromptEvent('testUpdateCopyFallback')).toBe(true);
+    expect(isUpdatePromptEvent('testUpdateSkipped')).toBe(true);
+    expect(isUpdatePromptEvent('checkUpdate')).toBe(false);
+    expect(isUpdatePromptEvent('quit')).toBe(false);
+    expect(isUpdatePromptEvent('pauseResume')).toBe(false);
+  });
+
+  it('maps test mode update commands correctly', () => {
+    const originalEnv = process.env.DORO_TEST_MODE;
+    process.env.DORO_TEST_MODE = '1';
+
+    expect(resolveControlCommand(keyEvent('1', '1'))).toBe('testUpdateAvailable');
+    expect(resolveControlCommand(keyEvent('2', '2'))).toBe('testUpdateCopySuccess');
+    expect(resolveControlCommand(keyEvent('3', '3'))).toBe('testUpdateCopyFallback');
+    expect(resolveControlCommand(keyEvent('4', '4'))).toBe('testUpdateSkipped');
+
+    process.env.DORO_TEST_MODE = originalEnv;
+  });
+
+  it('handles non-key events correctly', () => {
+    expect(resolveControlCommand({ type: 'mouse' })).toBe('none');
+    expect(resolveControlCommand({ type: 'resize' })).toBe('none');
   });
 });

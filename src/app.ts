@@ -11,12 +11,22 @@ import { getDurationForMode } from './constants';
 import {
   isAllowedWhenLocked,
   isPromptConfirmEvent,
+  isUpdatePromptEvent,
   resolveControlCommand,
   type InputEvent
 } from './input';
 import { TimerStateMachine } from './stateMachine';
 import { DoroUi } from './ui';
-import { type Settings, saveSettings, resetSettings } from './config';
+import { type Settings, saveSettings, resetSettings, loadSettings } from './config';
+import {
+  checkForUpdates,
+  copyToClipboard,
+  getUpdateCommand,
+  isCheckDue,
+  shouldPromptForVersion,
+  type UpdateCheckResult,
+  type UpdatePromptState
+} from './update';
 
 export class DoroApp {
   private readonly machine: TimerStateMachine;
@@ -40,6 +50,13 @@ export class DoroApp {
   private tickInterval: NodeJS.Timeout | null = null;
 
   private lastTickTs = Date.now();
+
+  // Update-related state
+  private updatePromptState: UpdatePromptState = 'none';
+
+  private updateCheckResult: UpdateCheckResult | null = null;
+
+  private isCheckingUpdate = false;
 
   public constructor(initialSettings: Settings) {
     this.machine = new TimerStateMachine();
@@ -84,6 +101,9 @@ export class DoroApp {
     this.tickInterval = setInterval(() => {
       this.stepClock();
     }, 250);
+
+    // Start non-blocking update check
+    void this.performStartupUpdateCheck();
   }
 
   private stepClock(): void {
@@ -140,8 +160,54 @@ export class DoroApp {
 
     const command = resolveControlCommand(event);
 
+    // Handle test mode commands for VRT deterministic states
+    if (process.env.DORO_TEST_MODE === '1') {
+      if (command === 'testUpdateAvailable') {
+        this.updatePromptState = 'available';
+        this.updateCheckResult = {
+          isAvailable: true,
+          latestVersion: '1.3.0',
+          currentVersion: '1.2.1'
+        };
+        this.render();
+        return;
+      }
+      if (command === 'testUpdateCopySuccess') {
+        this.updatePromptState = 'copySuccess';
+        this.render();
+        return;
+      }
+      if (command === 'testUpdateCopyFallback') {
+        this.updatePromptState = 'copyFallback';
+        this.render();
+        return;
+      }
+      if (command === 'testUpdateSkipped') {
+        this.updatePromptState = 'skipped';
+        this.updateCheckResult = {
+          isAvailable: false,
+          currentVersion: '1.2.1'
+        };
+        this.render();
+        return;
+      }
+    }
+
     if (command === 'quit') {
       this.shutdown();
+      return;
+    }
+
+    // Handle update prompt responses with priority
+    if (this.updatePromptState !== 'none' && isUpdatePromptEvent(command)) {
+      if (command === 'updateYes' || command === 'updateNo') {
+        void this.handleUpdatePromptResponse(command);
+      }
+      return;
+    }
+
+    if (command === 'checkUpdate') {
+      void this.handleManualUpdateCheck();
       return;
     }
 
@@ -341,15 +407,21 @@ export class DoroApp {
       hasPrompt: Boolean(state.switchPrompt),
       promptCountdownSeconds,
       promptTotalSeconds,
-      promptNextMode
+      promptNextMode,
+      updatePromptState: this.updatePromptState,
+      updateCheckResult: this.updateCheckResult
     });
   }
 
   private persistSettings(): void {
-    void saveSettings({
-      volumeMode: this.volumeMode,
-      colorScheme: this.ui.getColorScheme()
-    });
+    void (async () => {
+      const currentSettings = await loadSettings();
+      await saveSettings({
+        ...currentSettings,
+        volumeMode: this.volumeMode,
+        colorScheme: this.ui.getColorScheme()
+      });
+    })();
   }
 
   private async handleResetSettings(): Promise<void> {
@@ -379,6 +451,155 @@ export class DoroApp {
     stopPlayback();
     this.ui.destroy();
     process.exit(0);
+  }
+
+  private async performStartupUpdateCheck(): Promise<void> {
+    try {
+      const currentSettings = await loadSettings();
+
+      if (!isCheckDue(currentSettings)) {
+        return;
+      }
+
+      this.isCheckingUpdate = true;
+      const result = await checkForUpdates();
+
+      if (
+        result.isAvailable &&
+        result.latestVersion &&
+        shouldPromptForVersion(result.latestVersion, currentSettings)
+      ) {
+        this.updateCheckResult = result;
+        this.updatePromptState = 'available';
+        this.render();
+      }
+
+      // Update lastCheckedAt only if the check was successful (no error)
+      if (!result.error) {
+        await saveSettings({
+          ...currentSettings,
+          lastCheckedAt: Date.now()
+        });
+      }
+    } catch {
+      // Silently fail startup checks
+    } finally {
+      this.isCheckingUpdate = false;
+    }
+  }
+
+  private async handleManualUpdateCheck(): Promise<void> {
+    if (this.isCheckingUpdate) {
+      return;
+    }
+
+    try {
+      this.isCheckingUpdate = true;
+      const result = await checkForUpdates();
+
+      if (result.error) {
+        // Update check failed - show error message
+        this.updateCheckResult = result;
+        this.updatePromptState = 'error';
+        this.render();
+
+        // Auto-clear the error message after a few seconds
+        setTimeout(() => {
+          if (this.updatePromptState === 'error') {
+            this.updatePromptState = 'none';
+            this.updateCheckResult = null;
+            this.render();
+          }
+        }, 3000);
+      } else if (result.isAvailable && result.latestVersion) {
+        this.updateCheckResult = result;
+        this.updatePromptState = 'available';
+        this.render();
+      } else {
+        // No update available - briefly show a message, then clear
+        this.updateCheckResult = result;
+        this.updatePromptState = 'skipped';
+        this.render();
+
+        // Auto-clear the message after a few seconds
+        setTimeout(() => {
+          if (this.updatePromptState === 'skipped') {
+            this.updatePromptState = 'none';
+            this.updateCheckResult = null;
+            this.render();
+          }
+        }, 3000);
+      }
+
+      // Update lastCheckedAt for manual checks if successful
+      if (!result.error) {
+        const currentSettings = await loadSettings();
+        await saveSettings({
+          ...currentSettings,
+          lastCheckedAt: Date.now()
+        });
+      }
+    } catch {
+      // Silently fail manual checks
+    } finally {
+      this.isCheckingUpdate = false;
+    }
+  }
+
+  private async handleUpdatePromptResponse(command: 'updateYes' | 'updateNo'): Promise<void> {
+    if (!this.updateCheckResult || !this.updateCheckResult.latestVersion) {
+      return;
+    }
+
+    if (command === 'updateNo') {
+      // User declined - skip this version
+      const currentSettings = await loadSettings();
+      await saveSettings({
+        ...currentSettings,
+        skippedVersion: this.updateCheckResult.latestVersion
+      });
+
+      this.updatePromptState = 'skipped';
+      this.render();
+
+      // Auto-clear after showing skipped message
+      setTimeout(() => {
+        this.updatePromptState = 'none';
+        this.updateCheckResult = null;
+        this.render();
+      }, 2000);
+
+      return;
+    }
+
+    if (command === 'updateYes') {
+      // User accepted - copy update command to clipboard and exit
+      const updateCommand = getUpdateCommand();
+
+      try {
+        const clipboardResult = await copyToClipboard(updateCommand);
+
+        if (clipboardResult.success) {
+          this.updatePromptState = 'copySuccess';
+        } else {
+          this.updatePromptState = 'copyFallback';
+        }
+
+        this.render();
+
+        // Exit after showing the result for a moment
+        setTimeout(() => {
+          this.shutdown();
+        }, 2000);
+      } catch {
+        this.updatePromptState = 'copyFallback';
+        this.render();
+
+        setTimeout(() => {
+          this.shutdown();
+        }, 2000);
+      }
+    }
   }
 
   public bindProcessSignals(): void {

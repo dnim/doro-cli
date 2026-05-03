@@ -49,4 +49,26 @@ describe('audio synth', () => {
     expect(buffer.length).toBeGreaterThan(44 + AUDIO_SAMPLE_RATE / 10);
     expect(buffer.length).toBeLessThan(44 + AUDIO_SAMPLE_RATE / 3);
   });
+
+  it('creates clips with different volume multipliers', () => {
+    const buffer1 = createWorkStartClip(0.5);
+    const buffer2 = createWorkStartClip(1.0);
+
+    validateWav(buffer1);
+    validateWav(buffer2);
+
+    // Both should be valid but may have different characteristics
+    expect(buffer1.length).toBeGreaterThan(44);
+    expect(buffer2.length).toBeGreaterThan(44);
+  });
+
+  it('handles edge cases in synthesis', () => {
+    // Test with very low volume
+    const lowVolumeBuffer = createCompletionBeepClip(0.1);
+    validateWav(lowVolumeBuffer);
+
+    // Test with zero volume (edge case)
+    const zeroVolumeBuffer = createCompletionBeepClip(0.0);
+    validateWav(zeroVolumeBuffer);
+  });
 });

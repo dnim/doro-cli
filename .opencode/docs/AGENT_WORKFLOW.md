@@ -25,6 +25,7 @@ This document outlines the standard operating procedures for all AI agents worki
 ## 2. Planning
 
 - **One Plan, One Feature**: Before implementation, the agent MUST create a plan file for a **single feature** inside the `_plans/active/` directory, following the structure in `file://_plans/TEMPLATE.md`.
+- **Branch Creation in Plans**: When in plan mode (especially on main branch), the plan output MUST include branch creation as the first step at the top, clearly specifying the exact branch name to be created (e.g., "Create feature branch `feature/update-notifier`").
 - **Plan as a Living Document**: The plan is a living document that must be updated after each commit. It must follow the metadata-first format defined in the template.
 - **User Approval**: The agent must wait for explicit user approval of the plan (e.g., the user saying "nice" or "proceed") before beginning implementation.
 
@@ -35,22 +36,29 @@ This document outlines the standard operating procedures for all AI agents worki
 ### Commit Protection System
 
 **OpenCode automatically prevents unauthorized commits** via the permission system defined in `opencode.json`:
+
 - `"git commit *": "deny"` blocks all direct commit attempts by agents
 - Environment variables (`OPENCODE=1`, `OPENCODE_PROCESS_ROLE=worker`) identify agent context
 - This protection is automatic and cannot be bypassed by agents
 
 ### Proper Commit Workflow for Agents
 
-1. **Request Approval**: Before committing, the agent MUST ask the user explicitly:
+1. **Run Pre-commit Checks**: Before requesting approval, the agent MUST run all necessary checks:
+   - `npm run typecheck` - Verify TypeScript compilation
+   - `npm run lint:local` - Check code style and formatting
+   - `npm run test:unit` - Run unit tests with coverage
+   - Address any failures before proceeding
+
+2. **Request Approval**: After all checks pass, the agent MUST ask the user explicitly:
    - Present the proposed commit message
    - Show what changes will be included (`git status`, `git diff`)
    - Wait for explicit user confirmation (e.g., "yes", "proceed", "commit")
 
-2. **User Executes Commit**: After approval, the **user** runs the commit command:
+3. **User Executes Commit**: After approval, the **user** runs the commit command:
    - User types: `git commit -m "the agreed message"`
    - OR user can modify the message and commit manually
 
-3. **Agent Never Commits Directly**: Agents must never attempt `git commit` commands
+4. **Agent Never Commits Directly**: Agents must never attempt `git commit` commands
    - Such attempts will be blocked by OpenCode's permission system
    - Instead, agents should guide users through the commit process
 
@@ -77,6 +85,13 @@ I've completed the feature implementation. Here are the changes ready to commit:
 
 Please review and run: `git commit -m "Add dark mode toggle to settings page"`
 ```
+
+### Commit Message Formatting
+
+**Always format the final commit command for easy copy-paste**:
+- Provide the complete command: `git commit -m "commit message"`
+- Use proper conventional commit format when applicable (feat/fix/chore/docs)
+- Example: `git commit -m "fix(update-notifier): stabilize VRT test commands and refresh snapshots"`
 
 ## 4. CI/CD
 

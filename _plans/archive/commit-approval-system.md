@@ -19,6 +19,7 @@
 ### Research Findings
 
 **OpenCode already prevents unauthorized commits via:**
+
 1. `opencode.json` permission system: `"git commit *": "deny"` for plan/general agents
 2. Environment variables: `OPENCODE=1`, `OPENCODE_RUN_ID`, `OPENCODE_PROCESS_ROLE=worker`
 3. Workflow requirement: `.opencode/docs/AGENT_WORKFLOW.md:34` mandates pre-commit approval

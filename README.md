@@ -17,9 +17,12 @@ Focus on your work, not your timer.
 
 ### Gallery
 
-|                             Small                              |                               Medium (Text Hints)                               |                                Medium (Icon Hints)                                |                             Wide                             |
-| :------------------------------------------------------------: | :-----------------------------------------------------------------------------: | :-------------------------------------------------------------------------------: | :----------------------------------------------------------: |
-| ![Screenshot Small](./assets/screenshots/screenshot-small.png) | ![Screenshot Medium with Keys](./assets/screenshots/screenshot-medium-keys.png) | ![Screenshot Medium with Icons](./assets/screenshots/screenshot-medium-icons.png) | ![Screenshot Wide](./assets/screenshots/screenshot-wide.png) |
+Experience doro-cli's responsive design across different terminal sizes:
+
+|                             Tiny                              |                               Small                               |                                Medium                                |                             Large                             |
+| :-----------------------------------------------------------: | :---------------------------------------------------------------: | :-----------------------------------------------------------------: | :----------------------------------------------------------: |
+| ![Tiny Terminal](./assets/screenshots/tiny.png) | ![Small Terminal](./assets/screenshots/small.png) | ![Medium Terminal](./assets/screenshots/medium.png) | ![Large Terminal](./assets/screenshots/large.png) |
+| Minimal view for very small terminals | Compact layout with essential controls | Full interface with comfortable spacing | Spacious layout for wide terminals |
 
 ## Installation
 
@@ -67,19 +70,20 @@ doro
 
 ## Controls
 
-|    Key    | Action                    |
-| :-------: | ------------------------- |
-|    `q`    | Quit                      |
+|      Key       | Action                    |
+| :------------: | ------------------------- |
+|      `q`       | Quit                      |
 | `p` or `Space` | Pause / Resume            |
-|    `r`    | Reset Timer               |
-|    `c`    | Toggle Color Scheme       |
-|    `m`    | Mute / Unmute             |
-|    `w`    | Start Work Timer          |
-|    `s`    | Start Short Break         |
-|    `l`    | Start Long Break          |
-|    `L`    | Lock / Unlock Hotkeys     |
-| `Shift+R` | Reset All Settings        |
-| `Shift+D` | Debug: Fast-forward timer |
+|      `r`       | Reset Timer               |
+|      `c`       | Toggle Color Scheme       |
+|      `m`       | Mute / Unmute             |
+|      `w`       | Start Work Timer          |
+|      `s`       | Start Short Break         |
+|      `l`       | Start Long Break          |
+|      `L`       | Lock / Unlock Hotkeys     |
+|   `Shift+R`    | Reset All Settings        |
+|   `Shift+D`    | Debug: Fast-forward timer |
+|   `Shift+U`    | Check for Updates         |
 
 ## Configuration
 
