@@ -13,10 +13,14 @@ module.exports = {
     }
   },
   transform: {
-    '^.+\\.tsx?$': ['ts-jest', { useESM: true }]
+    '^.+\\.tsx?$': ['ts-jest', { useESM: true }],
+    '^.+\\.js$': ['ts-jest', { useESM: true }]
   },
   extensionsToTreatAsEsm: ['.ts'],
   moduleNameMapper: {
     '^(\\.{1,2}/.*)\\.js$': '$1'
-  }
+  },
+  transformIgnorePatterns: [
+    'node_modules/(?!(env-paths|is-safe-filename)/)'
+  ]
 };
