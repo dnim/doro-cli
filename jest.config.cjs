@@ -3,7 +3,7 @@ module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
   testMatch: ['**/__tests__/**/*.test.ts'],
-  collectCoverage: process.env.CI || process.argv.includes('--coverage'),
+  collectCoverage: !!process.env.CI || process.argv.includes('--coverage'),
   collectCoverageFrom: ['src/**/*.ts', '!src/cli.ts'],
   coverageThreshold: {
     global: {
