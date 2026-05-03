@@ -4,6 +4,7 @@ title: Usage Statistics
 status: To Do
 assignee: []
 created_date: '2026-05-03 10:14'
+updated_date: '2026-05-03 10:17'
 labels: []
 dependencies: []
 ---
@@ -16,7 +17,7 @@ This plan covers recording session statistics to a local file with protection ag
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Install 'proper-lockfile' dependency to manage concurrent file access.
+- [x] #1 Install 'proper-lockfile' dependency to manage concurrent file access.
 - [ ] #2 Create 'src/stats.ts' module with file-locking logic for reading and writing 'stats.json'.
 - [ ] #3 Integrate session recording into 'DoroApp', calling the stats module upon session completion.
 - [ ] #4 Add '--stats' flag handling to 'src/cli.ts' to trigger the stats view.
