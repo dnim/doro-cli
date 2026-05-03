@@ -1,3 +1,8 @@
+import { setupFetchMock } from './utils/mocks';
+
+// Setup centralized mocks
+setupFetchMock();
+
 import {
   getCurrentVersion,
   fetchLatestVersion,
@@ -7,9 +12,6 @@ import {
   checkForUpdates,
   getUpdateCommand
 } from '../update';
-
-// Mock fetch globally
-global.fetch = jest.fn();
 
 describe('update functionality', () => {
   beforeEach(() => {

@@ -1,29 +1,21 @@
+import { setupChildProcessMocks, setupFsMocks, createMockChildProcess } from './utils/mocks';
+
+// Setup centralized mocks
+setupChildProcessMocks();
+setupFsMocks();
+
 import { playClip, stopPlayback } from '../audio/player';
 import { spawn } from 'node:child_process';
 import { promises as fs } from 'node:fs';
 
-jest.mock('node:child_process');
-jest.mock('node:fs', () => ({
-  promises: {
-    writeFile: jest.fn(),
-    rm: jest.fn()
-  }
-}));
-
 describe('Audio Player', () => {
-  let mockSpawn: jest.Mock;
-  let mockFsWriteFile: jest.Mock;
-  let mockFsRm: jest.Mock;
-
   beforeEach(() => {
+    // Clear all mocks before each test
     jest.clearAllMocks();
 
-    mockSpawn = spawn as unknown as jest.Mock;
-    mockFsWriteFile = fs.writeFile as jest.Mock;
-    mockFsRm = fs.rm as jest.Mock;
-
-    mockFsWriteFile.mockResolvedValue(undefined);
-    mockFsRm.mockResolvedValue(undefined);
+    // Setup default mock behavior
+    (fs.writeFile as jest.Mock).mockResolvedValue(undefined);
+    (fs.rm as jest.Mock).mockResolvedValue(undefined);
   });
 
   afterEach(() => {
@@ -31,34 +23,28 @@ describe('Audio Player', () => {
   });
 
   it('should write buffer to temp file, spawn child process, and clean up', async () => {
-    // Setup a mock child process that successfully exits immediately
-    const mockChild = {
-      kill: jest.fn(),
-      on: jest.fn().mockImplementation((event, cb) => {
-        if (event === 'close') {
-          setTimeout(() => cb(0, null), 0); // exit code 0
-        }
-      }),
-      killed: false
-    };
-    mockSpawn.mockReturnValue(mockChild);
-
+    // Arrange
+    const mockChild = createMockChildProcess(0); // Successfully exits with code 0
+    (spawn as jest.Mock).mockReturnValue(mockChild);
     const dummyBuffer = Buffer.from('dummy-audio-data');
 
+    // Act
     await playClip(dummyBuffer);
 
-    expect(mockFsWriteFile).toHaveBeenCalledWith(
+    // Assert
+    expect(fs.writeFile).toHaveBeenCalledWith(
       expect.stringMatching(/doro-[0-9a-f]+\.wav/),
       dummyBuffer
     );
-    expect(mockSpawn).toHaveBeenCalled();
+    expect(spawn).toHaveBeenCalled();
     // Verify cleanup
-    expect(mockFsRm).toHaveBeenCalledWith(expect.stringMatching(/doro-[0-9a-f]+\.wav/), {
+    expect(fs.rm).toHaveBeenCalledWith(expect.stringMatching(/doro-[0-9a-f]+\.wav/), {
       force: true
     });
   });
 
   it('should stop playback and kill child process if stopPlayback is called', async () => {
+    // Arrange
     let closeCb: (code: number, signal: string) => void;
 
     const mockChild = {
@@ -75,10 +61,10 @@ describe('Audio Player', () => {
       killed: false
     };
 
-    mockSpawn.mockReturnValue(mockChild);
-
+    (spawn as jest.Mock).mockReturnValue(mockChild);
     const dummyBuffer = Buffer.from('dummy');
 
+    // Act
     const playPromise = playClip(dummyBuffer);
 
     // Give it a tick to start
@@ -88,33 +74,29 @@ describe('Audio Player', () => {
 
     await playPromise;
 
+    // Assert
     expect(mockChild.kill).toHaveBeenCalledWith('SIGTERM');
   });
 
   it('should fallback to next candidate if spawn fails or exits with error', async () => {
-    // We mock spawn to fail for the first candidate and succeed for the second
+    // Arrange: Mock spawn to fail for the first candidate and succeed for the second
     let spawnCount = 0;
-    mockSpawn.mockImplementation(() => {
+    (spawn as jest.Mock).mockImplementation(() => {
       spawnCount++;
       const isFirst = spawnCount === 1;
-      return {
-        kill: jest.fn(),
-        on: jest.fn().mockImplementation((event, cb) => {
-          if (event === 'close') {
-            setTimeout(() => cb(isFirst ? 1 : 0, null), 0); // fail 1st, succeed 2nd
-          }
-        }),
-        killed: false
-      };
+      return createMockChildProcess(isFirst ? 1 : 0); // Fail first, succeed second
     });
 
+    // Act
     const dummyBuffer = Buffer.from('dummy');
     await playClip(dummyBuffer);
 
-    expect(mockSpawn).toHaveBeenCalledTimes(2);
+    // Assert
+    expect(spawn).toHaveBeenCalledTimes(2);
   });
 
   it('should handle early cancellation after spawn but before child setup', async () => {
+    // Arrange
     const mockChild = {
       kill: jest.fn(),
       on: jest.fn().mockImplementation((event, cb) => {
@@ -126,11 +108,10 @@ describe('Audio Player', () => {
       killed: false
     };
 
-    mockSpawn.mockReturnValue(mockChild);
-
+    (spawn as jest.Mock).mockReturnValue(mockChild);
     const dummyBuffer = Buffer.from('dummy');
 
-    // Start playback
+    // Act
     const playPromise = playClip(dummyBuffer);
 
     // Cancel after a tiny delay to let spawn happen
@@ -138,7 +119,8 @@ describe('Audio Player', () => {
 
     await playPromise;
 
-    expect(mockSpawn).toHaveBeenCalled();
+    // Assert
+    expect(spawn).toHaveBeenCalled();
     expect(mockChild.kill).toHaveBeenCalledWith('SIGTERM');
   });
 
@@ -146,7 +128,7 @@ describe('Audio Player', () => {
     let errorCb: () => void;
     let spawnCount = 0;
 
-    mockSpawn.mockImplementation(() => {
+    (spawn as jest.Mock).mockImplementation(() => {
       spawnCount++;
       const isFirst = spawnCount === 1;
 
@@ -171,14 +153,14 @@ describe('Audio Player', () => {
     const dummyBuffer = Buffer.from('dummy');
     await playClip(dummyBuffer);
 
-    expect(mockSpawn).toHaveBeenCalledTimes(2);
+    expect(spawn as jest.Mock).toHaveBeenCalledTimes(2);
   });
 
   it('should fall back to terminal bell when all candidates fail', async () => {
     const mockStdoutWrite = jest.spyOn(process.stdout, 'write').mockImplementation();
 
     // Make all spawn attempts fail
-    mockSpawn.mockImplementation(() => ({
+    (spawn as jest.Mock).mockImplementation(() => ({
       kill: jest.fn(),
       on: jest.fn().mockImplementation((event, cb) => {
         if (event === 'close') {
@@ -198,7 +180,7 @@ describe('Audio Player', () => {
 
   it('should stop immediately if stopPlayback is called before spawn', async () => {
     let callCount = 0;
-    mockSpawn.mockImplementation(() => {
+    (spawn as jest.Mock).mockImplementation(() => {
       callCount++;
       return {
         kill: jest.fn(),
@@ -233,7 +215,7 @@ describe('Audio Player', () => {
   it('should handle concurrent playClip calls by cancelling previous', async () => {
     let spawnCount = 0;
 
-    mockSpawn.mockImplementation(() => {
+    (spawn as jest.Mock).mockImplementation(() => {
       spawnCount++;
       const isFirst = spawnCount === 1;
 
@@ -275,7 +257,7 @@ describe('Audio Player', () => {
 
     // Mock a cancelled state that gets checked early
     let mockChild: { kill: jest.Mock; on: jest.Mock; killed: boolean } | undefined;
-    mockSpawn.mockImplementation(() => {
+    (spawn as jest.Mock).mockImplementation(() => {
       mockChild = {
         kill: jest.fn(),
         on: jest.fn().mockImplementation((event, cb) => {
@@ -304,7 +286,7 @@ describe('Audio Player', () => {
     // Track if playback gets cancelled during error handling
     let errorCb: () => void;
 
-    mockSpawn.mockImplementation(() => ({
+    (spawn as jest.Mock).mockImplementation(() => ({
       kill: jest.fn(),
       on: jest.fn().mockImplementation((event, cb) => {
         if (event === 'error') {
@@ -330,8 +312,8 @@ describe('Audio Player', () => {
     await playClip(dummyBuffer);
 
     // Should not spawn any processes in test mode
-    expect(mockSpawn).not.toHaveBeenCalled();
-    expect(mockFsWriteFile).not.toHaveBeenCalled();
+    expect(spawn as jest.Mock).not.toHaveBeenCalled();
+    expect(fs.writeFile).not.toHaveBeenCalled();
 
     process.env.DORO_TEST_MODE = originalTestMode;
   });
