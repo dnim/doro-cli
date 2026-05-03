@@ -1,10 +1,11 @@
 ---
 id: DORO-001
 title: Integrate Backlog.md into doro-cli
-status: To Do
-assignee: []
+status: In Progress
+assignee:
+  - '@opencode'
 created_date: '2026-05-03 10:10'
-updated_date: '2026-05-03 10:10'
+updated_date: '2026-05-03 10:16'
 labels: []
 dependencies: []
 ---
