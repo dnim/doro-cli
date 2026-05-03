@@ -9,6 +9,11 @@ if [ "$BRANCH" = "main" ]; then
   exit 1
 fi
 
-npm run lint
+# Run lint-staged (includes linting and formatting on changed files)
+npx lint-staged
+
+# Run typecheck on the entire project
 npm run typecheck
+
+# Run tests with coverage to catch any coverage threshold violations
 npm run test:unit -- --coverage
