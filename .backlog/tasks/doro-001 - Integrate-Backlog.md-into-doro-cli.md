@@ -5,7 +5,7 @@ status: In Progress
 assignee:
   - '@opencode'
 created_date: '2026-05-03 10:10'
-updated_date: '2026-05-03 10:16'
+updated_date: '2026-05-03 10:18'
 labels: []
 dependencies: []
 ---
@@ -18,7 +18,7 @@ This task is to fully integrate the Backlog.md task management system into the d
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 backlog init is run successfully within the doro-cli project,Existing 'plans' from doro-cli are identified and migrated into backlog tasks,A unified AGENTS.md file is created in doro-cli with instructions for using backlog,The doro-cli project is fully set up to use backlog for task management
+- [x] #1 backlog init is run successfully within the doro-cli project,Existing 'plans' from doro-cli are identified and migrated into backlog tasks,A unified AGENTS.md file is created in doro-cli with instructions for using backlog,The doro-cli project is fully set up to use backlog for task management
 <!-- AC:END -->
 
 ## Implementation Plan
