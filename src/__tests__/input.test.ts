@@ -1,54 +1,37 @@
 import { describe, expect, it } from '@jest/globals';
+import { createKeyEvent } from './utils/mocks';
 import {
-  isAllowedWhenLocked,
-  isPromptConfirmEvent,
-  isUpdatePromptEvent,
   resolveControlCommand,
-  type InputEvent
+  isUpdatePromptEvent,
+  isPromptConfirmEvent,
+  isAllowedWhenLocked
 } from '../input';
-
-function keyEvent(
-  ch: string,
-  keyName: string,
-  keyFull = keyName,
-  shift = false,
-  ctrl = false
-): InputEvent {
-  return {
-    type: 'key',
-    ch,
-    keyName,
-    keyFull,
-    shift,
-    ctrl
-  };
-}
 
 describe('input mapping', () => {
   it('maps commands correctly', () => {
-    expect(resolveControlCommand(keyEvent('q', 'q'))).toBe('quit');
-    expect(resolveControlCommand(keyEvent('p', 'p'))).toBe('pauseResume');
-    expect(resolveControlCommand(keyEvent(' ', 'space'))).toBe('pauseResume');
-    expect(resolveControlCommand(keyEvent('c', 'c'))).toBe('toggleColorScheme');
-    expect(resolveControlCommand(keyEvent('m', 'm'))).toBe('toggleMute');
-    expect(resolveControlCommand(keyEvent('D', 'd', 'S-d', true))).toBe('debugNearEnd');
-    expect(resolveControlCommand(keyEvent('d', 'd'))).toBe('none');
-    expect(resolveControlCommand(keyEvent('r', 'r'))).toBe('resetRun');
-    expect(resolveControlCommand(keyEvent('R', 'r', 'S-r', true))).toBe('resetSettings');
-    expect(resolveControlCommand(keyEvent('w', 'w'))).toBe('startWork');
-    expect(resolveControlCommand(keyEvent('s', 's'))).toBe('startShort');
-    expect(resolveControlCommand(keyEvent('l', 'l'))).toBe('startLong');
-    expect(resolveControlCommand(keyEvent('L', 'l', 'S-l', true))).toBe('toggleLock');
-    expect(resolveControlCommand(keyEvent('\u0003', 'c', 'C-c', false, true))).toBe('quit');
+    expect(resolveControlCommand(createKeyEvent('q', 'q'))).toBe('quit');
+    expect(resolveControlCommand(createKeyEvent('p', 'p'))).toBe('pauseResume');
+    expect(resolveControlCommand(createKeyEvent(' ', 'space'))).toBe('pauseResume');
+    expect(resolveControlCommand(createKeyEvent('c', 'c'))).toBe('toggleColorScheme');
+    expect(resolveControlCommand(createKeyEvent('m', 'm'))).toBe('toggleMute');
+    expect(resolveControlCommand(createKeyEvent('D', 'd', 'S-d', true))).toBe('debugNearEnd');
+    expect(resolveControlCommand(createKeyEvent('d', 'd'))).toBe('none');
+    expect(resolveControlCommand(createKeyEvent('r', 'r'))).toBe('resetRun');
+    expect(resolveControlCommand(createKeyEvent('R', 'r', 'S-r', true))).toBe('resetSettings');
+    expect(resolveControlCommand(createKeyEvent('w', 'w'))).toBe('startWork');
+    expect(resolveControlCommand(createKeyEvent('s', 's'))).toBe('startShort');
+    expect(resolveControlCommand(createKeyEvent('l', 'l'))).toBe('startLong');
+    expect(resolveControlCommand(createKeyEvent('L', 'l', 'S-l', true))).toBe('toggleLock');
+    expect(resolveControlCommand(createKeyEvent('\u0003', 'c', 'C-c', false, true))).toBe('quit');
   });
 
   it('maps update commands correctly', () => {
-    expect(resolveControlCommand(keyEvent('U', 'u', 'S-u', true))).toBe('checkUpdate');
-    expect(resolveControlCommand(keyEvent('u', 'u'))).toBe('none');
-    expect(resolveControlCommand(keyEvent('y', 'y'))).toBe('updateYes');
-    expect(resolveControlCommand(keyEvent('Y', 'y'))).toBe('updateYes');
-    expect(resolveControlCommand(keyEvent('n', 'n'))).toBe('updateNo');
-    expect(resolveControlCommand(keyEvent('N', 'n'))).toBe('updateNo');
+    expect(resolveControlCommand(createKeyEvent('U', 'u', 'S-u', true))).toBe('checkUpdate');
+    expect(resolveControlCommand(createKeyEvent('u', 'u'))).toBe('none');
+    expect(resolveControlCommand(createKeyEvent('y', 'y'))).toBe('updateYes');
+    expect(resolveControlCommand(createKeyEvent('Y', 'y'))).toBe('updateYes');
+    expect(resolveControlCommand(createKeyEvent('n', 'n'))).toBe('updateNo');
+    expect(resolveControlCommand(createKeyEvent('N', 'n'))).toBe('updateNo');
   });
 
   it('allows only quit, pause, toggle lock, and update check when locked', () => {
@@ -66,10 +49,10 @@ describe('input mapping', () => {
   });
 
   it('treats any non-quit key and mouse as prompt confirm', () => {
-    expect(isPromptConfirmEvent(keyEvent('q', 'q'), 'quit')).toBe(false);
-    expect(isPromptConfirmEvent(keyEvent('p', 'p'), 'pauseResume')).toBe(true);
+    expect(isPromptConfirmEvent(createKeyEvent('q', 'q'), 'quit')).toBe(false);
+    expect(isPromptConfirmEvent(createKeyEvent('p', 'p'), 'pauseResume')).toBe(true);
     expect(isPromptConfirmEvent({ type: 'mouse' }, 'none')).toBe(true);
-    expect(isPromptConfirmEvent(keyEvent('D', 'd', 'S-d', true), 'debugNearEnd')).toBe(false);
+    expect(isPromptConfirmEvent(createKeyEvent('D', 'd', 'S-d', true), 'debugNearEnd')).toBe(false);
   });
 
   it('identifies update prompt events correctly', () => {
@@ -88,10 +71,10 @@ describe('input mapping', () => {
     const originalEnv = process.env.DORO_TEST_MODE;
     process.env.DORO_TEST_MODE = '1';
 
-    expect(resolveControlCommand(keyEvent('1', '1'))).toBe('testUpdateAvailable');
-    expect(resolveControlCommand(keyEvent('2', '2'))).toBe('testUpdateCopySuccess');
-    expect(resolveControlCommand(keyEvent('3', '3'))).toBe('testUpdateCopyFallback');
-    expect(resolveControlCommand(keyEvent('4', '4'))).toBe('testUpdateSkipped');
+    expect(resolveControlCommand(createKeyEvent('1', '1'))).toBe('testUpdateAvailable');
+    expect(resolveControlCommand(createKeyEvent('2', '2'))).toBe('testUpdateCopySuccess');
+    expect(resolveControlCommand(createKeyEvent('3', '3'))).toBe('testUpdateCopyFallback');
+    expect(resolveControlCommand(createKeyEvent('4', '4'))).toBe('testUpdateSkipped');
 
     process.env.DORO_TEST_MODE = originalEnv;
   });

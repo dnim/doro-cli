@@ -4,6 +4,19 @@ jest.mock('env-paths', () => {
     config: '/mock/config/path'
   });
 });
+
+// Mock dependencies
+jest.mock('../stateMachine');
+jest.mock('../ui');
+jest.mock('../audio/player');
+jest.mock('../audio/synth');
+jest.mock('../constants');
+jest.mock('../input');
+jest.mock('../config');
+jest.mock('../update');
+
+import { setupTimerMocks, setupProcessExitMock } from './utils/mocks';
+import { createMockState, createMockConfig, createMockSettings } from './utils/factories';
 import { DoroApp } from '../app';
 import { TimerStateMachine } from '../stateMachine';
 import { DoroUi } from '../ui';
@@ -20,21 +33,9 @@ import { resolveControlCommand, isUpdatePromptEvent, isPromptConfirmEvent } from
 import { saveSettings, resetSettings, loadSettings } from '../config';
 import { checkForUpdates, isCheckDue, shouldPromptForVersion, copyToClipboard } from '../update';
 
-// Mock dependencies
-jest.mock('../stateMachine');
-jest.mock('../ui');
-jest.mock('../audio/player');
-jest.mock('../audio/synth');
-jest.mock('../constants');
-jest.mock('../input');
-jest.mock('../config');
-jest.mock('../update');
-
-// Mock `process.exit` to prevent tests from terminating the process
-const mockExit = jest.spyOn(process, 'exit').mockImplementation((() => {}) as never);
-
-// Mock `setInterval` and `clearInterval`
-jest.useFakeTimers();
+// Setup timers and process mocks
+const mockExit = setupProcessExitMock();
+setupTimerMocks();
 let spySetInterval: jest.SpyInstance;
 let spyClearInterval: jest.SpyInstance;
 
@@ -50,6 +51,11 @@ describe('DoroApp', () => {
 
     spySetInterval = jest.spyOn(global, 'setInterval');
     spyClearInterval = jest.spyOn(global, 'clearInterval');
+
+    // Arrange: Setup mock instances with factory data
+    const defaultState = createMockState();
+    const defaultConfig = createMockConfig();
+    const defaultSettings = createMockSettings();
 
     // Mock methods for TimerStateMachine instance
     mockTimerStateMachine = {
@@ -91,33 +97,13 @@ describe('DoroApp', () => {
     (createCompletionBeepClip as jest.Mock).mockReturnValue(Buffer.from('complete'));
     (createResetBeepClip as jest.Mock).mockReturnValue(Buffer.from('reset'));
 
-    // Default mock implementations for methods
-    mockTimerStateMachine.getState.mockReturnValue({
-      mode: 'work',
-      status: 'paused',
-      remainingSeconds: 0,
-      isLocked: false,
-      switchPrompt: null,
-      completedWorkSessions: 0
-    });
-    mockTimerStateMachine.getConfig.mockReturnValue({
-      workSeconds: 25 * 60,
-      shortRestSeconds: 5 * 60,
-      longRestSeconds: 15 * 60,
-      longRestEveryWorkSessions: 4,
-      switchConfirmSeconds: 5
-    });
-    (getDurationForMode as jest.Mock).mockReturnValue(25 * 60); // Default duration
+    // Default mock implementations for methods using factory data
+    mockTimerStateMachine.getState.mockReturnValue(defaultState);
+    mockTimerStateMachine.getConfig.mockReturnValue(defaultConfig);
+    (getDurationForMode as jest.Mock).mockReturnValue(defaultConfig.workSeconds); // Default duration
 
     mockTimerStateMachine.tick.mockReturnValue({
-      state: {
-        mode: 'work',
-        status: 'running',
-        remainingSeconds: 10,
-        isLocked: false,
-        switchPrompt: null,
-        completedWorkSessions: 0
-      },
+      state: { ...defaultState, status: 'running', remainingSeconds: 10 },
       startedPrompt: false,
       switchedRunning: false,
       switchedToMode: null,
@@ -125,14 +111,8 @@ describe('DoroApp', () => {
     });
 
     (saveSettings as jest.Mock).mockResolvedValue(undefined);
-    (resetSettings as jest.Mock).mockResolvedValue({
-      volumeMode: 'normal',
-      colorScheme: 'modern'
-    });
-    (loadSettings as jest.Mock).mockResolvedValue({
-      volumeMode: 'normal',
-      colorScheme: 'modern'
-    });
+    (resetSettings as jest.Mock).mockResolvedValue(defaultSettings);
+    (loadSettings as jest.Mock).mockResolvedValue(defaultSettings);
     (checkForUpdates as jest.Mock).mockResolvedValue({
       isAvailable: false,
       currentVersion: '1.0.0'
@@ -146,21 +126,11 @@ describe('DoroApp', () => {
 
     // Mock resetCurrentAndRun to return a valid result
     mockTimerStateMachine.resetCurrentAndRun.mockReturnValue({
-      state: {
-        mode: 'work',
-        status: 'running',
-        remainingSeconds: 1500,
-        isLocked: false,
-        switchPrompt: null,
-        completedWorkSessions: 0
-      },
+      state: { ...defaultState, status: 'running', remainingSeconds: 1500 },
       switchedToMode: 'work'
     });
 
-    app = new DoroApp({
-      volumeMode: 'normal',
-      colorScheme: 'modern'
-    });
+    app = new DoroApp(defaultSettings);
   });
 
   afterAll(() => {

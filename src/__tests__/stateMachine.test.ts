@@ -1,52 +1,48 @@
 import { describe, expect, it } from '@jest/globals';
 import { TimerStateMachine } from '../stateMachine';
+import { createQuickTestConfig } from './utils/factories';
 
 describe('TimerStateMachine', () => {
   it('starts in paused work mode', () => {
-    const machine = new TimerStateMachine({
-      workSeconds: 10,
-      shortRestSeconds: 3,
-      longRestSeconds: 6,
-      longRestEveryWorkSessions: 3,
-      switchConfirmSeconds: 5
-    });
-
+    // Arrange
+    const config = createQuickTestConfig();
+    const machine = new TimerStateMachine(config);
+    // Act
     const state = machine.getState();
+
+    // Assert
     expect(state.mode).toBe('work');
     expect(state.status).toBe('paused');
     expect(state.remainingSeconds).toBe(10);
   });
 
   it('resets current mode and runs', () => {
-    const machine = new TimerStateMachine({
-      workSeconds: 10,
-      shortRestSeconds: 3,
-      longRestSeconds: 6,
-      longRestEveryWorkSessions: 3,
-      switchConfirmSeconds: 5
-    });
+    // Arrange
+    const config = createQuickTestConfig();
+    const machine = new TimerStateMachine(config);
 
+    // Act
     machine.startMode('short');
     machine.tick(Date.now());
     const result = machine.resetCurrentAndRun();
+
+    // Assert
     expect(result.state.mode).toBe('short');
     expect(result.state.remainingSeconds).toBe(3);
     expect(result.state.status).toBe('running');
   });
 
   it('enters switch prompt when running timer reaches zero', () => {
-    const machine = new TimerStateMachine({
-      workSeconds: 2,
-      shortRestSeconds: 3,
-      longRestSeconds: 6,
-      longRestEveryWorkSessions: 3,
-      switchConfirmSeconds: 5
-    });
+    // Arrange
+    const config = createQuickTestConfig({ workSeconds: 2 });
+    const machine = new TimerStateMachine(config);
 
+    // Act
     machine.startMode('work');
     machine.tick(1000);
     const result = machine.tick(2000);
 
+    // Assert
     expect(result.startedPrompt).toBe(true);
     expect(result.completedMode).toBe('work');
     expect(result.state.status).toBe('switchPrompt');
@@ -55,14 +51,15 @@ describe('TimerStateMachine', () => {
   });
 
   it('switches to long rest every third completed work session', () => {
-    const machine = new TimerStateMachine({
+    // Arrange
+    const config = createQuickTestConfig({
       workSeconds: 1,
       shortRestSeconds: 1,
-      longRestSeconds: 2,
-      longRestEveryWorkSessions: 3,
-      switchConfirmSeconds: 5
+      longRestSeconds: 2
     });
+    const machine = new TimerStateMachine(config);
 
+    // Act
     machine.startMode('work');
 
     machine.tick(1000);
@@ -77,24 +74,24 @@ describe('TimerStateMachine', () => {
 
     machine.tick(5000);
     const state = machine.getState();
+
+    // Assert
     expect(state.status).toBe('switchPrompt');
     expect(state.switchPrompt?.nextMode).toBe('long');
     expect(state.completedWorkSessions).toBe(3);
   });
 
   it('confirm switches immediately and runs', () => {
-    const machine = new TimerStateMachine({
-      workSeconds: 1,
-      shortRestSeconds: 3,
-      longRestSeconds: 6,
-      longRestEveryWorkSessions: 3,
-      switchConfirmSeconds: 5
-    });
+    // Arrange
+    const config = createQuickTestConfig({ workSeconds: 1 });
+    const machine = new TimerStateMachine(config);
 
+    // Act
     machine.startMode('work');
     machine.tick(1000);
     const result = machine.confirmPromptAndSwitch();
 
+    // Assert
     expect(result.switchedToMode).toBe('short');
     expect(result.state.mode).toBe('short');
     expect(result.state.status).toBe('running');
@@ -102,18 +99,19 @@ describe('TimerStateMachine', () => {
   });
 
   it('auto-switches and starts next mode after prompt timeout', () => {
-    const machine = new TimerStateMachine({
+    // Arrange
+    const config = createQuickTestConfig({
       workSeconds: 1,
-      shortRestSeconds: 3,
-      longRestSeconds: 6,
-      longRestEveryWorkSessions: 3,
       switchConfirmSeconds: 2
     });
+    const machine = new TimerStateMachine(config);
 
+    // Act
     machine.startMode('work');
     machine.tick(1000);
     const result = machine.tick(3000);
 
+    // Assert
     expect(result.switchedRunning).toBe(true);
     expect(result.switchedToMode).toBe('short');
     expect(result.state.mode).toBe('short');
@@ -122,46 +120,42 @@ describe('TimerStateMachine', () => {
   });
 
   it('debug jump pushes running timer to 3 seconds', () => {
-    const machine = new TimerStateMachine({
-      workSeconds: 10,
-      shortRestSeconds: 3,
-      longRestSeconds: 6,
-      longRestEveryWorkSessions: 3,
-      switchConfirmSeconds: 5
-    });
+    // Arrange
+    const config = createQuickTestConfig();
+    const machine = new TimerStateMachine(config);
 
+    // Act
     machine.startMode('work');
     const state = machine.debugJumpToNearEnd(3);
 
+    // Assert
     expect(state.status).toBe('running');
     expect(state.remainingSeconds).toBe(3);
   });
 
   it('debug jump does nothing while paused', () => {
-    const machine = new TimerStateMachine({
-      workSeconds: 10,
-      shortRestSeconds: 3,
-      longRestSeconds: 6,
-      longRestEveryWorkSessions: 3,
-      switchConfirmSeconds: 5
-    });
+    // Arrange
+    const config = createQuickTestConfig();
+    const machine = new TimerStateMachine(config);
 
+    // Act
     const before = machine.getState();
     const after = machine.debugJumpToNearEnd(3);
 
+    // Assert
     expect(after.status).toBe('paused');
     expect(after.remainingSeconds).toBe(before.remainingSeconds);
   });
 
   it('debug jump during switch prompt shortens confirm window', () => {
-    const machine = new TimerStateMachine({
+    // Arrange
+    const config = createQuickTestConfig({
       workSeconds: 2,
-      shortRestSeconds: 3,
-      longRestSeconds: 6,
-      longRestEveryWorkSessions: 3,
       switchConfirmSeconds: 60
     });
+    const machine = new TimerStateMachine(config);
 
+    // Act
     machine.startMode('work');
     machine.tick(1000);
     machine.tick(2000);
@@ -169,6 +163,8 @@ describe('TimerStateMachine', () => {
     expect(before.status).toBe('switchPrompt');
 
     const after = machine.debugJumpToNearEnd(3);
+
+    // Assert
     expect(after.status).toBe('switchPrompt');
     expect(after.switchPrompt).not.toBeNull();
     const remainingMs = (after.switchPrompt as { deadlineTs: number }).deadlineTs - Date.now();
@@ -178,14 +174,11 @@ describe('TimerStateMachine', () => {
 
   describe('toggleLock', () => {
     it('toggles isLocked state', () => {
-      const machine = new TimerStateMachine({
-        workSeconds: 10,
-        shortRestSeconds: 3,
-        longRestSeconds: 6,
-        longRestEveryWorkSessions: 3,
-        switchConfirmSeconds: 5
-      });
+      // Arrange
+      const config = createQuickTestConfig();
+      const machine = new TimerStateMachine(config);
 
+      // Act & Assert
       const initialState = machine.getState();
       expect(initialState.isLocked).toBe(false);
 
@@ -199,14 +192,11 @@ describe('TimerStateMachine', () => {
 
   describe('togglePause', () => {
     it('toggles between running and paused states', () => {
-      const machine = new TimerStateMachine({
-        workSeconds: 10,
-        shortRestSeconds: 3,
-        longRestSeconds: 6,
-        longRestEveryWorkSessions: 3,
-        switchConfirmSeconds: 5
-      });
+      // Arrange
+      const config = createQuickTestConfig();
+      const machine = new TimerStateMachine(config);
 
+      // Act & Assert
       machine.startMode('work');
       const runningState = machine.getState();
       expect(runningState.status).toBe('running');
@@ -219,14 +209,11 @@ describe('TimerStateMachine', () => {
     });
 
     it('does nothing when in switchPrompt status', () => {
-      const machine = new TimerStateMachine({
-        workSeconds: 1,
-        shortRestSeconds: 3,
-        longRestSeconds: 6,
-        longRestEveryWorkSessions: 3,
-        switchConfirmSeconds: 5
-      });
+      // Arrange
+      const config = createQuickTestConfig({ workSeconds: 1 });
+      const machine = new TimerStateMachine(config);
 
+      // Act
       machine.startMode('work');
       machine.tick(1000); // Complete work, enter switchPrompt
 
@@ -234,23 +221,23 @@ describe('TimerStateMachine', () => {
       expect(beforeState.status).toBe('switchPrompt');
 
       const afterState = machine.togglePause();
+
+      // Assert
       expect(afterState.status).toBe('switchPrompt');
     });
   });
 
   describe('forceQuitState', () => {
     it('returns current state without modification', () => {
-      const machine = new TimerStateMachine({
-        workSeconds: 10,
-        shortRestSeconds: 3,
-        longRestSeconds: 6,
-        longRestEveryWorkSessions: 3,
-        switchConfirmSeconds: 5
-      });
+      // Arrange
+      const config = createQuickTestConfig();
+      const machine = new TimerStateMachine(config);
 
+      // Act
       const beforeState = machine.getState();
       const afterState = machine.forceQuitState();
 
+      // Assert
       expect(afterState).toEqual(beforeState);
       expect(afterState.mode).toBe('work');
       expect(afterState.status).toBe('paused');
@@ -259,34 +246,34 @@ describe('TimerStateMachine', () => {
 
   describe('getConfig', () => {
     it('returns the timer configuration', () => {
-      const config = {
+      // Arrange
+      const config = createQuickTestConfig({
         workSeconds: 15,
         shortRestSeconds: 4,
         longRestSeconds: 8,
         longRestEveryWorkSessions: 2,
         switchConfirmSeconds: 3
-      };
+      });
 
+      // Act
       const machine = new TimerStateMachine(config);
       const returnedConfig = machine.getConfig();
 
+      // Assert
       expect(returnedConfig).toEqual(config);
     });
   });
 
   describe('tick edge cases', () => {
     it('returns unchanged state when not running and not in switchPrompt', () => {
-      const machine = new TimerStateMachine({
-        workSeconds: 10,
-        shortRestSeconds: 3,
-        longRestSeconds: 6,
-        longRestEveryWorkSessions: 3,
-        switchConfirmSeconds: 5
-      });
+      // Arrange
+      const config = createQuickTestConfig();
+      const machine = new TimerStateMachine(config);
 
-      // Machine starts paused
+      // Act (Machine starts paused)
       const result = machine.tick(Date.now());
 
+      // Assert
       expect(result.startedPrompt).toBe(false);
       expect(result.switchedRunning).toBe(false);
       expect(result.switchedToMode).toBeNull();
@@ -295,14 +282,14 @@ describe('TimerStateMachine', () => {
     });
 
     it('returns unchanged state when in switchPrompt but deadline not reached', () => {
-      const machine = new TimerStateMachine({
+      // Arrange
+      const config = createQuickTestConfig({
         workSeconds: 1,
-        shortRestSeconds: 3,
-        longRestSeconds: 6,
-        longRestEveryWorkSessions: 3,
         switchConfirmSeconds: 60 // Long timeout
       });
+      const machine = new TimerStateMachine(config);
 
+      // Act
       machine.startMode('work');
       const firstTick = machine.tick(1000); // Complete work, enter switchPrompt
       expect(firstTick.state.status).toBe('switchPrompt');
@@ -311,6 +298,7 @@ describe('TimerStateMachine', () => {
       // Deadline will be 1000 + 60*1000 = 61000, so tick at 2000 is safe
       const result = machine.tick(2000);
 
+      // Assert
       expect(result.startedPrompt).toBe(false);
       expect(result.switchedRunning).toBe(false);
       expect(result.switchedToMode).toBeNull();
@@ -321,17 +309,14 @@ describe('TimerStateMachine', () => {
 
   describe('confirmPromptAndSwitch edge cases', () => {
     it('returns null switchedToMode when no prompt exists', () => {
-      const machine = new TimerStateMachine({
-        workSeconds: 10,
-        shortRestSeconds: 3,
-        longRestSeconds: 6,
-        longRestEveryWorkSessions: 3,
-        switchConfirmSeconds: 5
-      });
+      // Arrange
+      const config = createQuickTestConfig();
+      const machine = new TimerStateMachine(config);
 
-      // No switchPrompt active
+      // Act (No switchPrompt active)
       const result = machine.confirmPromptAndSwitch();
 
+      // Assert
       expect(result.switchedToMode).toBeNull();
       expect(result.state.status).toBe('paused');
     });
