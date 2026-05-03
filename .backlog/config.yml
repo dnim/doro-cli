@@ -1,0 +1,17 @@
+project_name: "doro-cli"
+default_status: "To Do"
+statuses: ["To Do", "In Progress", "Done"]
+labels: []
+definition_of_done: ["code coverage is passing, VRTs added for ui changes, tests/linting/typecheck is green."]
+date_format: yyyy-mm-dd
+max_column_width: 20
+default_editor: "subl -w"
+auto_open_browser: true
+default_port: 6420
+remote_operations: true
+auto_commit: true
+zero_padded_ids: 3
+bypass_git_hooks: true
+check_active_branches: true
+active_branch_days: 20
+task_prefix: "doro"
