@@ -1,11 +1,13 @@
 ---
 id: DORO-003
 title: Fix Tiny UI Volume Indicator
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-05-03 10:14'
+updated_date: '2026-05-03 20:38'
 labels: []
 dependencies: []
+ordinal: 1000
 ---
 
 ## Description
