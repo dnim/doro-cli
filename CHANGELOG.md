@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-05-03
+
+### Added
+
+- **Update Notifier**: Automatic version checking with responsive UI and clipboard integration for seamless updates.
+- **Embedded Key Shortcuts**: Bold key letters within help bar words for better accessibility on large screens.
+- **Backlog.md Integration**: Full project management system with task tracking and AI agent workflows.
+- **AI Agent Instructions**: Comprehensive documentation for Claude, Gemini, and GitHub Copilot agents.
+- **Test Suite Improvements**: DAMP (Descriptive And Meaningful Patterns) principles with factory utilities and centralized mocks.
+
+### Changed
+
+- Enhanced visual regression test coverage with new update notifier UI states.
+- Improved test organization with factory functions and mock utilities for better AI agent compatibility.
+- Migrated from `_plans/` directory to `.backlog/` for structured task management.
+- Strengthened pre-commit hooks with more comprehensive validation.
+
+### Fixed
+
+- Stabilized visual regression tests for deterministic update notifier behavior.
+- Improved audio handling in test environments to prevent flaky tests.
+
 ## [1.3.0] - 2026-05-01
 
 ### Added
