@@ -4,8 +4,10 @@ title: doro-cli on Mobile
 status: To Do
 assignee: []
 created_date: '2026-05-03 10:14'
+updated_date: '2026-05-03 20:40'
 labels: []
 dependencies: []
+ordinal: 1000
 ---
 
 ## Description

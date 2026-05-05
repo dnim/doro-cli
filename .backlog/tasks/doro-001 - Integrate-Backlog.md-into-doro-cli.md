@@ -5,9 +5,10 @@ status: Done
 assignee:
   - '@opencode'
 created_date: '2026-05-03 10:10'
-updated_date: '2026-05-03 10:21'
+updated_date: '2026-05-03 20:38'
 labels: []
 dependencies: []
+ordinal: 2000
 ---
 
 ## Description
