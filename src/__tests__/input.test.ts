@@ -34,6 +34,11 @@ describe('input mapping', () => {
     expect(resolveControlCommand(createKeyEvent('N', 'n'))).toBe('updateNo');
   });
 
+  it('does not crash when a key event arrives without a character', () => {
+    expect(resolveControlCommand(createKeyEvent(undefined, 'q'))).toBe('quit');
+    expect(resolveControlCommand(createKeyEvent(undefined, 'up'))).toBe('none');
+  });
+
   it('allows only quit, pause, toggle lock, and update check when locked', () => {
     expect(isAllowedWhenLocked('quit')).toBe(true);
     expect(isAllowedWhenLocked('toggleLock')).toBe(true);
