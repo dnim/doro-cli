@@ -1,43 +1,50 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { DoroUi, getRunningStatusText } from '../ui';
 import blessed from 'blessed';
 import { enableMouse, disableMouse } from '../mouse';
 
-jest.mock('blessed', () => {
+vi.mock('blessed', () => {
   const mockScreen = {
-    on: jest.fn(),
-    render: jest.fn(),
-    destroy: jest.fn(),
+    on: vi.fn(),
+    render: vi.fn(),
+    destroy: vi.fn(),
     cols: 80,
     rows: 24
   };
   const mockBox = {
     style: {},
-    setContent: jest.fn(),
-    hide: jest.fn(),
-    show: jest.fn()
+    setContent: vi.fn(),
+    hide: vi.fn(),
+    show: vi.fn()
   };
 
   return {
-    screen: jest.fn(() => mockScreen),
-    box: jest.fn(() => ({ ...mockBox }))
+    default: {
+      screen: vi.fn(() => mockScreen),
+      box: vi.fn(() => ({ ...mockBox }))
+    }
   };
 });
 
-jest.mock('../mouse', () => ({
-  enableMouse: jest.fn(),
-  disableMouse: jest.fn()
+vi.mock('../mouse', () => ({
+  enableMouse: vi.fn(),
+  disableMouse: vi.fn()
 }));
 
 describe('DoroUi', () => {
-  let handlers: { onKey: jest.Mock; onResize: jest.Mock; onAnyClick: jest.Mock };
+  let handlers: {
+    onKey: ReturnType<typeof vi.fn>;
+    onResize: ReturnType<typeof vi.fn>;
+    onAnyClick: ReturnType<typeof vi.fn>;
+  };
   let ui: DoroUi;
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     handlers = {
-      onKey: jest.fn(),
-      onResize: jest.fn(),
-      onAnyClick: jest.fn()
+      onKey: vi.fn(),
+      onResize: vi.fn(),
+      onAnyClick: vi.fn()
     };
   });
 
@@ -48,7 +55,7 @@ describe('DoroUi', () => {
   });
 
   it('should initialize correctly with blessed elements', () => {
-    ui = new DoroUi(handlers);
+    ui = new DoroUi(handlers as any);
 
     expect(blessed.screen).toHaveBeenCalledTimes(1);
     // 1 root + 1 progress + 1 banner + 1 status + 1 help + 4 prompt overlays = 9 boxes
@@ -56,14 +63,14 @@ describe('DoroUi', () => {
 
     expect(enableMouse).toHaveBeenCalledTimes(1);
 
-    const mouseCallback = (enableMouse as jest.Mock).mock.calls[0][0];
+    const mouseCallback = vi.mocked(enableMouse).mock.calls[0][0];
     mouseCallback();
     expect(handlers.onAnyClick).toHaveBeenCalledTimes(1);
   });
 
   it('should render work mode state', () => {
-    ui = new DoroUi(handlers);
-    const mockScreen = (blessed.screen as jest.Mock).mock.results[0].value;
+    ui = new DoroUi(handlers as any);
+    const mockScreen = vi.mocked(blessed.screen).mock.results[0].value;
 
     ui.render({
       mode: 'work',
@@ -84,8 +91,8 @@ describe('DoroUi', () => {
   });
 
   it('should render update error state', () => {
-    ui = new DoroUi(handlers);
-    const mockScreen = (blessed.screen as jest.Mock).mock.results[0].value;
+    ui = new DoroUi(handlers as any);
+    const mockScreen = vi.mocked(blessed.screen).mock.results[0].value;
 
     ui.render({
       mode: 'work',
@@ -110,8 +117,8 @@ describe('DoroUi', () => {
   });
 
   it('should render update skipped state with version info', () => {
-    ui = new DoroUi(handlers);
-    const mockScreen = (blessed.screen as jest.Mock).mock.results[0].value;
+    ui = new DoroUi(handlers as any);
+    const mockScreen = vi.mocked(blessed.screen).mock.results[0].value;
 
     ui.render({
       mode: 'work',
@@ -136,8 +143,8 @@ describe('DoroUi', () => {
   });
 
   it('should render transition prompt state', () => {
-    ui = new DoroUi(handlers);
-    const mockScreen = (blessed.screen as jest.Mock).mock.results[0].value;
+    ui = new DoroUi(handlers as any);
+    const mockScreen = vi.mocked(blessed.screen).mock.results[0].value;
 
     ui.render({
       mode: 'work',
@@ -158,8 +165,8 @@ describe('DoroUi', () => {
   });
 
   it('should handle zero columns without crashing', () => {
-    ui = new DoroUi(handlers);
-    const mockScreen = (blessed.screen as jest.Mock).mock.results[0].value;
+    ui = new DoroUi(handlers as any);
+    const mockScreen = vi.mocked(blessed.screen).mock.results[0].value;
     mockScreen.cols = 0;
 
     ui.render({
@@ -182,8 +189,8 @@ describe('DoroUi', () => {
   });
 
   it('should render paused state', () => {
-    ui = new DoroUi(handlers);
-    const mockScreen = (blessed.screen as jest.Mock).mock.results[0].value;
+    ui = new DoroUi(handlers as any);
+    const mockScreen = vi.mocked(blessed.screen).mock.results[0].value;
 
     ui.render({
       mode: 'work',
@@ -204,8 +211,8 @@ describe('DoroUi', () => {
   });
 
   it('should render switchPrompt status explicitly', () => {
-    ui = new DoroUi(handlers);
-    const mockScreen = (blessed.screen as jest.Mock).mock.results[0].value;
+    ui = new DoroUi(handlers as any);
+    const mockScreen = vi.mocked(blessed.screen).mock.results[0].value;
 
     ui.render({
       mode: 'work',
@@ -226,7 +233,7 @@ describe('DoroUi', () => {
   });
 
   it('should toggle color scheme and return it', () => {
-    ui = new DoroUi(handlers, 'modern');
+    ui = new DoroUi(handlers as any, 'modern');
     expect(ui.getColorScheme()).toBe('modern');
 
     const next = ui.toggleColorScheme();
@@ -238,14 +245,14 @@ describe('DoroUi', () => {
   });
 
   it('should set color scheme explicitly', () => {
-    ui = new DoroUi(handlers, 'modern');
+    ui = new DoroUi(handlers as any, 'modern');
     ui.setColorScheme('calm');
     expect(ui.getColorScheme()).toBe('calm');
   });
 
   it('should destroy and disable mouse', () => {
-    ui = new DoroUi(handlers);
-    const mockScreen = (blessed.screen as jest.Mock).mock.results[0].value;
+    ui = new DoroUi(handlers as any);
+    const mockScreen = vi.mocked(blessed.screen).mock.results[0].value;
 
     ui.destroy();
 
@@ -274,8 +281,8 @@ describe('DoroUi', () => {
   });
 
   it('should render update prompt states', () => {
-    ui = new DoroUi(handlers);
-    const mockScreen = (blessed.screen as jest.Mock).mock.results[0].value;
+    ui = new DoroUi(handlers as any);
+    const mockScreen = vi.mocked(blessed.screen).mock.results[0].value;
 
     // Update available prompt
     ui.render({
@@ -365,8 +372,8 @@ describe('DoroUi', () => {
   });
 
   it('should use narrow help text at medium screen width', () => {
-    ui = new DoroUi(handlers);
-    const mockScreen = (blessed.screen as jest.Mock).mock.results[0].value;
+    ui = new DoroUi(handlers as any);
+    const mockScreen = vi.mocked(blessed.screen).mock.results[0].value;
     mockScreen.cols = 50;
 
     ui.render({
@@ -389,8 +396,8 @@ describe('DoroUi', () => {
   });
 
   it('should use ultra help text at small screen width', () => {
-    ui = new DoroUi(handlers);
-    const mockScreen = (blessed.screen as jest.Mock).mock.results[0].value;
+    ui = new DoroUi(handlers as any);
+    const mockScreen = vi.mocked(blessed.screen).mock.results[0].value;
     mockScreen.cols = 19;
 
     ui.render({
@@ -413,8 +420,8 @@ describe('DoroUi', () => {
   });
 
   it('should drop low-priority tokens at very tiny screen width', () => {
-    ui = new DoroUi(handlers);
-    const mockScreen = (blessed.screen as jest.Mock).mock.results[0].value;
+    ui = new DoroUi(handlers as any);
+    const mockScreen = vi.mocked(blessed.screen).mock.results[0].value;
     mockScreen.cols = 10;
 
     ui.render({
@@ -438,8 +445,8 @@ describe('DoroUi', () => {
 
   it('should render buildProgressRow with fill within left padding', () => {
     // Very low progress ratio → fw < padLeft for centered text
-    ui = new DoroUi(handlers);
-    const mockScreen = (blessed.screen as jest.Mock).mock.results[0].value;
+    ui = new DoroUi(handlers as any);
+    const mockScreen = vi.mocked(blessed.screen).mock.results[0].value;
     mockScreen.cols = 80;
 
     ui.render({
@@ -462,8 +469,8 @@ describe('DoroUi', () => {
 
   it('should render buildProgressRow with fill spanning into right padding', () => {
     // Very high progress ratio → fw > padLeft + textLen
-    ui = new DoroUi(handlers);
-    const mockScreen = (blessed.screen as jest.Mock).mock.results[0].value;
+    ui = new DoroUi(handlers as any);
+    const mockScreen = vi.mocked(blessed.screen).mock.results[0].value;
     mockScreen.cols = 80;
 
     ui.render({
@@ -485,8 +492,8 @@ describe('DoroUi', () => {
   });
 
   it('should render update available without latestVersion (empty status text)', () => {
-    ui = new DoroUi(handlers);
-    const mockScreen = (blessed.screen as jest.Mock).mock.results[0].value;
+    ui = new DoroUi(handlers as any);
+    const mockScreen = vi.mocked(blessed.screen).mock.results[0].value;
 
     ui.render({
       mode: 'work',
@@ -507,8 +514,8 @@ describe('DoroUi', () => {
   });
 
   it('should render update prompt fallback text at very narrow screens', () => {
-    ui = new DoroUi(handlers);
-    const mockScreen = (blessed.screen as jest.Mock).mock.results[0].value;
+    ui = new DoroUi(handlers as any);
+    const mockScreen = vi.mocked(blessed.screen).mock.results[0].value;
     mockScreen.cols = 5;
 
     const baseState = {
@@ -582,8 +589,8 @@ describe('DoroUi', () => {
   });
 
   it('should return empty transition status text when terminal is too narrow', () => {
-    ui = new DoroUi(handlers);
-    const mockScreen = (blessed.screen as jest.Mock).mock.results[0].value;
+    ui = new DoroUi(handlers as any);
+    const mockScreen = vi.mocked(blessed.screen).mock.results[0].value;
     mockScreen.cols = 1; // Even '1s' (2 chars) doesn't fit
 
     ui.render({

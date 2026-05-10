@@ -1,19 +1,18 @@
+import { MockInstance, type Mocked } from 'vitest';
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-empty-function */
-jest.mock('env-paths', () => {
-  return jest.fn().mockReturnValue({
-    config: '/mock/config/path'
-  });
-});
+vi.mock('env-paths', () => ({
+  default: vi.fn().mockReturnValue({ config: '/mock/config/path' })
+}));
 
 // Mock dependencies
-jest.mock('../stateMachine');
-jest.mock('../ui');
-jest.mock('../audio/player');
-jest.mock('../audio/synth');
-jest.mock('../constants');
-jest.mock('../input');
-jest.mock('../config');
-jest.mock('../update');
+vi.mock('../stateMachine');
+vi.mock('../ui');
+vi.mock('../audio/player');
+vi.mock('../audio/synth');
+vi.mock('../constants');
+vi.mock('../input');
+vi.mock('../config');
+vi.mock('../update');
 
 import { setupTimerMocks, setupProcessExitMock } from './utils/mocks';
 import { createMockState, createMockConfig, createMockSettings } from './utils/factories';
@@ -36,21 +35,21 @@ import { checkForUpdates, isCheckDue, shouldPromptForVersion, copyToClipboard } 
 // Setup timers and process mocks
 const mockExit = setupProcessExitMock();
 setupTimerMocks();
-let spySetInterval: jest.SpyInstance;
-let spyClearInterval: jest.SpyInstance;
+let spySetInterval: MockInstance;
+let spyClearInterval: MockInstance;
 
 describe('DoroApp', () => {
   let app: DoroApp;
-  let mockTimerStateMachine: jest.Mocked<TimerStateMachine>;
-  let mockDoroUi: jest.Mocked<DoroUi>;
+  let mockTimerStateMachine: Mocked<TimerStateMachine>;
+  let mockDoroUi: Mocked<DoroUi>;
 
   beforeEach(() => {
     // Clear all mocks before each test
-    jest.clearAllMocks();
-    jest.runOnlyPendingTimers(); // Clear any timers from previous tests
+    vi.clearAllMocks();
+    vi.runOnlyPendingTimers(); // Clear any timers from previous tests
 
-    spySetInterval = jest.spyOn(global, 'setInterval');
-    spyClearInterval = jest.spyOn(global, 'clearInterval');
+    spySetInterval = vi.spyOn(global, 'setInterval');
+    spyClearInterval = vi.spyOn(global, 'clearInterval');
 
     // Arrange: Setup mock instances with factory data
     const defaultState = createMockState();
@@ -59,30 +58,32 @@ describe('DoroApp', () => {
 
     // Mock methods for TimerStateMachine instance
     mockTimerStateMachine = {
-      startMode: jest.fn(),
-      getState: jest.fn(),
-      getConfig: jest.fn(),
-      tick: jest.fn(),
-      confirmPromptAndSwitch: jest.fn(),
-      toggleLock: jest.fn(),
-      togglePause: jest.fn(),
-      debugJumpToNearEnd: jest.fn(),
-      resetCurrentAndRun: jest.fn()
+      startMode: vi.fn(),
+      getState: vi.fn(),
+      getConfig: vi.fn(),
+      tick: vi.fn(),
+      confirmPromptAndSwitch: vi.fn(),
+      toggleLock: vi.fn(),
+      togglePause: vi.fn(),
+      debugJumpToNearEnd: vi.fn(),
+      resetCurrentAndRun: vi.fn()
       // Add other methods of TimerStateMachine as they are used
-    } as unknown as jest.Mocked<TimerStateMachine>;
+    } as unknown as Mocked<TimerStateMachine>;
 
     // Initialize mock DoroUi instance
     mockDoroUi = {
-      render: jest.fn(),
-      destroy: jest.fn(),
-      toggleColorScheme: jest.fn(),
-      getColorScheme: jest.fn(),
-      setColorScheme: jest.fn()
-    } as unknown as jest.Mocked<DoroUi>;
+      render: vi.fn(),
+      destroy: vi.fn(),
+      toggleColorScheme: vi.fn(),
+      getColorScheme: vi.fn(),
+      setColorScheme: vi.fn()
+    } as unknown as Mocked<DoroUi>;
 
     // Mock constructor implementations
-    (TimerStateMachine as jest.Mock).mockImplementation(() => mockTimerStateMachine);
-    (DoroUi as jest.Mock).mockImplementation((options) => {
+    vi.mocked(TimerStateMachine).mockImplementation(function () {
+      return mockTimerStateMachine;
+    });
+    vi.mocked(DoroUi).mockImplementation(function (options) {
       // Capture the callbacks passed to DoroUi constructor
       (mockDoroUi as any).onKey = options.onKey;
       (mockDoroUi as any).onAnyClick = options.onAnyClick;
@@ -91,16 +92,16 @@ describe('DoroApp', () => {
     });
 
     // Mock synth functions to return dummy Buffers
-    (createWorkStartClip as jest.Mock).mockReturnValue(Buffer.from('work'));
-    (createShortRestStartClip as jest.Mock).mockReturnValue(Buffer.from('short-rest'));
-    (createLongRestStartClip as jest.Mock).mockReturnValue(Buffer.from('long-rest'));
-    (createCompletionBeepClip as jest.Mock).mockReturnValue(Buffer.from('complete'));
-    (createResetBeepClip as jest.Mock).mockReturnValue(Buffer.from('reset'));
+    vi.mocked(createWorkStartClip).mockReturnValue(Buffer.from('work'));
+    vi.mocked(createShortRestStartClip).mockReturnValue(Buffer.from('short-rest'));
+    vi.mocked(createLongRestStartClip).mockReturnValue(Buffer.from('long-rest'));
+    vi.mocked(createCompletionBeepClip).mockReturnValue(Buffer.from('complete'));
+    vi.mocked(createResetBeepClip).mockReturnValue(Buffer.from('reset'));
 
     // Default mock implementations for methods using factory data
     mockTimerStateMachine.getState.mockReturnValue(defaultState);
     mockTimerStateMachine.getConfig.mockReturnValue(defaultConfig);
-    (getDurationForMode as jest.Mock).mockReturnValue(defaultConfig.workSeconds); // Default duration
+    vi.mocked(getDurationForMode).mockReturnValue(defaultConfig.workSeconds); // Default duration
 
     mockTimerStateMachine.tick.mockReturnValue({
       state: { ...defaultState, status: 'running', remainingSeconds: 10 },
@@ -110,19 +111,19 @@ describe('DoroApp', () => {
       completedMode: null
     });
 
-    (saveSettings as jest.Mock).mockResolvedValue(undefined);
-    (resetSettings as jest.Mock).mockResolvedValue(defaultSettings);
-    (loadSettings as jest.Mock).mockResolvedValue(defaultSettings);
-    (checkForUpdates as jest.Mock).mockResolvedValue({
+    vi.mocked(saveSettings).mockResolvedValue(undefined);
+    vi.mocked(resetSettings).mockResolvedValue(defaultSettings);
+    vi.mocked(loadSettings).mockResolvedValue(defaultSettings);
+    vi.mocked(checkForUpdates).mockResolvedValue({
       isAvailable: false,
       currentVersion: '1.0.0'
     });
     // Default mocks for input helpers (auto-mocked, set sensible defaults)
-    (isUpdatePromptEvent as jest.Mock).mockReturnValue(false);
-    (isPromptConfirmEvent as jest.Mock).mockReturnValue(false);
+    vi.mocked(isUpdatePromptEvent).mockReturnValue(false);
+    vi.mocked(isPromptConfirmEvent).mockReturnValue(false);
     // Default mocks for update helpers
-    (isCheckDue as jest.Mock).mockReturnValue(false);
-    (shouldPromptForVersion as jest.Mock).mockReturnValue(true);
+    vi.mocked(isCheckDue).mockReturnValue(false);
+    vi.mocked(shouldPromptForVersion).mockReturnValue(true);
 
     // Mock resetCurrentAndRun to return a valid result
     mockTimerStateMachine.resetCurrentAndRun.mockReturnValue({
@@ -137,7 +138,7 @@ describe('DoroApp', () => {
     mockExit.mockRestore(); // Restore original process.exit
     spySetInterval.mockRestore();
     spyClearInterval.mockRestore();
-    jest.useRealTimers(); // Use real timers after all tests
+    vi.useRealTimers(); // Use real timers after all tests
   });
 
   it('should initialize correctly', () => {
@@ -152,8 +153,8 @@ describe('DoroApp', () => {
 
   describe('start', () => {
     it('should start the timer in work mode, play audio, render, and set up tick interval', () => {
-      const mockRender = jest.spyOn(app as any, 'render'); // Access private method for spying
-      const mockPlayModeClip = jest.spyOn(app as any, 'playModeClip'); // Access private method for spying
+      const mockRender = vi.spyOn(app as any, 'render'); // Access private method for spying
+      const mockPlayModeClip = vi.spyOn(app as any, 'playModeClip'); // Access private method for spying
 
       app.start();
 
@@ -168,8 +169,8 @@ describe('DoroApp', () => {
 
   describe('shutdown', () => {
     it('should clear interval, stop playback, destroy UI, and exit process', () => {
-      const mockStopPlayback = jest.mocked(stopPlayback);
-      const mockDestroyUi = jest.mocked(mockDoroUi.destroy);
+      const mockStopPlayback = vi.mocked(stopPlayback);
+      const mockDestroyUi = vi.mocked(mockDoroUi.destroy);
 
       (app as any).isExiting = false; // Ensure it's not already exiting
       const intervalId = setInterval(() => {}, 1000); // Simulate an active interval
@@ -186,8 +187,8 @@ describe('DoroApp', () => {
     });
 
     it('should not shutdown if already exiting', () => {
-      const mockStopPlayback = jest.mocked(stopPlayback);
-      const mockDestroyUi = jest.mocked(mockDoroUi.destroy);
+      const mockStopPlayback = vi.mocked(stopPlayback);
+      const mockDestroyUi = vi.mocked(mockDoroUi.destroy);
 
       (app as any).isExiting = true; // Already exiting
       (app as any).tickInterval = setInterval(() => {}, 1000);
@@ -217,12 +218,12 @@ describe('DoroApp', () => {
     });
 
     it('should toggle color scheme', () => {
-      (resolveControlCommand as jest.Mock).mockReturnValue('toggleColorScheme');
-      (mockDoroUi.toggleColorScheme as jest.Mock).mockReturnValue('calm');
-      (mockDoroUi.getColorScheme as jest.Mock).mockReturnValue('calm');
+      vi.mocked(resolveControlCommand).mockReturnValue('toggleColorScheme');
+      vi.mocked(mockDoroUi.toggleColorScheme).mockReturnValue('calm');
+      vi.mocked(mockDoroUi.getColorScheme).mockReturnValue('calm');
 
       // Clear previous calls
-      (saveSettings as jest.Mock).mockClear();
+      vi.mocked(saveSettings).mockClear();
 
       (app as any).handleInput({
         type: 'key',
@@ -237,7 +238,7 @@ describe('DoroApp', () => {
     });
 
     it('should toggle pause', () => {
-      (resolveControlCommand as jest.Mock).mockReturnValue('pauseResume');
+      vi.mocked(resolveControlCommand).mockReturnValue('pauseResume');
       (app as any).handleInput({
         type: 'key',
         ch: 'p',
@@ -250,7 +251,7 @@ describe('DoroApp', () => {
     });
 
     it('should stop audio when pausing from running state', () => {
-      (resolveControlCommand as jest.Mock).mockReturnValue('pauseResume');
+      vi.mocked(resolveControlCommand).mockReturnValue('pauseResume');
 
       // Set up initial running state
       const runningState = {
@@ -291,7 +292,7 @@ describe('DoroApp', () => {
     });
 
     it('should not stop audio when resuming from paused state', () => {
-      (resolveControlCommand as jest.Mock).mockReturnValue('pauseResume');
+      vi.mocked(resolveControlCommand).mockReturnValue('pauseResume');
 
       // Set up initial paused state
       const pausedState = {
@@ -332,7 +333,7 @@ describe('DoroApp', () => {
     });
 
     it('should confirm transition and pause when pauseResume pressed during switchPrompt', () => {
-      (resolveControlCommand as jest.Mock).mockReturnValue('pauseResume');
+      vi.mocked(resolveControlCommand).mockReturnValue('pauseResume');
 
       // Mock switchPrompt state
       mockTimerStateMachine.getState.mockReturnValue({
@@ -375,7 +376,7 @@ describe('DoroApp', () => {
     });
 
     it('should cycle volumeMode: normal -> quiet -> muted -> normal', () => {
-      (resolveControlCommand as jest.Mock).mockReturnValue('toggleMute');
+      vi.mocked(resolveControlCommand).mockReturnValue('toggleMute');
       const inputEvent = {
         type: 'key',
         ch: 'm',
@@ -402,7 +403,7 @@ describe('DoroApp', () => {
     });
 
     it('should handle resetSettings command', async () => {
-      (resolveControlCommand as jest.Mock).mockReturnValue('resetSettings');
+      vi.mocked(resolveControlCommand).mockReturnValue('resetSettings');
       await (app as any).handleInput({
         type: 'key',
         ch: 'R',
@@ -447,7 +448,7 @@ describe('DoroApp', () => {
       expect(playClip).toHaveBeenCalled();
 
       // Test reset beep
-      (resolveControlCommand as jest.Mock).mockReturnValue('resetRun');
+      vi.mocked(resolveControlCommand).mockReturnValue('resetRun');
       mockTimerStateMachine.resetCurrentAndRun.mockReturnValue({
         switchedToMode: 'work'
       } as any);
@@ -497,8 +498,8 @@ describe('DoroApp', () => {
 
   describe('bindProcessSignals', () => {
     it('should bind SIGINT and SIGTERM and call shutdown', () => {
-      const mockOn = jest.spyOn(process, 'on').mockImplementation();
-      const mockShutdown = jest.spyOn(app as any, 'shutdown').mockImplementation();
+      const mockOn = vi.spyOn(process, 'on').mockImplementation((() => {}) as any);
+      const mockShutdown = vi.spyOn(app as any, 'shutdown').mockImplementation(() => {});
 
       app.bindProcessSignals();
 
@@ -519,8 +520,8 @@ describe('DoroApp', () => {
 
   describe('UI event callbacks', () => {
     it('should handle onKey callback via DoroUi constructor', () => {
-      const mockHandleInput = jest.spyOn(app as any, 'handleInput');
-      (resolveControlCommand as jest.Mock).mockReturnValue(null); // Return null for no command
+      const mockHandleInput = vi.spyOn(app as any, 'handleInput');
+      vi.mocked(resolveControlCommand).mockReturnValue(null as any); // Return null for no command
 
       // Get the onKey callback from the mocked DoroUi constructor
       const onKeyCallback = (mockDoroUi as any).onKey;
@@ -540,8 +541,8 @@ describe('DoroApp', () => {
     });
 
     it('should handle onAnyClick callback via DoroUi constructor', () => {
-      const mockHandleInput = jest.spyOn(app as any, 'handleInput');
-      (resolveControlCommand as jest.Mock).mockReturnValue(null); // Return null for no command
+      const mockHandleInput = vi.spyOn(app as any, 'handleInput');
+      vi.mocked(resolveControlCommand).mockReturnValue(null as any); // Return null for no command
 
       // Get the onAnyClick callback from the mocked DoroUi constructor
       const onClickCallback = (mockDoroUi as any).onAnyClick;
@@ -554,7 +555,7 @@ describe('DoroApp', () => {
     });
 
     it('should handle onResize callback via DoroUi constructor', () => {
-      const mockHandleInput = jest.spyOn(app as any, 'handleInput');
+      const mockHandleInput = vi.spyOn(app as any, 'handleInput');
 
       // Get the onResize callback from the mocked DoroUi constructor
       const onResizeCallback = (mockDoroUi as any).onResize;
@@ -569,8 +570,8 @@ describe('DoroApp', () => {
 
   describe('additional input handling', () => {
     it('should handle quit command', () => {
-      const mockShutdown = jest.spyOn(app as any, 'shutdown').mockImplementation();
-      (resolveControlCommand as jest.Mock).mockReturnValue('quit');
+      const mockShutdown = vi.spyOn(app as any, 'shutdown').mockImplementation(() => {});
+      vi.mocked(resolveControlCommand).mockReturnValue('quit');
 
       (app as any).handleInput({
         type: 'key',
@@ -585,7 +586,7 @@ describe('DoroApp', () => {
     });
 
     it('should handle resize events by calling render', () => {
-      const mockRender = jest.spyOn(mockDoroUi, 'render');
+      const mockRender = vi.spyOn(mockDoroUi, 'render');
 
       (app as any).handleInput({ type: 'resize' });
 
@@ -593,7 +594,7 @@ describe('DoroApp', () => {
     });
 
     it('should ignore input when exiting', () => {
-      const mockRender = jest.spyOn(mockDoroUi, 'render');
+      const mockRender = vi.spyOn(mockDoroUi, 'render');
       (app as any).isExiting = true;
 
       (app as any).handleInput({ type: 'resize' });
@@ -604,7 +605,7 @@ describe('DoroApp', () => {
 
   describe('stepClock edge cases', () => {
     it('should return early when isExiting is true', () => {
-      const mockTick = jest.spyOn(mockTimerStateMachine, 'tick');
+      const mockTick = vi.spyOn(mockTimerStateMachine, 'tick');
       (app as any).isExiting = true;
 
       (app as any).stepClock();
@@ -637,7 +638,7 @@ describe('DoroApp', () => {
         completedMode: null
       });
 
-      const mockPlayModeClip = jest.spyOn(app as any, 'playModeClip');
+      const mockPlayModeClip = vi.spyOn(app as any, 'playModeClip');
 
       (app as any).stepClock();
 
@@ -647,8 +648,8 @@ describe('DoroApp', () => {
 
   describe('update functionality', () => {
     it('should handle manual update check with error', async () => {
-      (resolveControlCommand as jest.Mock).mockReturnValue('checkUpdate');
-      (checkForUpdates as jest.Mock).mockResolvedValue({
+      vi.mocked(resolveControlCommand).mockReturnValue('checkUpdate');
+      vi.mocked(checkForUpdates).mockResolvedValue({
         isAvailable: false,
         currentVersion: '1.0.0',
         error: 'Network error'
@@ -669,8 +670,8 @@ describe('DoroApp', () => {
     });
 
     it('should handle manual update check with available update', async () => {
-      (resolveControlCommand as jest.Mock).mockReturnValue('checkUpdate');
-      (checkForUpdates as jest.Mock).mockResolvedValue({
+      vi.mocked(resolveControlCommand).mockReturnValue('checkUpdate');
+      vi.mocked(checkForUpdates).mockResolvedValue({
         isAvailable: true,
         latestVersion: '1.2.0',
         currentVersion: '1.0.0'
@@ -691,8 +692,8 @@ describe('DoroApp', () => {
     });
 
     it('should handle manual update check with no update available', async () => {
-      (resolveControlCommand as jest.Mock).mockReturnValue('checkUpdate');
-      (checkForUpdates as jest.Mock).mockResolvedValue({
+      vi.mocked(resolveControlCommand).mockReturnValue('checkUpdate');
+      vi.mocked(checkForUpdates).mockResolvedValue({
         isAvailable: false,
         currentVersion: '1.0.0'
       });
@@ -719,17 +720,6 @@ describe('DoroApp', () => {
         currentVersion: '1.0.0'
       };
 
-      // Mock the copy operation to fail so it falls back to 'copyFallback'
-      const mockCopyToClipboard = jest.fn().mockResolvedValue({
-        success: false,
-        error: 'Clipboard failed'
-      });
-
-      jest.doMock('../update', () => ({
-        ...jest.requireActual('../update'),
-        copyToClipboard: mockCopyToClipboard
-      }));
-
       // Test the actual state that would be set
       (app as any).updatePromptState = 'copyFallback';
 
@@ -737,7 +727,7 @@ describe('DoroApp', () => {
     });
 
     it('should handle update prompt no response', async () => {
-      (resolveControlCommand as jest.Mock).mockReturnValue('updateNo');
+      vi.mocked(resolveControlCommand).mockReturnValue('updateNo');
       (app as any).updatePromptState = 'available';
       (app as any).updateCheckResult = {
         isAvailable: true,
@@ -765,11 +755,11 @@ describe('DoroApp', () => {
         skippedVersion: '1.1.0'
       };
 
-      (loadSettings as jest.Mock).mockResolvedValue(existingSettings);
-      (saveSettings as jest.Mock).mockClear();
+      vi.mocked(loadSettings).mockResolvedValue(existingSettings as any);
+      vi.mocked(saveSettings).mockClear();
 
       (app as any).volumeMode = 'muted';
-      (mockDoroUi.getColorScheme as jest.Mock).mockReturnValue('modern');
+      vi.mocked(mockDoroUi.getColorScheme).mockReturnValue('modern');
 
       (app as any).persistSettings();
 
@@ -780,7 +770,7 @@ describe('DoroApp', () => {
 
   describe('debugNearEnd during switchPrompt', () => {
     it('should handle debugNearEnd command during switchPrompt', () => {
-      (resolveControlCommand as jest.Mock).mockReturnValue('debugNearEnd');
+      vi.mocked(resolveControlCommand).mockReturnValue('debugNearEnd');
 
       mockTimerStateMachine.getState.mockReturnValue({
         mode: 'work',
@@ -810,7 +800,7 @@ describe('DoroApp', () => {
 
   describe('additional command coverage', () => {
     it('should handle startWork command', () => {
-      (resolveControlCommand as jest.Mock).mockReturnValue('startWork');
+      vi.mocked(resolveControlCommand).mockReturnValue('startWork');
 
       (app as any).handleInput({
         type: 'key',
@@ -826,7 +816,7 @@ describe('DoroApp', () => {
     });
 
     it('should handle startShort command', () => {
-      (resolveControlCommand as jest.Mock).mockReturnValue('startShort');
+      vi.mocked(resolveControlCommand).mockReturnValue('startShort');
 
       (app as any).handleInput({
         type: 'key',
@@ -842,7 +832,7 @@ describe('DoroApp', () => {
     });
 
     it('should handle startLong command', () => {
-      (resolveControlCommand as jest.Mock).mockReturnValue('startLong');
+      vi.mocked(resolveControlCommand).mockReturnValue('startLong');
 
       (app as any).handleInput({
         type: 'key',
@@ -858,7 +848,7 @@ describe('DoroApp', () => {
     });
 
     it('should handle toggleLock command', () => {
-      (resolveControlCommand as jest.Mock).mockReturnValue('toggleLock');
+      vi.mocked(resolveControlCommand).mockReturnValue('toggleLock');
 
       (app as any).handleInput({
         type: 'key',
@@ -874,7 +864,7 @@ describe('DoroApp', () => {
     });
 
     it('should render without action when locked and command is not allowed', () => {
-      (resolveControlCommand as jest.Mock).mockReturnValue('startWork');
+      vi.mocked(resolveControlCommand).mockReturnValue('startWork');
 
       mockTimerStateMachine.getState.mockReturnValue({
         mode: 'work',
@@ -885,7 +875,7 @@ describe('DoroApp', () => {
         completedWorkSessions: 0
       });
 
-      const renderCallsBefore = (mockDoroUi.render as jest.Mock).mock.calls.length;
+      const renderCallsBefore = vi.mocked(mockDoroUi.render).mock.calls.length;
 
       (app as any).handleInput({
         type: 'key',
@@ -897,11 +887,11 @@ describe('DoroApp', () => {
       });
 
       expect(mockTimerStateMachine.startMode).not.toHaveBeenCalled();
-      expect((mockDoroUi.render as jest.Mock).mock.calls.length).toBeGreaterThan(renderCallsBefore);
+      expect(vi.mocked(mockDoroUi.render).mock.calls.length).toBeGreaterThan(renderCallsBefore);
     });
 
     it('should handle debugNearEnd command in normal (non-switchPrompt) state', () => {
-      (resolveControlCommand as jest.Mock).mockReturnValue('debugNearEnd');
+      vi.mocked(resolveControlCommand).mockReturnValue('debugNearEnd');
 
       mockTimerStateMachine.getState.mockReturnValue({
         mode: 'work',
@@ -926,8 +916,8 @@ describe('DoroApp', () => {
     });
 
     it('should dispatch updateYes/updateNo while updatePromptState is active', async () => {
-      (resolveControlCommand as jest.Mock).mockReturnValue('updateYes');
-      (isUpdatePromptEvent as jest.Mock).mockReturnValue(true);
+      vi.mocked(resolveControlCommand).mockReturnValue('updateYes');
+      vi.mocked(isUpdatePromptEvent).mockReturnValue(true);
       (app as any).updatePromptState = 'available';
       (app as any).updateCheckResult = {
         isAvailable: true,
@@ -935,7 +925,7 @@ describe('DoroApp', () => {
         currentVersion: '1.0.0'
       };
 
-      const handleSpy = jest
+      const handleSpy = vi
         .spyOn(app as any, 'handleUpdatePromptResponse')
         .mockResolvedValue(undefined);
 
@@ -953,11 +943,11 @@ describe('DoroApp', () => {
     });
 
     it('should swallow update prompt events without calling handleUpdatePromptResponse for non yes/no', async () => {
-      (resolveControlCommand as jest.Mock).mockReturnValue('testUpdateAvailable');
-      (isUpdatePromptEvent as jest.Mock).mockReturnValue(true);
+      vi.mocked(resolveControlCommand).mockReturnValue('testUpdateAvailable');
+      vi.mocked(isUpdatePromptEvent).mockReturnValue(true);
       (app as any).updatePromptState = 'available';
 
-      const handleSpy = jest
+      const handleSpy = vi
         .spyOn(app as any, 'handleUpdatePromptResponse')
         .mockResolvedValue(undefined);
 
@@ -975,8 +965,8 @@ describe('DoroApp', () => {
     });
 
     it('should confirm prompt transition and play mode clip during switchPrompt', () => {
-      (resolveControlCommand as jest.Mock).mockReturnValue('startWork');
-      (isPromptConfirmEvent as jest.Mock).mockReturnValue(true);
+      vi.mocked(resolveControlCommand).mockReturnValue('startWork');
+      vi.mocked(isPromptConfirmEvent).mockReturnValue(true);
 
       mockTimerStateMachine.getState.mockReturnValue({
         mode: 'work',
@@ -1014,7 +1004,7 @@ describe('DoroApp', () => {
 
     it('should handle playModeClip in muted mode without playing sound', () => {
       (app as any).volumeMode = 'muted';
-      (resolveControlCommand as jest.Mock).mockReturnValue('startWork');
+      vi.mocked(resolveControlCommand).mockReturnValue('startWork');
 
       (app as any).handleInput({
         type: 'key',
@@ -1048,7 +1038,7 @@ describe('DoroApp', () => {
       expect(playClip).not.toHaveBeenCalled();
 
       // Test reset beep (triggered by resetRun with muted)
-      (resolveControlCommand as jest.Mock).mockReturnValue('resetRun');
+      vi.mocked(resolveControlCommand).mockReturnValue('resetRun');
       mockTimerStateMachine.resetCurrentAndRun.mockReturnValue({ switchedToMode: 'work' } as any);
 
       (app as any).handleInput({ type: 'key', ch: 'r' } as any);
@@ -1058,16 +1048,16 @@ describe('DoroApp', () => {
 
   describe('performStartupUpdateCheck', () => {
     it('should set updatePromptState to available when update is available and due', async () => {
-      (isCheckDue as jest.Mock).mockReturnValue(true);
-      (shouldPromptForVersion as jest.Mock).mockReturnValue(true);
-      (loadSettings as jest.Mock).mockResolvedValue({
+      vi.mocked(isCheckDue).mockReturnValue(true);
+      vi.mocked(shouldPromptForVersion).mockReturnValue(true);
+      vi.mocked(loadSettings).mockResolvedValue({
         volumeMode: 'normal',
         colorScheme: 'modern',
         lastCheckedAt: Date.now() - 25 * 60 * 60 * 1000,
         checkIntervalHours: 24
       });
 
-      (checkForUpdates as jest.Mock).mockResolvedValue({
+      vi.mocked(checkForUpdates).mockResolvedValue({
         isAvailable: true,
         latestVersion: '2.0.0',
         currentVersion: '1.0.0'
@@ -1081,9 +1071,9 @@ describe('DoroApp', () => {
     });
 
     it('should not prompt when version was already skipped', async () => {
-      (isCheckDue as jest.Mock).mockReturnValue(true);
-      (shouldPromptForVersion as jest.Mock).mockReturnValue(false); // Already skipped
-      (loadSettings as jest.Mock).mockResolvedValue({
+      vi.mocked(isCheckDue).mockReturnValue(true);
+      vi.mocked(shouldPromptForVersion).mockReturnValue(false); // Already skipped
+      vi.mocked(loadSettings).mockResolvedValue({
         volumeMode: 'normal',
         colorScheme: 'modern',
         lastCheckedAt: Date.now() - 25 * 60 * 60 * 1000,
@@ -1091,33 +1081,33 @@ describe('DoroApp', () => {
         skippedVersion: '2.0.0'
       });
 
-      (checkForUpdates as jest.Mock).mockResolvedValue({
+      vi.mocked(checkForUpdates).mockResolvedValue({
         isAvailable: true,
         latestVersion: '2.0.0',
         currentVersion: '1.0.0'
       });
 
-      const renderCountBefore = (mockDoroUi.render as jest.Mock).mock.calls.length;
+      const renderCountBefore = vi.mocked(mockDoroUi.render).mock.calls.length;
       await (app as any).performStartupUpdateCheck();
 
       expect((app as any).updatePromptState).toBe('none');
-      expect((mockDoroUi.render as jest.Mock).mock.calls.length).toBe(renderCountBefore);
+      expect(vi.mocked(mockDoroUi.render).mock.calls.length).toBe(renderCountBefore);
     });
 
     it('should skip save when check returns an error', async () => {
-      (isCheckDue as jest.Mock).mockReturnValue(true);
-      (loadSettings as jest.Mock).mockResolvedValue({
+      vi.mocked(isCheckDue).mockReturnValue(true);
+      vi.mocked(loadSettings).mockResolvedValue({
         volumeMode: 'normal',
         colorScheme: 'modern'
       });
 
-      (checkForUpdates as jest.Mock).mockResolvedValue({
+      vi.mocked(checkForUpdates).mockResolvedValue({
         isAvailable: false,
         currentVersion: '1.0.0',
         error: 'Network error'
       });
 
-      (saveSettings as jest.Mock).mockClear();
+      vi.mocked(saveSettings).mockClear();
       await (app as any).performStartupUpdateCheck();
 
       // saveSettings should NOT have been called because result.error is set
@@ -1153,7 +1143,7 @@ describe('DoroApp', () => {
     });
 
     it('should copy update command and set copySuccess state on updateYes', async () => {
-      (copyToClipboard as jest.Mock).mockResolvedValue({ success: true });
+      vi.mocked(copyToClipboard).mockResolvedValue({ success: true });
       (app as any).updateCheckResult = {
         isAvailable: true,
         latestVersion: '2.0.0',
@@ -1168,7 +1158,7 @@ describe('DoroApp', () => {
     });
 
     it('should set copyFallback when clipboard copy fails on updateYes', async () => {
-      (copyToClipboard as jest.Mock).mockResolvedValue({ success: false, error: 'no clipboard' });
+      vi.mocked(copyToClipboard).mockResolvedValue({ success: false, error: 'no clipboard' });
       (app as any).updateCheckResult = {
         isAvailable: true,
         latestVersion: '2.0.0',
@@ -1183,7 +1173,7 @@ describe('DoroApp', () => {
     });
 
     it('should set copyFallback when copyToClipboard throws', async () => {
-      (copyToClipboard as jest.Mock).mockRejectedValue(new Error('spawn error'));
+      vi.mocked(copyToClipboard).mockRejectedValue(new Error('spawn error'));
       (app as any).updateCheckResult = {
         isAvailable: true,
         latestVersion: '2.0.0',
@@ -1200,8 +1190,8 @@ describe('DoroApp', () => {
 
   describe('SIGTERM signal handling', () => {
     it('should call shutdown on SIGTERM', () => {
-      const mockOn = jest.spyOn(process, 'on').mockImplementation();
-      const mockShutdown = jest.spyOn(app as any, 'shutdown').mockImplementation();
+      const mockOn = vi.spyOn(process, 'on').mockImplementation((() => {}) as any);
+      const mockShutdown = vi.spyOn(app as any, 'shutdown').mockImplementation(() => {});
 
       app.bindProcessSignals();
 
@@ -1226,7 +1216,7 @@ describe('DoroApp', () => {
     });
 
     it('should set updatePromptState to available on testUpdateAvailable', () => {
-      (resolveControlCommand as jest.Mock).mockReturnValue('testUpdateAvailable');
+      vi.mocked(resolveControlCommand).mockReturnValue('testUpdateAvailable');
 
       (app as any).handleInput({
         type: 'key',
@@ -1242,7 +1232,7 @@ describe('DoroApp', () => {
     });
 
     it('should set updatePromptState to copySuccess on testUpdateCopySuccess', () => {
-      (resolveControlCommand as jest.Mock).mockReturnValue('testUpdateCopySuccess');
+      vi.mocked(resolveControlCommand).mockReturnValue('testUpdateCopySuccess');
 
       (app as any).handleInput({
         type: 'key',
@@ -1257,7 +1247,7 @@ describe('DoroApp', () => {
     });
 
     it('should set updatePromptState to copyFallback on testUpdateCopyFallback', () => {
-      (resolveControlCommand as jest.Mock).mockReturnValue('testUpdateCopyFallback');
+      vi.mocked(resolveControlCommand).mockReturnValue('testUpdateCopyFallback');
 
       (app as any).handleInput({
         type: 'key',
@@ -1272,7 +1262,7 @@ describe('DoroApp', () => {
     });
 
     it('should set updatePromptState to skipped on testUpdateSkipped', () => {
-      (resolveControlCommand as jest.Mock).mockReturnValue('testUpdateSkipped');
+      vi.mocked(resolveControlCommand).mockReturnValue('testUpdateSkipped');
 
       (app as any).handleInput({
         type: 'key',

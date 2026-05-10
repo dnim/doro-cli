@@ -1,8 +1,27 @@
-import { setupChildProcessMocks, setupFsMocks, createMockChildProcess } from './utils/mocks';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { createMockChildProcess } from './utils/mocks';
 
-// Setup centralized mocks
-setupChildProcessMocks();
-setupFsMocks();
+vi.mock('node:child_process', () => ({
+  spawn: vi.fn()
+}));
+
+vi.mock('node:fs', () => ({
+  default: {
+    existsSync: vi.fn(),
+    promises: {
+      readFile: vi.fn(),
+      writeFile: vi.fn(),
+      mkdir: vi.fn(),
+      rm: vi.fn()
+    }
+  },
+  promises: {
+    readFile: vi.fn(),
+    writeFile: vi.fn(),
+    mkdir: vi.fn(),
+    rm: vi.fn()
+  }
+}));
 
 import { playClip, stopPlayback } from '../audio/player';
 import { spawn } from 'node:child_process';
@@ -11,11 +30,11 @@ import { promises as fs } from 'node:fs';
 describe('Audio Player', () => {
   beforeEach(() => {
     // Clear all mocks before each test
-    jest.clearAllMocks();
+    vi.clearAllMocks();
 
     // Setup default mock behavior
-    (fs.writeFile as jest.Mock).mockResolvedValue(undefined);
-    (fs.rm as jest.Mock).mockResolvedValue(undefined);
+    vi.mocked(fs.writeFile).mockResolvedValue(undefined);
+    vi.mocked(fs.rm).mockResolvedValue(undefined);
   });
 
   afterEach(() => {
@@ -25,7 +44,7 @@ describe('Audio Player', () => {
   it('should write buffer to temp file, spawn child process, and clean up', async () => {
     // Arrange
     const mockChild = createMockChildProcess(0); // Successfully exits with code 0
-    (spawn as jest.Mock).mockReturnValue(mockChild);
+    vi.mocked(spawn).mockReturnValue(mockChild as any);
     const dummyBuffer = Buffer.from('dummy-audio-data');
 
     // Act
@@ -48,12 +67,12 @@ describe('Audio Player', () => {
     let closeCb: (code: number, signal: string) => void;
 
     const mockChild = {
-      kill: jest.fn().mockImplementation((signal) => {
+      kill: vi.fn().mockImplementation((signal) => {
         if (closeCb) {
           closeCb(null as unknown as number, signal); // Simulate child exiting after kill
         }
       }),
-      on: jest.fn().mockImplementation((event, cb) => {
+      on: vi.fn().mockImplementation((event, cb) => {
         if (event === 'close') {
           closeCb = cb;
         }
@@ -61,7 +80,7 @@ describe('Audio Player', () => {
       killed: false
     };
 
-    (spawn as jest.Mock).mockReturnValue(mockChild);
+    vi.mocked(spawn).mockReturnValue(mockChild as any);
     const dummyBuffer = Buffer.from('dummy');
 
     // Act
@@ -81,10 +100,10 @@ describe('Audio Player', () => {
   it('should fallback to next candidate if spawn fails or exits with error', async () => {
     // Arrange: Mock spawn to fail for the first candidate and succeed for the second
     let spawnCount = 0;
-    (spawn as jest.Mock).mockImplementation(() => {
+    (vi.mocked(spawn) as any).mockImplementation(() => {
       spawnCount++;
       const isFirst = spawnCount === 1;
-      return createMockChildProcess(isFirst ? 1 : 0); // Fail first, succeed second
+      return createMockChildProcess(isFirst ? 1 : 0) as unknown as ReturnType<typeof spawn>; // Fail first, succeed second
     });
 
     // Act
@@ -98,8 +117,8 @@ describe('Audio Player', () => {
   it('should handle early cancellation after spawn but before child setup', async () => {
     // Arrange
     const mockChild = {
-      kill: jest.fn(),
-      on: jest.fn().mockImplementation((event, cb) => {
+      kill: vi.fn(),
+      on: vi.fn().mockImplementation((event, cb) => {
         if (event === 'close') {
           // Simulate being killed
           setTimeout(() => cb(null, 'SIGTERM'), 5);
@@ -108,7 +127,7 @@ describe('Audio Player', () => {
       killed: false
     };
 
-    (spawn as jest.Mock).mockReturnValue(mockChild);
+    vi.mocked(spawn).mockReturnValue(mockChild as any);
     const dummyBuffer = Buffer.from('dummy');
 
     // Act
@@ -128,13 +147,13 @@ describe('Audio Player', () => {
     let errorCb: () => void;
     let spawnCount = 0;
 
-    (spawn as jest.Mock).mockImplementation(() => {
+    (vi.mocked(spawn) as any).mockImplementation(() => {
       spawnCount++;
       const isFirst = spawnCount === 1;
 
       const mockChild = {
-        kill: jest.fn(),
-        on: jest.fn().mockImplementation((event, cb) => {
+        kill: vi.fn(),
+        on: vi.fn().mockImplementation((event, cb) => {
           if (event === 'error' && isFirst) {
             errorCb = cb;
             // Trigger error immediately for first spawn
@@ -153,16 +172,18 @@ describe('Audio Player', () => {
     const dummyBuffer = Buffer.from('dummy');
     await playClip(dummyBuffer);
 
-    expect(spawn as jest.Mock).toHaveBeenCalledTimes(2);
+    expect(vi.mocked(spawn)).toHaveBeenCalledTimes(2);
   });
 
   it('should fall back to terminal bell when all candidates fail', async () => {
-    const mockStdoutWrite = jest.spyOn(process.stdout, 'write').mockImplementation();
+    const mockStdoutWrite = vi.spyOn(process.stdout, 'write').mockImplementation((() => {
+      /* noop */
+    }) as any);
 
     // Make all spawn attempts fail
-    (spawn as jest.Mock).mockImplementation(() => ({
-      kill: jest.fn(),
-      on: jest.fn().mockImplementation((event, cb) => {
+    (vi.mocked(spawn) as any).mockImplementation(() => ({
+      kill: vi.fn(),
+      on: vi.fn().mockImplementation((event, cb) => {
         if (event === 'close') {
           setTimeout(() => cb(1, null), 0); // Non-zero exit code = failure
         }
@@ -180,11 +201,11 @@ describe('Audio Player', () => {
 
   it('should stop immediately if stopPlayback is called before spawn', async () => {
     let callCount = 0;
-    (spawn as jest.Mock).mockImplementation(() => {
+    (vi.mocked(spawn) as any).mockImplementation(() => {
       callCount++;
       return {
-        kill: jest.fn(),
-        on: jest.fn().mockImplementation((event, cb) => {
+        kill: vi.fn(),
+        on: vi.fn().mockImplementation((event, cb) => {
           if (event === 'close') {
             setTimeout(() => cb(0, null), 0);
           }
@@ -215,13 +236,13 @@ describe('Audio Player', () => {
   it('should handle concurrent playClip calls by cancelling previous', async () => {
     let spawnCount = 0;
 
-    (spawn as jest.Mock).mockImplementation(() => {
+    (vi.mocked(spawn) as any).mockImplementation(() => {
       spawnCount++;
       const isFirst = spawnCount === 1;
 
       return {
-        kill: jest.fn(),
-        on: jest.fn().mockImplementation((event, cb) => {
+        kill: vi.fn(),
+        on: vi.fn().mockImplementation((event, cb) => {
           if (event === 'close') {
             if (isFirst) {
               // First call gets cancelled (signal SIGTERM)
@@ -256,11 +277,13 @@ describe('Audio Player', () => {
     const dummyBuffer = Buffer.from('dummy');
 
     // Mock a cancelled state that gets checked early
-    let mockChild: { kill: jest.Mock; on: jest.Mock; killed: boolean } | undefined;
-    (spawn as jest.Mock).mockImplementation(() => {
+    let mockChild:
+      | { kill: ReturnType<typeof vi.fn>; on: ReturnType<typeof vi.fn>; killed: boolean }
+      | undefined;
+    (vi.mocked(spawn) as any).mockImplementation(() => {
       mockChild = {
-        kill: jest.fn(),
-        on: jest.fn().mockImplementation((event, cb) => {
+        kill: vi.fn(),
+        on: vi.fn().mockImplementation((event, cb) => {
           if (event === 'close') {
             setTimeout(() => cb(null, 'SIGTERM'), 0);
           }
@@ -286,9 +309,9 @@ describe('Audio Player', () => {
     // Track if playback gets cancelled during error handling
     let errorCb: () => void;
 
-    (spawn as jest.Mock).mockImplementation(() => ({
-      kill: jest.fn(),
-      on: jest.fn().mockImplementation((event, cb) => {
+    (vi.mocked(spawn) as any).mockImplementation(() => ({
+      kill: vi.fn(),
+      on: vi.fn().mockImplementation((event, cb) => {
         if (event === 'error') {
           errorCb = cb;
           setTimeout(() => {
@@ -312,7 +335,7 @@ describe('Audio Player', () => {
     await playClip(dummyBuffer);
 
     // Should not spawn any processes in test mode
-    expect(spawn as jest.Mock).not.toHaveBeenCalled();
+    expect(vi.mocked(spawn)).not.toHaveBeenCalled();
     expect(fs.writeFile).not.toHaveBeenCalled();
 
     process.env.DORO_TEST_MODE = originalTestMode;

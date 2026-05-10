@@ -1,41 +1,42 @@
+import { MockInstance } from 'vitest';
 import { enableMouse, disableMouse } from '../mouse';
 
 describe('Mouse Tracking', () => {
-  let mockStdoutWrite: jest.SpyInstance;
-  let mockStdinOff: jest.SpyInstance;
-  let mockStdinPrependListener: jest.SpyInstance;
+  let mockStdoutWrite: MockInstance;
+  let mockStdinOff: MockInstance;
+  let mockStdinPrependListener: MockInstance;
 
   beforeEach(() => {
-    mockStdoutWrite = jest.spyOn(process.stdout, 'write').mockImplementation(() => true);
-    mockStdinOff = jest.spyOn(process.stdin, 'off').mockImplementation(() => process.stdin);
-    mockStdinPrependListener = jest
+    mockStdoutWrite = vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
+    mockStdinOff = vi.spyOn(process.stdin, 'off').mockImplementation(() => process.stdin);
+    mockStdinPrependListener = vi
       .spyOn(process.stdin, 'prependListener')
       .mockImplementation(() => process.stdin);
-    jest.useFakeTimers();
+    vi.useFakeTimers();
   });
 
   afterEach(() => {
     disableMouse();
-    jest.restoreAllMocks();
-    jest.useRealTimers();
+    vi.restoreAllMocks();
+    vi.useRealTimers();
   });
 
   it('should enable mouse tracking and emit escape sequences', () => {
-    const mockHandler = jest.fn();
+    const mockHandler = vi.fn();
     enableMouse(mockHandler);
 
     expect(mockStdinPrependListener).toHaveBeenCalledWith('data', expect.any(Function));
 
     // Process the setImmediate
-    jest.runAllTimers();
+    vi.runAllTimers();
 
     expect(mockStdoutWrite).toHaveBeenCalledWith('\x1b[?1000h\x1b[?1006h');
   });
 
   it('should disable mouse tracking', () => {
-    const mockHandler = jest.fn();
+    const mockHandler = vi.fn();
     enableMouse(mockHandler);
-    jest.runAllTimers();
+    vi.runAllTimers();
 
     disableMouse();
 
@@ -44,10 +45,11 @@ describe('Mouse Tracking', () => {
   });
 
   it('should call handler on left mouse click SGR sequences', () => {
-    const mockHandler = jest.fn();
+    const mockHandler = vi.fn();
     enableMouse(mockHandler);
 
-    const dataListener = mockStdinPrependListener.mock.calls[0][1];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const dataListener = (mockStdinPrependListener.mock.calls[0] as any[])[1];
 
     // Left mouse press: \x1b[<0;10;10M
     dataListener(Buffer.from('\x1b[<0;10;10M'));
