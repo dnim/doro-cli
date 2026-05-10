@@ -1,9 +1,9 @@
 ---
 id: DORO-007
 title: Update Renovate config to group dependency update PRs
-status: To Do
+status: In Progress
 assignee:
-  - '@dnim'
+  - '@myself'
 created_date: '2026-05-10 14:15'
 updated_date: '2026-05-10 14:15'
 labels: []
