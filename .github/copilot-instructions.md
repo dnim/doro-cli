@@ -1,3 +1,16 @@
+# GitHub Copilot Instructions: Backlog.md Workflow
+
+You are operating in a repository that uses a file-based Project Management system located in the `.backlog/` directory.
+
+## Core Rules for Copilot
+
+1. **Context Gathering:** Always check `.backlog/tasks/` to understand current active work, acceptance criteria, and project priorities.
+2. **Task IDs:** Every task file is named sequentially as `doro-[ID] - [Title].md` (e.g., `doro-001 - Fix-UI.md`).
+3. **Updating State:** When you complete a task's coding requirements, use `backlog task edit <id> -s Done` to mark it complete. Never manually move or edit task files.
+4. **No Hallucinations:** Never make up task IDs. Run `backlog task list --plain` to find the next available sequential number before proposing a new task.
+5. **Implementation Notes:** Add progress context via CLI: `backlog task edit <id> --append-notes "your note"`. Never edit task files directly.
+
+---
 
 <!-- BACKLOG.MD GUIDELINES START -->
 # Instructions for the usage of Backlog.md CLI Tool
