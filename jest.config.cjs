@@ -3,8 +3,9 @@ module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
   testMatch: ['**/__tests__/**/*.test.ts'],
+  testPathIgnorePatterns: ['/node_modules/', '/__tests__/vitest/'],
   collectCoverage: !!process.env.CI || process.argv.includes('--coverage'),
-  collectCoverageFrom: ['src/**/*.ts', '!src/cli.ts'],
+  collectCoverageFrom: ['src/**/*.ts', '!src/cli.ts', '!src/**/__tests__/vitest/**'],
   coverageThreshold: {
     global: {
       branches: 73.5,

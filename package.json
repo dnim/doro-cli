@@ -30,6 +30,8 @@
     "lint:local": "eslint . --cache",
     "typecheck": "tsc --noEmit",
     "test:unit": "jest --runInBand",
+    "test:unit:vitest": "vitest run",
+    "test:unit:vitest:watch": "vitest",
     "test:visual": "npm run build && playwright test",
     "test:visual:update": "npm run build && playwright test --update-snapshots",
     "release": "npm run clean && npm run build && release-it",
@@ -54,6 +56,7 @@
     "@types/blessed": "^0.1.27",
     "@types/jest": "^30.0.0",
     "@types/node": "^25.6.0",
+    "@vitest/coverage-v8": "^4.1.5",
     "@yao-pkg/pkg": "^6.19.0",
     "eslint": "^10.2.1",
     "eslint-config-prettier": "^10.1.8",
@@ -69,6 +72,7 @@
     "tsx": "^4.19.3",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.29.0",
+    "vitest": "^4.1.5",
     "xterm": "^5.3.0"
   },
   "release-it": {

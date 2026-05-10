@@ -31,6 +31,7 @@ export default tseslint.config(
     ignores: [
       'dist/**',
       'jest.config.cjs',
+      'vitest.config.ts',
       'coverage/**',
       'node_modules/**',
       'playwright.config.ts'
