@@ -16,6 +16,16 @@
     {
       "matchUpdateTypes": ["major"],
       "enabled": false
+    },
+    {
+      "matchDepTypes": ["dependencies"],
+      "groupName": "Production Dependencies",
+      "groupSlug": "deps-prod"
+    },
+    {
+      "matchDepTypes": ["devDependencies"],
+      "groupName": "Development Dependencies",
+      "groupSlug": "deps-dev"
     }
   ]
 }
