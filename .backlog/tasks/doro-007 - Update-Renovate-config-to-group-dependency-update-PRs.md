@@ -5,7 +5,7 @@ status: In Progress
 assignee:
   - '@myself'
 created_date: '2026-05-10 14:15'
-updated_date: '2026-05-10 14:16'
+updated_date: '2026-05-10 14:22'
 labels: []
 dependencies: []
 ---
@@ -42,12 +42,12 @@ If Renovate package rules make a different but still simple two-group setup easi
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Renovate no longer opens one PR per dependency by default
-- [ ] #2 Dependency updates are grouped into at most two logical PR groups
-- [ ] #3 Runtime / production dependencies are grouped together
-- [ ] #4 Development / tooling dependencies are grouped together
-- [ ] #5 The resulting Renovate config is simple and maintainable
-- [ ] #6 Future dependency update PR volume is significantly reduced
+- [x] #1 Renovate no longer opens one PR per dependency by default
+- [x] #2 Dependency updates are grouped into at most two logical PR groups
+- [x] #3 Runtime / production dependencies are grouped together
+- [x] #4 Development / tooling dependencies are grouped together
+- [x] #5 The resulting Renovate config is simple and maintainable
+- [x] #6 Future dependency update PR volume is significantly reduced
 <!-- AC:END -->
 
 ## Implementation Plan
