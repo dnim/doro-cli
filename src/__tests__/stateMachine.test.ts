@@ -1,4 +1,4 @@
-import { describe, expect, it } from '@jest/globals';
+import { describe, expect, it } from 'vitest';
 import { TimerStateMachine } from '../stateMachine';
 import { createQuickTestConfig } from './utils/factories';
 

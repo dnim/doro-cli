@@ -1,74 +1,18 @@
 import type { InputEvent } from '../../input';
 
 /**
- * Mock setup for external dependencies used across multiple tests
+ * Mock setup for external dependencies used across multiple tests.
+ *
+ * NOTE: vi.mock() calls must be declared at the TOP LEVEL of each test file
+ * (not inside these helper functions) so Vitest can hoist them.
+ * These helpers configure mock return values after the module mocks are in place.
  */
-
-/**
- * Sets up env-paths mock to return a consistent config path
- */
-export function setupEnvPathsMock() {
-  jest.mock('env-paths', () => {
-    return jest.fn().mockReturnValue({
-      config: '/mock/config/path'
-    });
-  });
-}
-
-/**
- * Sets up Node.js fs module mocks for file operations
- */
-export function setupFsMocks() {
-  jest.mock('node:fs', () => ({
-    existsSync: jest.fn(),
-    promises: {
-      readFile: jest.fn(),
-      writeFile: jest.fn(),
-      mkdir: jest.fn(),
-      rm: jest.fn()
-    }
-  }));
-}
-
-/**
- * Sets up Node.js child_process module mocks for audio playback
- */
-export function setupChildProcessMocks() {
-  jest.mock('node:child_process', () => ({
-    spawn: jest.fn()
-  }));
-}
 
 /**
  * Sets up global fetch mock for network requests (like update checks)
  */
 export function setupFetchMock() {
-  global.fetch = jest.fn();
-}
-
-/**
- * Sets up comprehensive audio-related mocks including player and synthesizer modules
- */
-export function setupAudioMocks() {
-  // These mocks need to be set up before the modules are imported
-  // So this is mainly for documentation - actual mocks should be at top level
-  setupChildProcessMocks();
-  setupFsMocks();
-}
-
-/**
- * Sets up mocks for core application modules
- * NOTE: These mocks need to be set up before imports, so should be called at top level
- */
-export function setupAppMocks() {
-  jest.mock('../../stateMachine');
-  jest.mock('../../ui');
-  jest.mock('../../audio/player');
-  jest.mock('../../audio/synth');
-  jest.mock('../../constants');
-  jest.mock('../../input');
-  jest.mock('../../config');
-  jest.mock('../../update');
+  global.fetch = vi.fn();
 }
 
 /**
@@ -77,12 +21,12 @@ export function setupAppMocks() {
 export function setupInputMocks() {
   // Mock process.stdin for input handling
   const mockStdin = {
-    setRawMode: jest.fn(),
-    resume: jest.fn(),
-    pause: jest.fn(),
-    on: jest.fn(),
-    off: jest.fn(),
-    removeAllListeners: jest.fn()
+    setRawMode: vi.fn(),
+    resume: vi.fn(),
+    pause: vi.fn(),
+    on: vi.fn(),
+    off: vi.fn(),
+    removeAllListeners: vi.fn()
   };
 
   Object.defineProperty(process, 'stdin', {
@@ -92,7 +36,7 @@ export function setupInputMocks() {
 
   // Mock process.stdout for terminal output
   const mockStdout = {
-    write: jest.fn(),
+    write: vi.fn(),
     columns: 80,
     rows: 24
   };
@@ -104,17 +48,17 @@ export function setupInputMocks() {
 }
 
 /**
- * Sets up timer mocks using Jest's fake timers
+ * Sets up timer mocks using Vitest's fake timers
  */
 export function setupTimerMocks() {
-  jest.useFakeTimers();
+  vi.useFakeTimers();
 }
 
 /**
  * Sets up process.exit mock to prevent tests from terminating
  */
 export function setupProcessExitMock() {
-  return jest.spyOn(process, 'exit').mockImplementation((() => {
+  return vi.spyOn(process, 'exit').mockImplementation((() => {
     // Intentionally empty - prevents process.exit from terminating test runner
   }) as never);
 }
@@ -168,13 +112,10 @@ export function createResizeEvent(): InputEvent {
 }
 
 /**
- * Comprehensive setup for all common mocks used across test files
- * Call this in beforeEach for tests that need multiple mock types
+ * Comprehensive setup for all common mocks used across test files.
+ * NOTE: Callers must declare the required vi.mock() calls at their file's top level.
  */
 export function setupAllCommonMocks() {
-  setupEnvPathsMock();
-  setupFsMocks();
-  setupChildProcessMocks();
   setupFetchMock();
   setupTimerMocks();
   setupInputMocks();
@@ -186,8 +127,8 @@ export function setupAllCommonMocks() {
  */
 export function createMockChildProcess(exitCode = 0) {
   return {
-    kill: jest.fn(),
-    on: jest
+    kill: vi.fn(),
+    on: vi
       .fn()
       .mockImplementation((event: string, cb: (code: number, signal: string | null) => void) => {
         if (event === 'close') {

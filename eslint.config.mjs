@@ -15,8 +15,7 @@ export default tseslint.config(
         project: './tsconfig.json'
       },
       globals: {
-        ...globals.node,
-        ...globals.jest
+        ...globals.node
       }
     },
     rules: {
@@ -30,11 +29,10 @@ export default tseslint.config(
   {
     ignores: [
       'dist/**',
-      'jest.config.cjs',
-      'vitest.config.ts',
       'coverage/**',
       'node_modules/**',
-      'playwright.config.ts'
+      'playwright.config.ts',
+      'vitest.config.ts'
     ]
   }
 );

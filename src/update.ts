@@ -1,3 +1,4 @@
+import { spawn } from 'node:child_process';
 import { type Settings } from './config';
 
 export type UpdatePromptState =
@@ -155,10 +156,6 @@ export function getUpdateCommand(): string {
  */
 export async function copyToClipboard(text: string): Promise<ClipboardResult> {
   const command = getUpdateCommand();
-
-  // Try different clipboard methods based on platform
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { spawn } = require('child_process');
 
   return new Promise((resolve) => {
     let clipboardCmd: string;

@@ -1,7 +1,7 @@
-import { setupFetchMock } from './utils/mocks';
-
-// Setup centralized mocks
-setupFetchMock();
+// Initialize global.fetch as a mock before tests
+beforeAll(() => {
+  global.fetch = vi.fn();
+});
 
 import {
   getCurrentVersion,
@@ -15,12 +15,11 @@ import {
 
 describe('update functionality', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
-    jest.resetModules();
+    vi.clearAllMocks();
   });
 
   afterEach(() => {
-    jest.resetAllMocks();
+    vi.resetAllMocks();
   });
 
   describe('getCurrentVersion', () => {
@@ -37,7 +36,7 @@ describe('update functionality', () => {
 
   describe('fetchLatestVersion', () => {
     it('should fetch version from npm registry', async () => {
-      (global.fetch as jest.Mock).mockResolvedValue({
+      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
         ok: true,
         json: () => Promise.resolve({ version: '1.3.0' })
       });
@@ -53,14 +52,14 @@ describe('update functionality', () => {
     });
 
     it('should return null on network error', async () => {
-      (global.fetch as jest.Mock).mockRejectedValue(new Error('Network error'));
+      (global.fetch as ReturnType<typeof vi.fn>).mockRejectedValue(new Error('Network error'));
 
       const version = await fetchLatestVersion();
       expect(version).toBeNull();
     });
 
     it('should return null on non-ok response', async () => {
-      (global.fetch as jest.Mock).mockResolvedValue({
+      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
         ok: false,
         status: 404
       });
@@ -70,9 +69,9 @@ describe('update functionality', () => {
     });
 
     it('should handle timeout', async () => {
-      jest.useFakeTimers();
+      vi.useFakeTimers();
 
-      (global.fetch as jest.Mock).mockImplementation(
+      (global.fetch as ReturnType<typeof vi.fn>).mockImplementation(
         (url, options) =>
           new Promise((resolve, reject) => {
             options.signal.addEventListener('abort', () => {
@@ -85,12 +84,12 @@ describe('update functionality', () => {
       const versionPromise = fetchLatestVersion();
 
       // Fast forward past the 5 second timeout
-      jest.advanceTimersByTime(6000);
+      vi.advanceTimersByTime(6000);
 
       const version = await versionPromise;
       expect(version).toBeNull();
 
-      jest.useRealTimers();
+      vi.useRealTimers();
     });
   });
 
@@ -179,7 +178,7 @@ describe('update functionality', () => {
 
   describe('checkForUpdates', () => {
     it('should return update available when newer version exists', async () => {
-      (global.fetch as jest.Mock).mockResolvedValue({
+      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
         ok: true,
         json: () => Promise.resolve({ version: '99.0.0' })
       });
@@ -194,7 +193,7 @@ describe('update functionality', () => {
 
     it('should return no update when same version', async () => {
       const currentVersion = getCurrentVersion();
-      (global.fetch as jest.Mock).mockResolvedValue({
+      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
         ok: true,
         json: () => Promise.resolve({ version: currentVersion })
       });
@@ -207,7 +206,7 @@ describe('update functionality', () => {
     });
 
     it('should handle fetch error', async () => {
-      (global.fetch as jest.Mock).mockRejectedValue(new Error('Network error'));
+      (global.fetch as ReturnType<typeof vi.fn>).mockRejectedValue(new Error('Network error'));
 
       const result = await checkForUpdates();
 
@@ -222,19 +221,27 @@ describe('update functionality', () => {
     });
   });
 
+  function getHandler(mock: ReturnType<typeof vi.fn>, event: string): (...args: unknown[]) => void {
+    const call = (mock.mock.calls as [string, (...args: unknown[]) => void][]).find(
+      (c) => c[0] === event
+    );
+    if (!call) {
+      throw new Error(`No handler registered for event '${event}'`);
+    }
+    return call[1];
+  }
+
   describe('copyToClipboard', () => {
-    const mockSpawn = jest.fn();
+    let mockSpawnLocal: ReturnType<typeof vi.fn>;
 
     beforeEach(() => {
-      mockSpawn.mockClear();
-      jest.doMock('child_process', () => ({
-        spawn: mockSpawn
-      }));
-      jest.resetModules();
+      mockSpawnLocal = vi.fn();
+      vi.resetModules();
+      vi.doMock('node:child_process', () => ({ spawn: mockSpawnLocal }));
     });
 
     afterEach(() => {
-      jest.dontMock('child_process');
+      vi.doUnmock('node:child_process');
     });
 
     it('should copy to clipboard on macOS', async () => {
@@ -242,33 +249,24 @@ describe('update functionality', () => {
       Object.defineProperty(process, 'platform', { value: 'darwin' });
 
       const mockProc = {
-        on: jest.fn(),
-        stdin: {
-          write: jest.fn(),
-          end: jest.fn()
-        },
-        stderr: {
-          on: jest.fn()
-        }
+        on: vi.fn(),
+        stdin: { write: vi.fn(), end: vi.fn() },
+        stderr: { on: vi.fn() }
       };
 
-      mockSpawn.mockReturnValue(mockProc);
+      mockSpawnLocal.mockReturnValue(mockProc);
 
-      // Need to require the module again to get the mocked version
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const { copyToClipboard: mockedCopyToClipboard } = require('../update');
+      const { copyToClipboard: mockedCopyToClipboard } = await import('../update.js');
       const resultPromise = mockedCopyToClipboard('test text');
 
-      // Simulate successful completion
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const onCloseHandler = mockProc.on.mock.calls.find((call: any[]) => call[0] === 'close')[1];
+      const onCloseHandler = getHandler(mockProc.on, 'close');
       onCloseHandler(0);
 
       const result = await resultPromise;
 
       expect(result.success).toBe(true);
       expect(result.command).toBe('npm install -g doro-cli@latest && doro');
-      expect(mockSpawn).toHaveBeenCalledWith('pbcopy', []);
+      expect(mockSpawnLocal).toHaveBeenCalledWith('pbcopy', []);
 
       Object.defineProperty(process, 'platform', { value: originalPlatform });
     });
@@ -278,25 +276,17 @@ describe('update functionality', () => {
       Object.defineProperty(process, 'platform', { value: 'darwin' });
 
       const mockProc = {
-        on: jest.fn(),
-        stdin: {
-          write: jest.fn(),
-          end: jest.fn()
-        },
-        stderr: {
-          on: jest.fn()
-        }
+        on: vi.fn(),
+        stdin: { write: vi.fn(), end: vi.fn() },
+        stderr: { on: vi.fn() }
       };
 
-      mockSpawn.mockReturnValue(mockProc);
+      mockSpawnLocal.mockReturnValue(mockProc);
 
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const { copyToClipboard: mockedCopyToClipboard } = require('../update');
+      const { copyToClipboard: mockedCopyToClipboard } = await import('../update.js');
       const resultPromise = mockedCopyToClipboard('test text');
 
-      // Simulate failure
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const onCloseHandler = mockProc.on.mock.calls.find((call: any[]) => call[0] === 'close')[1];
+      const onCloseHandler = getHandler(mockProc.on, 'close');
       onCloseHandler(1);
 
       const result = await resultPromise;
@@ -311,8 +301,7 @@ describe('update functionality', () => {
       const originalPlatform = process.platform;
       Object.defineProperty(process, 'platform', { value: 'unknown' });
 
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const { copyToClipboard: mockedCopyToClipboard } = require('../update');
+      const { copyToClipboard: mockedCopyToClipboard } = await import('../update.js');
       const result = await mockedCopyToClipboard('test text');
 
       expect(result.success).toBe(false);
@@ -326,43 +315,34 @@ describe('update functionality', () => {
       Object.defineProperty(process, 'platform', { value: 'linux' });
 
       const mockXclipProc = {
-        on: jest.fn(),
-        stdin: { write: jest.fn(), end: jest.fn() },
-        stderr: { on: jest.fn() }
+        on: vi.fn(),
+        stdin: { write: vi.fn(), end: vi.fn() },
+        stderr: { on: vi.fn() }
       };
-
       const mockXselProc = {
-        on: jest.fn(),
-        stdin: { write: jest.fn(), end: jest.fn() },
-        stderr: { on: jest.fn() }
+        on: vi.fn(),
+        stdin: { write: vi.fn(), end: vi.fn() },
+        stderr: { on: vi.fn() }
       };
 
-      // First call returns xclip proc, second returns xsel
-      mockSpawn.mockReturnValueOnce(mockXclipProc).mockReturnValueOnce(mockXselProc);
+      mockSpawnLocal.mockReturnValueOnce(mockXclipProc).mockReturnValueOnce(mockXselProc);
 
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const { copyToClipboard: mockedCopyToClipboard } = require('../update');
+      const { copyToClipboard: mockedCopyToClipboard } = await import('../update.js');
       const resultPromise = mockedCopyToClipboard('test text');
 
       // Simulate xclip error
-      const xclipErrorHandler = mockXclipProc.on.mock.calls.find(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (call: any[]) => call[0] === 'error'
-      )[1];
+      const xclipErrorHandler = getHandler(mockXclipProc.on, 'error');
       xclipErrorHandler(new Error('xclip not found'));
 
       // Simulate xsel success
-      const xselCloseHandler = mockXselProc.on.mock.calls.find(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (call: any[]) => call[0] === 'close'
-      )[1];
+      const xselCloseHandler = getHandler(mockXselProc.on, 'close');
       xselCloseHandler(0);
 
       const result = await resultPromise;
 
       expect(result.success).toBe(true);
-      expect(mockSpawn).toHaveBeenCalledWith('xclip', ['-selection', 'clipboard']);
-      expect(mockSpawn).toHaveBeenCalledWith('xsel', ['--clipboard', '--input']);
+      expect(mockSpawnLocal).toHaveBeenCalledWith('xclip', ['-selection', 'clipboard']);
+      expect(mockSpawnLocal).toHaveBeenCalledWith('xsel', ['--clipboard', '--input']);
 
       Object.defineProperty(process, 'platform', { value: originalPlatform });
     });
@@ -372,43 +352,34 @@ describe('update functionality', () => {
       Object.defineProperty(process, 'platform', { value: 'linux' });
 
       const mockXclipProc = {
-        on: jest.fn(),
-        stdin: { write: jest.fn(), end: jest.fn() },
-        stderr: { on: jest.fn() }
+        on: vi.fn(),
+        stdin: { write: vi.fn(), end: vi.fn() },
+        stderr: { on: vi.fn() }
       };
-
       const mockXselProc = {
-        on: jest.fn(),
-        stdin: { write: jest.fn(), end: jest.fn() },
-        stderr: { on: jest.fn() }
+        on: vi.fn(),
+        stdin: { write: vi.fn(), end: vi.fn() },
+        stderr: { on: vi.fn() }
       };
 
-      // First call returns xclip proc, second returns xsel
-      mockSpawn.mockReturnValueOnce(mockXclipProc).mockReturnValueOnce(mockXselProc);
+      mockSpawnLocal.mockReturnValueOnce(mockXclipProc).mockReturnValueOnce(mockXselProc);
 
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const { copyToClipboard: mockedCopyToClipboard } = require('../update');
+      const { copyToClipboard: mockedCopyToClipboard } = await import('../update.js');
       const resultPromise = mockedCopyToClipboard('test text');
 
-      // Simulate xclip non-zero exit (not error event)
-      const xclipCloseHandler = mockXclipProc.on.mock.calls.find(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (call: any[]) => call[0] === 'close'
-      )[1];
-      xclipCloseHandler(1); // Non-zero exit code triggers xsel fallback
+      // Simulate xclip non-zero exit
+      const xclipCloseHandler = getHandler(mockXclipProc.on, 'close');
+      xclipCloseHandler(1);
 
       // Simulate xsel success
-      const xselCloseHandler = mockXselProc.on.mock.calls.find(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (call: any[]) => call[0] === 'close'
-      )[1];
+      const xselCloseHandler = getHandler(mockXselProc.on, 'close');
       xselCloseHandler(0);
 
       const result = await resultPromise;
 
       expect(result.success).toBe(true);
-      expect(mockSpawn).toHaveBeenCalledWith('xclip', ['-selection', 'clipboard']);
-      expect(mockSpawn).toHaveBeenCalledWith('xsel', ['--clipboard', '--input']);
+      expect(mockSpawnLocal).toHaveBeenCalledWith('xclip', ['-selection', 'clipboard']);
+      expect(mockSpawnLocal).toHaveBeenCalledWith('xsel', ['--clipboard', '--input']);
 
       Object.defineProperty(process, 'platform', { value: originalPlatform });
     });
@@ -418,35 +389,27 @@ describe('update functionality', () => {
       Object.defineProperty(process, 'platform', { value: 'linux' });
 
       const mockXclipProc = {
-        on: jest.fn(),
-        stdin: { write: jest.fn(), end: jest.fn() },
-        stderr: { on: jest.fn() }
+        on: vi.fn(),
+        stdin: { write: vi.fn(), end: vi.fn() },
+        stderr: { on: vi.fn() }
       };
-
       const mockXselProc = {
-        on: jest.fn(),
-        stdin: { write: jest.fn(), end: jest.fn() },
-        stderr: { on: jest.fn() }
+        on: vi.fn(),
+        stdin: { write: vi.fn(), end: vi.fn() },
+        stderr: { on: vi.fn() }
       };
 
-      mockSpawn.mockReturnValueOnce(mockXclipProc).mockReturnValueOnce(mockXselProc);
+      mockSpawnLocal.mockReturnValueOnce(mockXclipProc).mockReturnValueOnce(mockXselProc);
 
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const { copyToClipboard: mockedCopyToClipboard } = require('../update');
+      const { copyToClipboard: mockedCopyToClipboard } = await import('../update.js');
       const resultPromise = mockedCopyToClipboard('test text');
 
-      // Simulate xclip failure (non-zero exit)
-      const xclipCloseHandler = mockXclipProc.on.mock.calls.find(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (call: any[]) => call[0] === 'close'
-      )[1];
+      // Simulate xclip failure
+      const xclipCloseHandler = getHandler(mockXclipProc.on, 'close');
       xclipCloseHandler(1);
 
       // Simulate xsel failure
-      const xselCloseHandler = mockXselProc.on.mock.calls.find(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (call: any[]) => call[0] === 'close'
-      )[1];
+      const xselCloseHandler = getHandler(mockXselProc.on, 'close');
       xselCloseHandler(1);
 
       const result = await resultPromise;
@@ -462,24 +425,22 @@ describe('update functionality', () => {
       Object.defineProperty(process, 'platform', { value: 'win32' });
 
       const mockProc = {
-        on: jest.fn(),
-        stdin: { write: jest.fn(), end: jest.fn() },
-        stderr: { on: jest.fn() }
+        on: vi.fn(),
+        stdin: { write: vi.fn(), end: vi.fn() },
+        stderr: { on: vi.fn() }
       };
-      mockSpawn.mockReturnValue(mockProc);
+      mockSpawnLocal.mockReturnValue(mockProc);
 
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const { copyToClipboard: mockedCopyToClipboard } = require('../update');
+      const { copyToClipboard: mockedCopyToClipboard } = await import('../update.js');
       const resultPromise = mockedCopyToClipboard('test text');
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const onCloseHandler = mockProc.on.mock.calls.find((call: any[]) => call[0] === 'close')[1];
+      const onCloseHandler = getHandler(mockProc.on, 'close');
       onCloseHandler(0);
 
       const result = await resultPromise;
 
       expect(result.success).toBe(true);
-      expect(mockSpawn).toHaveBeenCalledWith('clip', []);
+      expect(mockSpawnLocal).toHaveBeenCalledWith('clip', []);
 
       Object.defineProperty(process, 'platform', { value: originalPlatform });
     });
@@ -489,19 +450,16 @@ describe('update functionality', () => {
       Object.defineProperty(process, 'platform', { value: 'darwin' });
 
       const mockProc = {
-        on: jest.fn(),
-        stdin: { write: jest.fn(), end: jest.fn() },
-        stderr: { on: jest.fn() }
+        on: vi.fn(),
+        stdin: { write: vi.fn(), end: vi.fn() },
+        stderr: { on: vi.fn() }
       };
-      mockSpawn.mockReturnValue(mockProc);
+      mockSpawnLocal.mockReturnValue(mockProc);
 
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const { copyToClipboard: mockedCopyToClipboard } = require('../update');
+      const { copyToClipboard: mockedCopyToClipboard } = await import('../update.js');
       const resultPromise = mockedCopyToClipboard('test text');
 
-      // Simulate process error (e.g. pbcopy not found)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const onErrorHandler = mockProc.on.mock.calls.find((call: any[]) => call[0] === 'error')[1];
+      const onErrorHandler = getHandler(mockProc.on, 'error');
       onErrorHandler(new Error('pbcopy not found'));
 
       const result = await resultPromise;
@@ -517,35 +475,27 @@ describe('update functionality', () => {
       Object.defineProperty(process, 'platform', { value: 'linux' });
 
       const mockXclipProc = {
-        on: jest.fn(),
-        stdin: { write: jest.fn(), end: jest.fn() },
-        stderr: { on: jest.fn() }
+        on: vi.fn(),
+        stdin: { write: vi.fn(), end: vi.fn() },
+        stderr: { on: vi.fn() }
       };
       const mockXselProc = {
-        on: jest.fn(),
-        stdin: { write: jest.fn(), end: jest.fn() },
-        stderr: { on: jest.fn() }
+        on: vi.fn(),
+        stdin: { write: vi.fn(), end: vi.fn() },
+        stderr: { on: vi.fn() }
       };
 
-      mockSpawn.mockReturnValueOnce(mockXclipProc).mockReturnValueOnce(mockXselProc);
+      mockSpawnLocal.mockReturnValueOnce(mockXclipProc).mockReturnValueOnce(mockXselProc);
 
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const { copyToClipboard: mockedCopyToClipboard } = require('../update');
+      const { copyToClipboard: mockedCopyToClipboard } = await import('../update.js');
       const resultPromise = mockedCopyToClipboard('test text');
 
       // Simulate xclip error → triggers xsel fallback
-      const xclipErrorHandler = mockXclipProc.on.mock.calls.find(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (call: any[]) => call[0] === 'error'
-      )[1];
+      const xclipErrorHandler = getHandler(mockXclipProc.on, 'error');
       xclipErrorHandler(new Error('xclip not found'));
 
       // Simulate xsel also erroring
-
-      const xselErrorHandler = mockXselProc.on.mock.calls.find(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (call: any[]) => call[0] === 'error'
-      )[1];
+      const xselErrorHandler = getHandler(mockXselProc.on, 'error');
       xselErrorHandler(new Error('xsel not found'));
 
       const result = await resultPromise;
@@ -561,35 +511,27 @@ describe('update functionality', () => {
       Object.defineProperty(process, 'platform', { value: 'linux' });
 
       const mockXclipProc = {
-        on: jest.fn(),
-        stdin: { write: jest.fn(), end: jest.fn() },
-        stderr: { on: jest.fn() }
+        on: vi.fn(),
+        stdin: { write: vi.fn(), end: vi.fn() },
+        stderr: { on: vi.fn() }
       };
       const mockXselProc = {
-        on: jest.fn(),
-        stdin: { write: jest.fn(), end: jest.fn() },
-        stderr: { on: jest.fn() }
+        on: vi.fn(),
+        stdin: { write: vi.fn(), end: vi.fn() },
+        stderr: { on: vi.fn() }
       };
 
-      mockSpawn.mockReturnValueOnce(mockXclipProc).mockReturnValueOnce(mockXselProc);
+      mockSpawnLocal.mockReturnValueOnce(mockXclipProc).mockReturnValueOnce(mockXselProc);
 
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const { copyToClipboard: mockedCopyToClipboard } = require('../update');
+      const { copyToClipboard: mockedCopyToClipboard } = await import('../update.js');
       const resultPromise = mockedCopyToClipboard('test text');
 
-      // Simulate xclip non-zero exit → triggers xsel fallback via 'close' handler
-      const xclipCloseHandler = mockXclipProc.on.mock.calls.find(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (call: any[]) => call[0] === 'close'
-      )[1];
+      // Simulate xclip non-zero exit → triggers xsel fallback
+      const xclipCloseHandler = getHandler(mockXclipProc.on, 'close');
       xclipCloseHandler(1);
 
-      // Simulate xsel erroring (via error event, not close)
-
-      const xselErrorHandler = mockXselProc.on.mock.calls.find(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (call: any[]) => call[0] === 'error'
-      )[1];
+      // Simulate xsel erroring
+      const xselErrorHandler = getHandler(mockXselProc.on, 'error');
       xselErrorHandler(new Error('xsel not found'));
 
       const result = await resultPromise;
@@ -605,27 +547,21 @@ describe('update functionality', () => {
       Object.defineProperty(process, 'platform', { value: 'darwin' });
 
       const mockProc = {
-        on: jest.fn(),
-        stdin: { write: jest.fn(), end: jest.fn() },
-        stderr: { on: jest.fn() }
+        on: vi.fn(),
+        stdin: { write: vi.fn(), end: vi.fn() },
+        stderr: { on: vi.fn() }
       };
-      mockSpawn.mockReturnValue(mockProc);
+      mockSpawnLocal.mockReturnValue(mockProc);
 
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const { copyToClipboard: mockedCopyToClipboard } = require('../update');
+      const { copyToClipboard: mockedCopyToClipboard } = await import('../update.js');
       const resultPromise = mockedCopyToClipboard('test text');
 
       // Simulate stderr data output
-
-      const stderrDataHandler = mockProc.stderr.on.mock.calls.find(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (call: any[]) => call[0] === 'data'
-      )[1];
+      const stderrDataHandler = getHandler(mockProc.stderr.on, 'data');
       stderrDataHandler(Buffer.from('clipboard error output'));
 
-      // Simulate non-zero close (so error message uses stderr content)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const onCloseHandler = mockProc.on.mock.calls.find((call: any[]) => call[0] === 'close')[1];
+      // Simulate non-zero close
+      const onCloseHandler = getHandler(mockProc.on, 'close');
       onCloseHandler(1);
 
       const result = await resultPromise;
