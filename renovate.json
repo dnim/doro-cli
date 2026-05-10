@@ -5,6 +5,9 @@
   ],
   "minimumReleaseAge": "7 days",
   "internalChecksFilter": "strict",
+  "constraints": {
+    "npm": ">=10.5.0"
+  },
   "postUpdateOptions": [
     "npmDedupe"
   ],
