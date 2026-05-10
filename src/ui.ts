@@ -19,7 +19,7 @@ type UiRenderState = {
 };
 
 type UiHandlers = {
-  onKey: (ch: string, key: blessed.Widgets.Events.IKeyEventArg) => void;
+  onKey: (ch: string | undefined, key: blessed.Widgets.Events.IKeyEventArg) => void;
   onResize: () => void;
   onAnyClick: () => void;
 };

@@ -129,7 +129,7 @@ export function setupProcessExitMock() {
  * @returns InputEvent object
  */
 export function createKeyEvent(
-  ch: string,
+  ch: string | undefined,
   keyName: string,
   keyFull = keyName,
   shift = false,

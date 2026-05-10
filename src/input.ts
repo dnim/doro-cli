@@ -1,7 +1,7 @@
 export type InputEvent =
   | {
       type: 'key';
-      ch: string;
+      ch: string | undefined;
       keyName: string;
       keyFull: string;
       shift: boolean;
@@ -45,7 +45,7 @@ export function resolveControlCommand(event: InputEvent): ControlCommand {
     return 'quit';
   }
 
-  const lowerChar = event.ch.toLowerCase();
+  const lowerChar = event.ch?.toLowerCase() ?? '';
   if (event.keyName === 'q' || lowerChar === 'q') {
     return 'quit';
   }
