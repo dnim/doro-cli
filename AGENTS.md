@@ -120,6 +120,8 @@ The pre-commit hook automatically runs linting and tests on staged files to ensu
 
 ## Git Workflow
 
+- **NEVER commit directly to `main`.** Always work on a feature branch. If you are on `main`, create a branch before making any changes.
+- **Backlog auto-commit is disabled.** `npx backlog task create/update` will NOT auto-commit. Stage and commit backlog changes yourself on your feature branch, following the normal commit workflow.
 - **Branching**: Use feature branches when working on tasks (e.g. `tasks/doro-123-feature-name`)
 - **Committing**: Use the following format: `DORO-123: Title of the task`
 - **PR titles**: Use `{taskId}: {taskTitle}` (e.g. `DORO-123: Title of the task`)
