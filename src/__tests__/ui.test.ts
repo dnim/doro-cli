@@ -59,7 +59,7 @@ describe('DoroUi', () => {
 
     expect(blessed.screen).toHaveBeenCalledTimes(1);
     // 1 root + 1 progress + 1 banner + 1 status + 1 help + 4 prompt overlays = 9 boxes
-    expect(blessed.box).toHaveBeenCalledTimes(9);
+    expect(blessed.box).toHaveBeenCalledTimes(10);
 
     expect(enableMouse).toHaveBeenCalledTimes(1);
 

@@ -73,6 +73,7 @@ describe('DoroApp', () => {
     // Initialize mock DoroUi instance
     mockDoroUi = {
       render: vi.fn(),
+      renderSplash: vi.fn(),
       destroy: vi.fn(),
       toggleColorScheme: vi.fn(),
       getColorScheme: vi.fn(),
@@ -156,7 +157,10 @@ describe('DoroApp', () => {
       const mockRender = vi.spyOn(app as any, 'render'); // Access private method for spying
       const mockPlayModeClip = vi.spyOn(app as any, 'playModeClip'); // Access private method for spying
 
+      const prev = process.env.DORO_TEST_MODE;
+      process.env.DORO_TEST_MODE = '1';
       app.start();
+      process.env.DORO_TEST_MODE = prev;
 
       expect(mockTimerStateMachine.startMode).toHaveBeenCalledWith('work');
       expect(mockPlayModeClip).toHaveBeenCalledWith('work');

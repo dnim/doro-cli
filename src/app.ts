@@ -93,6 +93,38 @@ export class DoroApp {
   }
 
   public start(): void {
+    // Skip splash in test mode for deterministic VRT/unit tests
+    if (process.env.DORO_TEST_MODE === '1') {
+      this.launchTimer();
+      return;
+    }
+    void this.runSplash().then(() => this.launchTimer());
+  }
+
+  private runSplash(): Promise<void> {
+    return new Promise((resolve) => {
+      const DURATION_MS = 1500;
+      const FRAME_MS = 80;
+      const startTime = Date.now();
+
+      // Wave sweeps left→right: offset from −0.3 (pre-enter) to 1.3 (post-exit)
+      const tick = (): void => {
+        const elapsed = Date.now() - startTime;
+        if (elapsed >= DURATION_MS) {
+          resolve();
+          return;
+        }
+        const waveOffset = -0.3 + (elapsed / DURATION_MS) * 1.6;
+        this.ui.renderSplash(waveOffset);
+        setTimeout(tick, FRAME_MS);
+      };
+
+      this.ui.renderSplash(-0.3);
+      setTimeout(tick, FRAME_MS);
+    });
+  }
+
+  private launchTimer(): void {
     this.machine.startMode('work');
     this.playModeClip('work');
     this.lastTickTs = Date.now();

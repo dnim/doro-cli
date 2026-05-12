@@ -32,7 +32,8 @@ export default tseslint.config(
       'coverage/**',
       'node_modules/**',
       'playwright.config.ts',
-      'vitest.config.ts'
+      'vitest.config.ts',
+      'scripts/**'
     ]
   }
 );

@@ -2,6 +2,7 @@ import blessed from 'blessed';
 import { MODE_LABELS, MODE_LABELS_SHORT, type TimerMode, type TimerStatus } from './constants';
 import { enableMouse, disableMouse } from './mouse';
 import type { UpdateCheckResult, UpdatePromptState } from './update';
+import { getMascotArt } from './mascot';
 
 type UiRenderState = {
   mode: TimerMode;
@@ -24,7 +25,7 @@ type UiHandlers = {
   onAnyClick: () => void;
 };
 
-type ModeStyle = {
+export type ModeStyle = {
   base: string;
   fill: string;
   text: string;
@@ -499,6 +500,8 @@ export class DoroUi {
 
   private readonly promptBarFill: blessed.Widgets.BoxElement;
 
+  private readonly mascotBox: blessed.Widgets.BoxElement;
+
   private colorScheme: ColorScheme;
 
   public constructor(handlers: UiHandlers, initialColorScheme: ColorScheme = 'modern') {
@@ -614,6 +617,17 @@ export class DoroUi {
       left: 0,
       width: 0,
       height: 0
+    });
+
+    this.mascotBox = blessed.box({
+      parent: this.root,
+      top: 0,
+      left: 0,
+      width: '100%',
+      height: '100%',
+      tags: true,
+      hidden: true,
+      style: { bg: initialStyle.base }
     });
 
     enableMouse(() => {
@@ -747,7 +761,50 @@ export class DoroUi {
 
     // Transition state is now rendered inline — overlay always hidden.
     this.promptOverlay.hide();
+    this.mascotBox.hide();
 
+    this.screen.render();
+  }
+
+  /**
+   * Renders a single splash animation frame with the mascot centred on screen.
+   * Hides all normal UI elements during the splash.
+   */
+  public renderSplash(waveOffset: number): void {
+    const cols = this.screen.cols;
+    const rows = this.screen.rows;
+    const style = PALETTES[this.colorScheme].modes.work;
+
+    this.progressFill.hide();
+    this.modeBannerBox.hide();
+    this.statusBox.hide();
+    this.helpBox.hide();
+    this.promptOverlay.hide();
+
+    this.root.style.bg = style.base;
+    this.mascotBox.style.bg = style.base;
+
+    const art = getMascotArt(cols, rows, waveOffset);
+    if (!art) {
+      this.mascotBox.hide();
+      this.screen.render();
+      return;
+    }
+
+    const padTop = Math.max(0, Math.floor((rows - art.charRows) / 2));
+    const padLeft = Math.max(0, Math.floor((cols - art.charCols) / 2));
+    const leftPad = ' '.repeat(padLeft);
+
+    const contentLines: string[] = [];
+    for (let i = 0; i < padTop; i++) {
+      contentLines.push('');
+    }
+    for (const line of art.lines) {
+      contentLines.push(leftPad + line);
+    }
+
+    this.mascotBox.setContent(contentLines.join('\n'));
+    this.mascotBox.show();
     this.screen.render();
   }
 
