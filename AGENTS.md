@@ -10,11 +10,31 @@
 - **Plan mode**: output a structured numbered plan only — no code, no implementation prose
 - **Build mode**: follow the plan, execute directly; ask only when genuinely blocked
 
-## Standard Workflow
+## Task & Feature Tracking
+
+All feature work and bug fixes MUST be tracked in Backlog.md.
+
+- **Before starting any feature**: check `npx backlog task list` for an existing task; create one if absent.
+- **Before implementing**: ensure the task description and acceptance criteria reflect the final agreed design.
+- **Branch name**: always derive from the task ID (e.g. `tasks/doro-009-short-name`).
+- **During implementation**: keep the task status updated (`In Progress`).
+- **After implementation**: mark ACs done, set status to `Done`.
+
+Never start coding a feature that has no Backlog task.
 
 Core workflow rules (Git, Planning, Committing, CI/CD) are injected automatically via `opencode.json` instructions.
 
 Agents not using OpenCode: refer to `.opencode/docs/AGENT_WORKFLOW.md`.
+
+## Design & Creative Tasks
+
+For any task involving UI, visual design, mascots, icons, layout, color, or user-facing copy:
+
+1. **Ask first** — before writing any code, ask the user clarifying questions about intent, style, and constraints.
+2. **Present variants** — offer 2–3 concrete options with brief descriptions of the trade-offs.
+3. **Wait for approval** — only begin implementation after the user has chosen a direction.
+
+Never start implementing a creative/design task based on assumptions alone.
 
 ## Project-Specific Skills
 
