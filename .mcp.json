@@ -1,7 +1,9 @@
 {
-  "mcpServers": {
+  "mcp": {
     "core-x": {
-      "command": "./node_modules/.bin/core-x-agent"
+      "type": "local",
+      "command": ["npx", "-y", "core-x-agent"],
+      "enabled": true
     }
   }
 }
