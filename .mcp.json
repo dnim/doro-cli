@@ -1,0 +1,7 @@
+{
+  "mcpServers": {
+    "core-x": {
+      "command": "./node_modules/.bin/core-x-agent"
+    }
+  }
+}
