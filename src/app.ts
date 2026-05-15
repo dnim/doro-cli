@@ -36,6 +36,8 @@ import {
   type UpdatePromptState
 } from './update';
 
+export type EditDurationState = 'none' | 'editing' | 'saved';
+
 export class DoroApp {
   private readonly machine: TimerStateMachine;
 
@@ -58,6 +60,13 @@ export class DoroApp {
   private tickInterval: NodeJS.Timeout | null = null;
 
   private lastTickTs = Date.now();
+
+  // Edit duration state
+  private editDurationState: EditDurationState = 'none';
+
+  private editDurationValue: number | null = null;
+
+  private editDurationTimeout: NodeJS.Timeout | null = null;
 
   // Update-related state
   private updatePromptState: UpdatePromptState = 'none';
@@ -173,6 +182,12 @@ export class DoroApp {
     }
 
     const command = resolveControlCommand(event);
+
+    // If we're editing duration, any command other than duration commands or pause should perhaps cancel or we just let it fall through.
+    if (command === 'increaseDuration' || command === 'decreaseDuration') {
+      this.handleDurationEdit(command);
+      return;
+    }
 
     // Handle test mode commands for VRT deterministic states
     if (process.env.DORO_TEST_MODE === '1') {
@@ -361,6 +376,90 @@ export class DoroApp {
     }
 
     this.render();
+  }
+
+  private handleDurationEdit(command: 'increaseDuration' | 'decreaseDuration'): void {
+    const state = this.machine.getState();
+    const config = this.machine.getConfig();
+
+    if (this.editDurationState === 'none' || this.editDurationState === 'saved') {
+      this.editDurationState = 'editing';
+      const durationSecs = getDurationForMode(config, state.mode);
+      this.editDurationValue = Math.floor(durationSecs / 60);
+    }
+
+    if (this.editDurationValue === null) {
+      return;
+    }
+
+    if (command === 'increaseDuration') {
+      this.editDurationValue += 1;
+    } else {
+      this.editDurationValue -= 1;
+    }
+
+    // Clamp bounds
+    if (state.mode === 'short') {
+      this.editDurationValue = Math.max(3, Math.min(7, this.editDurationValue));
+    } else if (state.mode === 'long') {
+      this.editDurationValue = Math.max(10, Math.min(18, this.editDurationValue));
+    } else {
+      this.editDurationValue = Math.max(20, Math.min(30, this.editDurationValue));
+    }
+
+    this.render();
+
+    if (this.editDurationTimeout) {
+      clearTimeout(this.editDurationTimeout);
+    }
+
+    this.editDurationTimeout = setTimeout(() => {
+      this.saveDurationEdit();
+    }, 2000);
+  }
+
+  private saveDurationEdit(): void {
+    if (this.editDurationState !== 'editing' || this.editDurationValue === null) {
+      return;
+    }
+
+    const state = this.machine.getState();
+    const config = this.machine.getConfig();
+    const newConfig = { ...config };
+
+    if (state.mode === 'short') {
+      newConfig.shortRestSeconds = this.editDurationValue * 60;
+    } else if (state.mode === 'long') {
+      newConfig.longRestSeconds = this.editDurationValue * 60;
+    } else {
+      newConfig.workSeconds = this.editDurationValue * 60;
+    }
+
+    this.machine.updateConfig(newConfig);
+
+    // Save to settings
+    void (async () => {
+      const currentSettings = await loadSettings();
+      await saveSettings({
+        ...currentSettings,
+        workDuration: Math.floor(newConfig.workSeconds / 60),
+        shortBreakDuration: Math.floor(newConfig.shortRestSeconds / 60),
+        longBreakDuration: Math.floor(newConfig.longRestSeconds / 60)
+      });
+    })();
+
+    this.editDurationState = 'saved';
+    this.render();
+
+    if (this.editDurationTimeout) {
+      clearTimeout(this.editDurationTimeout);
+    }
+
+    this.editDurationTimeout = setTimeout(() => {
+      this.editDurationState = 'none';
+      this.editDurationValue = null;
+      this.render();
+    }, 2000);
   }
 
   private playModeClip(mode: 'work' | 'short' | 'long'): void {
