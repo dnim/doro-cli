@@ -84,7 +84,9 @@ describe('DoroUi', () => {
       promptTotalSeconds: 0,
       promptNextMode: null,
       updatePromptState: 'none',
-      updateCheckResult: null
+      updateCheckResult: null,
+      editDurationState: 'none',
+      editDurationValue: null
     });
 
     expect(mockScreen.render).toHaveBeenCalledTimes(1);
@@ -106,11 +108,9 @@ describe('DoroUi', () => {
       promptTotalSeconds: 0,
       promptNextMode: null,
       updatePromptState: 'error',
-      updateCheckResult: {
-        isAvailable: false,
-        currentVersion: '1.2.1',
-        error: 'Network timeout'
-      }
+      updateCheckResult: { isAvailable: false, currentVersion: '1.2.1', error: 'Network timeout' },
+      editDurationState: 'none',
+      editDurationValue: null
     });
 
     expect(mockScreen.render).toHaveBeenCalledTimes(1);
@@ -132,11 +132,9 @@ describe('DoroUi', () => {
       promptTotalSeconds: 0,
       promptNextMode: null,
       updatePromptState: 'skipped',
-      updateCheckResult: {
-        isAvailable: true,
-        latestVersion: '1.3.0',
-        currentVersion: '1.2.1'
-      }
+      updateCheckResult: { isAvailable: true, latestVersion: '1.3.0', currentVersion: '1.2.1' },
+      editDurationState: 'none',
+      editDurationValue: null
     });
 
     expect(mockScreen.render).toHaveBeenCalledTimes(1);
@@ -158,7 +156,9 @@ describe('DoroUi', () => {
       promptTotalSeconds: 5,
       promptNextMode: 'short',
       updatePromptState: 'none',
-      updateCheckResult: null
+      updateCheckResult: null,
+      editDurationState: 'none',
+      editDurationValue: null
     });
 
     expect(mockScreen.render).toHaveBeenCalledTimes(1);
@@ -181,7 +181,9 @@ describe('DoroUi', () => {
       promptTotalSeconds: 0,
       promptNextMode: null,
       updatePromptState: 'none',
-      updateCheckResult: null
+      updateCheckResult: null,
+      editDurationState: 'none',
+      editDurationValue: null
     });
 
     expect(mockScreen.render).toHaveBeenCalledTimes(1);
@@ -204,7 +206,9 @@ describe('DoroUi', () => {
       promptTotalSeconds: 0,
       promptNextMode: null,
       updatePromptState: 'none',
-      updateCheckResult: null
+      updateCheckResult: null,
+      editDurationState: 'none',
+      editDurationValue: null
     });
 
     expect(mockScreen.render).toHaveBeenCalledTimes(1);
@@ -226,7 +230,9 @@ describe('DoroUi', () => {
       promptTotalSeconds: 0,
       promptNextMode: null,
       updatePromptState: 'none',
-      updateCheckResult: null
+      updateCheckResult: null,
+      editDurationState: 'none',
+      editDurationValue: null
     });
 
     expect(mockScreen.render).toHaveBeenCalledTimes(1);
@@ -297,11 +303,9 @@ describe('DoroUi', () => {
       promptTotalSeconds: 0,
       promptNextMode: null,
       updatePromptState: 'available',
-      updateCheckResult: {
-        isAvailable: true,
-        latestVersion: '1.3.0',
-        currentVersion: '1.2.1'
-      }
+      updateCheckResult: { isAvailable: true, latestVersion: '1.3.0', currentVersion: '1.2.1' },
+      editDurationState: 'none',
+      editDurationValue: null
     });
 
     expect(mockScreen.render).toHaveBeenCalledTimes(1);
@@ -322,7 +326,9 @@ describe('DoroUi', () => {
       promptTotalSeconds: 0,
       promptNextMode: null,
       updatePromptState: 'copySuccess',
-      updateCheckResult: null
+      updateCheckResult: null,
+      editDurationState: 'none',
+      editDurationValue: null
     });
 
     expect(mockScreen.render).toHaveBeenCalledTimes(1);
@@ -342,7 +348,9 @@ describe('DoroUi', () => {
       promptTotalSeconds: 0,
       promptNextMode: null,
       updatePromptState: 'copyFallback',
-      updateCheckResult: null
+      updateCheckResult: null,
+      editDurationState: 'none',
+      editDurationValue: null
     });
 
     expect(mockScreen.render).toHaveBeenCalledTimes(1);
@@ -362,10 +370,9 @@ describe('DoroUi', () => {
       promptTotalSeconds: 0,
       promptNextMode: null,
       updatePromptState: 'skipped',
-      updateCheckResult: {
-        isAvailable: false,
-        currentVersion: '1.2.1'
-      }
+      updateCheckResult: { isAvailable: false, currentVersion: '1.2.1' },
+      editDurationState: 'none',
+      editDurationValue: null
     });
 
     expect(mockScreen.render).toHaveBeenCalledTimes(1);
@@ -388,7 +395,9 @@ describe('DoroUi', () => {
       promptTotalSeconds: 0,
       promptNextMode: null,
       updatePromptState: 'none',
-      updateCheckResult: null
+      updateCheckResult: null,
+      editDurationState: 'none',
+      editDurationValue: null
     });
 
     expect(mockScreen.render).toHaveBeenCalledTimes(1);
@@ -412,7 +421,9 @@ describe('DoroUi', () => {
       promptTotalSeconds: 0,
       promptNextMode: null,
       updatePromptState: 'none',
-      updateCheckResult: null
+      updateCheckResult: null,
+      editDurationState: 'none',
+      editDurationValue: null
     });
 
     expect(mockScreen.render).toHaveBeenCalledTimes(1);
@@ -436,7 +447,9 @@ describe('DoroUi', () => {
       promptTotalSeconds: 0,
       promptNextMode: null,
       updatePromptState: 'none',
-      updateCheckResult: null
+      updateCheckResult: null,
+      editDurationState: 'none',
+      editDurationValue: null
     });
 
     expect(mockScreen.render).toHaveBeenCalledTimes(1);
@@ -461,7 +474,9 @@ describe('DoroUi', () => {
       promptTotalSeconds: 0,
       promptNextMode: null,
       updatePromptState: 'none',
-      updateCheckResult: null
+      updateCheckResult: null,
+      editDurationState: 'none',
+      editDurationValue: null
     });
 
     expect(mockScreen.render).toHaveBeenCalledTimes(1);
@@ -485,7 +500,9 @@ describe('DoroUi', () => {
       promptTotalSeconds: 0,
       promptNextMode: null,
       updatePromptState: 'none',
-      updateCheckResult: null
+      updateCheckResult: null,
+      editDurationState: 'none',
+      editDurationValue: null
     });
 
     expect(mockScreen.render).toHaveBeenCalledTimes(1);
@@ -507,7 +524,9 @@ describe('DoroUi', () => {
       promptTotalSeconds: 0,
       promptNextMode: null,
       updatePromptState: 'available',
-      updateCheckResult: { isAvailable: true, currentVersion: '1.2.0' } // no latestVersion
+      updateCheckResult: { isAvailable: true, currentVersion: '1.2.0' },
+      editDurationState: 'none',
+      editDurationValue: null // no latestVersion
     });
 
     expect(mockScreen.render).toHaveBeenCalledTimes(1);
@@ -535,7 +554,9 @@ describe('DoroUi', () => {
     ui.render({
       ...baseState,
       updatePromptState: 'copySuccess',
-      updateCheckResult: null
+      updateCheckResult: null,
+      editDurationState: 'none',
+      editDurationValue: null
     });
     expect(mockScreen.render).toHaveBeenCalledTimes(1);
     mockScreen.render.mockClear();
@@ -544,7 +565,9 @@ describe('DoroUi', () => {
     ui.render({
       ...baseState,
       updatePromptState: 'copyFallback',
-      updateCheckResult: null
+      updateCheckResult: null,
+      editDurationState: 'none',
+      editDurationValue: null
     });
     expect(mockScreen.render).toHaveBeenCalledTimes(1);
     mockScreen.render.mockClear();
@@ -553,7 +576,9 @@ describe('DoroUi', () => {
     ui.render({
       ...baseState,
       updatePromptState: 'skipped',
-      updateCheckResult: { isAvailable: false, currentVersion: '1.2.0' }
+      updateCheckResult: { isAvailable: false, currentVersion: '1.2.0' },
+      editDurationState: 'none',
+      editDurationValue: null
     });
     expect(mockScreen.render).toHaveBeenCalledTimes(1);
     mockScreen.render.mockClear();
@@ -562,7 +587,9 @@ describe('DoroUi', () => {
     ui.render({
       ...baseState,
       updatePromptState: 'skipped',
-      updateCheckResult: { isAvailable: true, latestVersion: '1.3.0', currentVersion: '1.2.0' }
+      updateCheckResult: { isAvailable: true, latestVersion: '1.3.0', currentVersion: '1.2.0' },
+      editDurationState: 'none',
+      editDurationValue: null
     });
     expect(mockScreen.render).toHaveBeenCalledTimes(1);
     mockScreen.render.mockClear();
@@ -571,7 +598,9 @@ describe('DoroUi', () => {
     ui.render({
       ...baseState,
       updatePromptState: 'error',
-      updateCheckResult: { isAvailable: false, currentVersion: '1.2.0', error: 'net fail' }
+      updateCheckResult: { isAvailable: false, currentVersion: '1.2.0', error: 'net fail' },
+      editDurationState: 'none',
+      editDurationValue: null
     });
     expect(mockScreen.render).toHaveBeenCalledTimes(1);
     mockScreen.render.mockClear();
@@ -581,7 +610,9 @@ describe('DoroUi', () => {
     ui.render({
       ...baseState,
       updatePromptState: 'available',
-      updateCheckResult: { isAvailable: true, latestVersion: '1.3.0', currentVersion: '1.2.0' }
+      updateCheckResult: { isAvailable: true, latestVersion: '1.3.0', currentVersion: '1.2.0' },
+      editDurationState: 'none',
+      editDurationValue: null
     });
     expect(mockScreen.render).toHaveBeenCalledTimes(1);
 
@@ -605,7 +636,9 @@ describe('DoroUi', () => {
       promptTotalSeconds: 5,
       promptNextMode: 'short',
       updatePromptState: 'none',
-      updateCheckResult: null
+      updateCheckResult: null,
+      editDurationState: 'none',
+      editDurationValue: null
     });
 
     expect(mockScreen.render).toHaveBeenCalledTimes(1);

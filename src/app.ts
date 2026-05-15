@@ -522,7 +522,9 @@ export class DoroApp {
       promptTotalSeconds,
       promptNextMode,
       updatePromptState: this.updatePromptState,
-      updateCheckResult: this.updateCheckResult
+      updateCheckResult: this.updateCheckResult,
+      editDurationState: this.editDurationState,
+      editDurationValue: this.editDurationValue
     });
   }
 
