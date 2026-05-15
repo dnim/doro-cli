@@ -28,8 +28,10 @@
     "format:check": "prettier --check .",
     "lint": "eslint .",
     "lint:local": "eslint . --cache",
+    "lint:changed": "sh scripts/lint-changed.sh",
     "typecheck": "tsc --noEmit",
     "test:unit": "vitest run",
+    "test:unit:changed": "vitest run --changed",
     "test:visual": "npm run build && playwright test",
     "test:visual:update": "npm run build && playwright test --update-snapshots",
     "release": "npm run clean && npm run build && release-it",
@@ -48,6 +50,7 @@
   },
   "dependencies": {
     "blessed": "npm:@rook2pawn/neo-blessed@2.0.2",
+    "core-x": "1.0.0",
     "env-paths": "4.0.0"
   },
   "devDependencies": {
