@@ -7,7 +7,16 @@ import {
   createWorkStartClip
 } from './audio/synth';
 import { playClip, stopPlayback } from './audio/player';
-import { getDurationForMode } from './constants';
+import { DEFAULT_TIMER_CONFIG, type TimerConfig, getDurationForMode } from './constants';
+import {
+  type Settings,
+  saveSettings,
+  resetSettings,
+  loadSettings,
+  DEFAULT_WORK_MINS,
+  DEFAULT_SHORT_MINS,
+  DEFAULT_LONG_MINS
+} from './config';
 import {
   isAllowedWhenLocked,
   isPromptConfirmEvent,
@@ -17,7 +26,6 @@ import {
 } from './input';
 import { TimerStateMachine } from './stateMachine';
 import { DoroUi } from './ui';
-import { type Settings, saveSettings, resetSettings, loadSettings } from './config';
 import {
   checkForUpdates,
   copyToClipboard,
@@ -59,7 +67,13 @@ export class DoroApp {
   private isCheckingUpdate = false;
 
   public constructor(initialSettings: Settings) {
-    this.machine = new TimerStateMachine();
+    const config: TimerConfig = {
+      ...DEFAULT_TIMER_CONFIG,
+      workSeconds: (initialSettings.workDuration ?? DEFAULT_WORK_MINS) * 60,
+      shortRestSeconds: (initialSettings.shortBreakDuration ?? DEFAULT_SHORT_MINS) * 60,
+      longRestSeconds: (initialSettings.longBreakDuration ?? DEFAULT_LONG_MINS) * 60
+    };
+    this.machine = new TimerStateMachine(config);
     this.volumeMode = initialSettings.volumeMode;
 
     const mult = this.volumeMode === 'quiet' ? 0.25 : 1.0;
