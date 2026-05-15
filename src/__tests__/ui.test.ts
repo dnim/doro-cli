@@ -642,6 +642,82 @@ describe('DoroUi', () => {
     mockScreen.cols = 80; // Restore
   });
 
+  it('should render edit duration state', () => {
+    ui = new DoroUi(handlers as any);
+
+    ui.render({
+      mode: 'work',
+      status: 'running',
+      remainingSeconds: 120,
+      durationSeconds: 1500,
+      isLocked: false,
+      volumeMode: 'normal',
+      hasPrompt: false,
+      promptCountdownSeconds: 0,
+      promptTotalSeconds: 0,
+      promptNextMode: null,
+      updatePromptState: 'none',
+      updateCheckResult: null,
+      editDurationState: 'editing',
+      editDurationValue: 25,
+      editDurationBlink: false
+    });
+
+    const getRenderText = () => {
+      // Find the banner text in the mocked setContent calls
+      // We look at all setContent calls across all boxed elements
+      const setContentCalls = vi
+        .mocked(blessed.box)
+        .mock.results.map((r) => r.value.setContent)
+        .filter(Boolean)
+        .flatMap((m) => m.mock.calls.map((c: any[]) => c[0]));
+      // return the latest setContent calls string (last clear/render cycle)
+      return setContentCalls.slice(-5).join(' '); // just checking recent ones to avoid previous renders bleeding over
+    };
+
+    expect(getRenderText()).toContain('25');
+
+    ui.render({
+      mode: 'work',
+      status: 'running',
+      remainingSeconds: 120,
+      durationSeconds: 1500,
+      isLocked: false,
+      volumeMode: 'normal',
+      hasPrompt: false,
+      promptCountdownSeconds: 0,
+      promptTotalSeconds: 0,
+      promptNextMode: null,
+      updatePromptState: 'none',
+      updateCheckResult: null,
+      editDurationState: 'editing',
+      editDurationValue: 25,
+      editDurationBlink: true
+    });
+
+    expect(getRenderText()).not.toContain('25');
+
+    ui.render({
+      mode: 'work',
+      status: 'running',
+      remainingSeconds: 120,
+      durationSeconds: 1500,
+      isLocked: false,
+      volumeMode: 'normal',
+      hasPrompt: false,
+      promptCountdownSeconds: 0,
+      promptTotalSeconds: 0,
+      promptNextMode: null,
+      updatePromptState: 'none',
+      updateCheckResult: null,
+      editDurationState: 'saved',
+      editDurationValue: null,
+      editDurationBlink: false
+    });
+
+    expect(getRenderText()).toContain('saved');
+  });
+
   it('should return empty transition status text when terminal is too narrow', () => {
     ui = new DoroUi(handlers as any);
     const mockScreen = vi.mocked(blessed.screen).mock.results[0].value;
