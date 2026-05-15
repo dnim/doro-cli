@@ -27,13 +27,7 @@
       "model": "github-copilot/gemini-3-flash-preview"
     }
   },
-  "mcp": {
-    "core-x": {
-      "type": "local",
-      "command": ["npx", "core-x"],
-      "enabled": true
-    }
-  },
+  "mcp": {},
   "permission": {
     "bash": {
       "*": "ask",
