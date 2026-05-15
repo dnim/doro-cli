@@ -1,8 +1,13 @@
 ---
-description: Start working on a Backlog task end-to-end
-argument-hint: "<task-id>"
+description: Implement a feature or task using the AIDLC workflow
+argument-hint: "<task-id or description>"
 ---
-Look up task $1 with `npx backlog task get $1`. Set it In Progress, create a feature branch named `tasks/$1-<short-slug>`, then implement it following AGENTS.md conventions.
+Task request: $@
+
+Please apply the `task` skill (`.pi/skills/task/SKILL.md`) to handle this request.
+Use the provided request text to search the backlog. 
+- If a task doesn't exist, enter the AIDLC discussion phase to define requirements before creating it.
+- If it does exist (or once created), set it In Progress, create a feature branch (`tasks/<id>-<slug>`), and implement it following AGENTS.md conventions.
 
 Before requesting commit approval: run typecheck, lint, and unit tests. Fix any failures. Then present the proposed commit message and wait for explicit approval.
 
