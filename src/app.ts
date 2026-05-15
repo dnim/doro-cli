@@ -68,6 +68,8 @@ export class DoroApp {
 
   private editDurationTimeout: NodeJS.Timeout | null = null;
 
+  private editDurationBlink = false;
+
   // Update-related state
   private updatePromptState: UpdatePromptState = 'none';
 
@@ -129,6 +131,8 @@ export class DoroApp {
     void this.performStartupUpdateCheck();
   }
 
+  private blinkCounter = 0;
+
   private stepClock(): void {
     if (this.isExiting) {
       return;
@@ -136,6 +140,18 @@ export class DoroApp {
 
     const now = Date.now();
     let state = this.machine.getState();
+
+    // Handle blinking for edit duration (slow down blinking relative to 250ms tick)
+    if (this.editDurationState === 'editing') {
+      this.blinkCounter++;
+      if (this.blinkCounter >= 3) {
+        this.editDurationBlink = !this.editDurationBlink;
+        this.blinkCounter = 0;
+      }
+    } else {
+      this.editDurationBlink = false;
+      this.blinkCounter = 0;
+    }
 
     if (state.status === 'running') {
       const elapsedSeconds = Math.floor((now - this.lastTickTs) / 1000);
@@ -382,29 +398,33 @@ export class DoroApp {
     const state = this.machine.getState();
     const config = this.machine.getConfig();
 
+    let justStarted = false;
     if (this.editDurationState === 'none' || this.editDurationState === 'saved') {
       this.editDurationState = 'editing';
       const durationSecs = getDurationForMode(config, state.mode);
       this.editDurationValue = Math.floor(durationSecs / 60);
+      justStarted = true;
     }
 
     if (this.editDurationValue === null) {
       return;
     }
 
-    if (command === 'increaseDuration') {
-      this.editDurationValue += 1;
-    } else {
-      this.editDurationValue -= 1;
-    }
+    if (!justStarted) {
+      if (command === 'increaseDuration') {
+        this.editDurationValue += 1;
+      } else {
+        this.editDurationValue -= 1;
+      }
 
-    // Clamp bounds
-    if (state.mode === 'short') {
-      this.editDurationValue = Math.max(3, Math.min(7, this.editDurationValue));
-    } else if (state.mode === 'long') {
-      this.editDurationValue = Math.max(10, Math.min(18, this.editDurationValue));
-    } else {
-      this.editDurationValue = Math.max(20, Math.min(30, this.editDurationValue));
+      // Clamp bounds
+      if (state.mode === 'short') {
+        this.editDurationValue = Math.max(3, Math.min(7, this.editDurationValue));
+      } else if (state.mode === 'long') {
+        this.editDurationValue = Math.max(10, Math.min(18, this.editDurationValue));
+      } else {
+        this.editDurationValue = Math.max(20, Math.min(30, this.editDurationValue));
+      }
     }
 
     this.render();
@@ -524,7 +544,8 @@ export class DoroApp {
       updatePromptState: this.updatePromptState,
       updateCheckResult: this.updateCheckResult,
       editDurationState: this.editDurationState,
-      editDurationValue: this.editDurationValue
+      editDurationValue: this.editDurationValue,
+      editDurationBlink: this.editDurationBlink
     });
   }
 

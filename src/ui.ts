@@ -18,6 +18,7 @@ type UiRenderState = {
   updateCheckResult: UpdateCheckResult | null;
   editDurationState: 'none' | 'editing' | 'saved';
   editDurationValue: number | null;
+  editDurationBlink: boolean;
 };
 
 type UiHandlers = {
@@ -663,7 +664,7 @@ export class DoroUi {
 
     let bannerText: string;
     if (isEditingDuration && state.editDurationValue !== null) {
-      bannerText = `${state.editDurationValue}`;
+      bannerText = state.editDurationBlink ? ' ' : `${state.editDurationValue}`;
     } else if (isSavedDuration) {
       bannerText = 'saved';
     } else if (isPaused) {

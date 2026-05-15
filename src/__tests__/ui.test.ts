@@ -86,7 +86,8 @@ describe('DoroUi', () => {
       updatePromptState: 'none',
       updateCheckResult: null,
       editDurationState: 'none',
-      editDurationValue: null
+      editDurationValue: null,
+      editDurationBlink: false
     });
 
     expect(mockScreen.render).toHaveBeenCalledTimes(1);
@@ -110,7 +111,8 @@ describe('DoroUi', () => {
       updatePromptState: 'error',
       updateCheckResult: { isAvailable: false, currentVersion: '1.2.1', error: 'Network timeout' },
       editDurationState: 'none',
-      editDurationValue: null
+      editDurationValue: null,
+      editDurationBlink: false
     });
 
     expect(mockScreen.render).toHaveBeenCalledTimes(1);
@@ -134,7 +136,8 @@ describe('DoroUi', () => {
       updatePromptState: 'skipped',
       updateCheckResult: { isAvailable: true, latestVersion: '1.3.0', currentVersion: '1.2.1' },
       editDurationState: 'none',
-      editDurationValue: null
+      editDurationValue: null,
+      editDurationBlink: false
     });
 
     expect(mockScreen.render).toHaveBeenCalledTimes(1);
@@ -158,7 +161,8 @@ describe('DoroUi', () => {
       updatePromptState: 'none',
       updateCheckResult: null,
       editDurationState: 'none',
-      editDurationValue: null
+      editDurationValue: null,
+      editDurationBlink: false
     });
 
     expect(mockScreen.render).toHaveBeenCalledTimes(1);
@@ -183,7 +187,8 @@ describe('DoroUi', () => {
       updatePromptState: 'none',
       updateCheckResult: null,
       editDurationState: 'none',
-      editDurationValue: null
+      editDurationValue: null,
+      editDurationBlink: false
     });
 
     expect(mockScreen.render).toHaveBeenCalledTimes(1);
@@ -208,7 +213,8 @@ describe('DoroUi', () => {
       updatePromptState: 'none',
       updateCheckResult: null,
       editDurationState: 'none',
-      editDurationValue: null
+      editDurationValue: null,
+      editDurationBlink: false
     });
 
     expect(mockScreen.render).toHaveBeenCalledTimes(1);
@@ -232,7 +238,8 @@ describe('DoroUi', () => {
       updatePromptState: 'none',
       updateCheckResult: null,
       editDurationState: 'none',
-      editDurationValue: null
+      editDurationValue: null,
+      editDurationBlink: false
     });
 
     expect(mockScreen.render).toHaveBeenCalledTimes(1);
@@ -305,7 +312,8 @@ describe('DoroUi', () => {
       updatePromptState: 'available',
       updateCheckResult: { isAvailable: true, latestVersion: '1.3.0', currentVersion: '1.2.1' },
       editDurationState: 'none',
-      editDurationValue: null
+      editDurationValue: null,
+      editDurationBlink: false
     });
 
     expect(mockScreen.render).toHaveBeenCalledTimes(1);
@@ -328,7 +336,8 @@ describe('DoroUi', () => {
       updatePromptState: 'copySuccess',
       updateCheckResult: null,
       editDurationState: 'none',
-      editDurationValue: null
+      editDurationValue: null,
+      editDurationBlink: false
     });
 
     expect(mockScreen.render).toHaveBeenCalledTimes(1);
@@ -350,7 +359,8 @@ describe('DoroUi', () => {
       updatePromptState: 'copyFallback',
       updateCheckResult: null,
       editDurationState: 'none',
-      editDurationValue: null
+      editDurationValue: null,
+      editDurationBlink: false
     });
 
     expect(mockScreen.render).toHaveBeenCalledTimes(1);
@@ -372,7 +382,8 @@ describe('DoroUi', () => {
       updatePromptState: 'skipped',
       updateCheckResult: { isAvailable: false, currentVersion: '1.2.1' },
       editDurationState: 'none',
-      editDurationValue: null
+      editDurationValue: null,
+      editDurationBlink: false
     });
 
     expect(mockScreen.render).toHaveBeenCalledTimes(1);
@@ -397,7 +408,8 @@ describe('DoroUi', () => {
       updatePromptState: 'none',
       updateCheckResult: null,
       editDurationState: 'none',
-      editDurationValue: null
+      editDurationValue: null,
+      editDurationBlink: false
     });
 
     expect(mockScreen.render).toHaveBeenCalledTimes(1);
@@ -423,7 +435,8 @@ describe('DoroUi', () => {
       updatePromptState: 'none',
       updateCheckResult: null,
       editDurationState: 'none',
-      editDurationValue: null
+      editDurationValue: null,
+      editDurationBlink: false
     });
 
     expect(mockScreen.render).toHaveBeenCalledTimes(1);
@@ -449,7 +462,8 @@ describe('DoroUi', () => {
       updatePromptState: 'none',
       updateCheckResult: null,
       editDurationState: 'none',
-      editDurationValue: null
+      editDurationValue: null,
+      editDurationBlink: false
     });
 
     expect(mockScreen.render).toHaveBeenCalledTimes(1);
@@ -476,7 +490,8 @@ describe('DoroUi', () => {
       updatePromptState: 'none',
       updateCheckResult: null,
       editDurationState: 'none',
-      editDurationValue: null
+      editDurationValue: null,
+      editDurationBlink: false
     });
 
     expect(mockScreen.render).toHaveBeenCalledTimes(1);
@@ -502,7 +517,8 @@ describe('DoroUi', () => {
       updatePromptState: 'none',
       updateCheckResult: null,
       editDurationState: 'none',
-      editDurationValue: null
+      editDurationValue: null,
+      editDurationBlink: false
     });
 
     expect(mockScreen.render).toHaveBeenCalledTimes(1);
@@ -526,7 +542,8 @@ describe('DoroUi', () => {
       updatePromptState: 'available',
       updateCheckResult: { isAvailable: true, currentVersion: '1.2.0' },
       editDurationState: 'none',
-      editDurationValue: null // no latestVersion
+      editDurationValue: null,
+      editDurationBlink: false // no latestVersion
     });
 
     expect(mockScreen.render).toHaveBeenCalledTimes(1);
@@ -556,7 +573,8 @@ describe('DoroUi', () => {
       updatePromptState: 'copySuccess',
       updateCheckResult: null,
       editDurationState: 'none',
-      editDurationValue: null
+      editDurationValue: null,
+      editDurationBlink: false
     });
     expect(mockScreen.render).toHaveBeenCalledTimes(1);
     mockScreen.render.mockClear();
@@ -567,7 +585,8 @@ describe('DoroUi', () => {
       updatePromptState: 'copyFallback',
       updateCheckResult: null,
       editDurationState: 'none',
-      editDurationValue: null
+      editDurationValue: null,
+      editDurationBlink: false
     });
     expect(mockScreen.render).toHaveBeenCalledTimes(1);
     mockScreen.render.mockClear();
@@ -578,7 +597,8 @@ describe('DoroUi', () => {
       updatePromptState: 'skipped',
       updateCheckResult: { isAvailable: false, currentVersion: '1.2.0' },
       editDurationState: 'none',
-      editDurationValue: null
+      editDurationValue: null,
+      editDurationBlink: false
     });
     expect(mockScreen.render).toHaveBeenCalledTimes(1);
     mockScreen.render.mockClear();
@@ -589,7 +609,8 @@ describe('DoroUi', () => {
       updatePromptState: 'skipped',
       updateCheckResult: { isAvailable: true, latestVersion: '1.3.0', currentVersion: '1.2.0' },
       editDurationState: 'none',
-      editDurationValue: null
+      editDurationValue: null,
+      editDurationBlink: false
     });
     expect(mockScreen.render).toHaveBeenCalledTimes(1);
     mockScreen.render.mockClear();
@@ -600,7 +621,8 @@ describe('DoroUi', () => {
       updatePromptState: 'error',
       updateCheckResult: { isAvailable: false, currentVersion: '1.2.0', error: 'net fail' },
       editDurationState: 'none',
-      editDurationValue: null
+      editDurationValue: null,
+      editDurationBlink: false
     });
     expect(mockScreen.render).toHaveBeenCalledTimes(1);
     mockScreen.render.mockClear();
@@ -612,7 +634,8 @@ describe('DoroUi', () => {
       updatePromptState: 'available',
       updateCheckResult: { isAvailable: true, latestVersion: '1.3.0', currentVersion: '1.2.0' },
       editDurationState: 'none',
-      editDurationValue: null
+      editDurationValue: null,
+      editDurationBlink: false
     });
     expect(mockScreen.render).toHaveBeenCalledTimes(1);
 
@@ -638,7 +661,8 @@ describe('DoroUi', () => {
       updatePromptState: 'none',
       updateCheckResult: null,
       editDurationState: 'none',
-      editDurationValue: null
+      editDurationValue: null,
+      editDurationBlink: false
     });
 
     expect(mockScreen.render).toHaveBeenCalledTimes(1);
