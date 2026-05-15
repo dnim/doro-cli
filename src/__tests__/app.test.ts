@@ -433,6 +433,14 @@ describe('DoroApp', () => {
       expect(playClip).toHaveBeenCalled();
     });
 
+    it('should bail handleDurationEdit if value is null', () => {
+      app.start();
+      (app as any).handleDurationEdit('increaseDuration'); // Start edit
+      (app as any).editDurationValue = null; // force null for test
+      (app as any).handleDurationEdit('increaseDuration'); // should early return
+      expect((app as any).editDurationValue).toBeNull();
+    });
+
     it('should edit duration and cancel edit if invalid', () => {
       app.start();
       (app as any).handleDurationEdit('increaseDuration'); // Start edit
@@ -464,6 +472,7 @@ describe('DoroApp', () => {
 
       (app as any).handleDurationEdit('increaseDuration'); // Start edit
       expect((app as any).editDurationState).toBe('editing');
+      (app as any).handleDurationEdit('decreaseDuration'); // Trigger line 424
 
       (app as any).editDurationValue = 15;
       (app as any).saveDurationEdit(); // Submit
