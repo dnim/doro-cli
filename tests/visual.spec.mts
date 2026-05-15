@@ -58,7 +58,7 @@ test.describe('Doro CLI Visual Regression', () => {
     );
 
     const cliPath = path.resolve(rootDir, 'dist/cli.js');
-    ptyProcess = pty.spawn('node', [cliPath], {
+    ptyProcess = pty.spawn(process.execPath, [cliPath], {
       name: 'xterm-color',
       cols,
       rows,
@@ -138,6 +138,34 @@ test.describe('Doro CLI Visual Regression', () => {
             await page.waitForTimeout(4000);
             await expect(page.locator('#terminal-container')).toHaveScreenshot(
               `${theme}-${size.name}-done.png`
+            );
+          });
+
+          // Edit duration scenarios
+          test('edit duration mode', async ({ page }) => {
+            await setupTerminal(page, size.cols, size.rows, theme);
+            await page.evaluate(() => (window as any).sendPtyData('\x1b[A')); // UP arrow
+            await page.waitForTimeout(500); // wait for edit mode
+            await expect(page.locator('#terminal-container')).toHaveScreenshot(
+              `${theme}-${size.name}-edit-duration.png`
+            );
+          });
+
+          test('edit duration blink state', async ({ page }) => {
+            await setupTerminal(page, size.cols, size.rows, theme);
+            await page.evaluate(() => (window as any).sendPtyData('\x1b[A')); // UP arrow
+            await page.waitForTimeout(1300); // wait for blink (blink counter triggers after 3 ticks = 750ms)
+            await expect(page.locator('#terminal-container')).toHaveScreenshot(
+              `${theme}-${size.name}-edit-duration-blink.png`
+            );
+          });
+
+          test('edit duration saved state', async ({ page }) => {
+            await setupTerminal(page, size.cols, size.rows, theme);
+            await page.evaluate(() => (window as any).sendPtyData('\x1b[A')); // UP arrow
+            await page.waitForTimeout(2500); // Wait for the 2s timeout to trigger save state
+            await expect(page.locator('#terminal-container')).toHaveScreenshot(
+              `${theme}-${size.name}-edit-duration-saved.png`
             );
           });
 
