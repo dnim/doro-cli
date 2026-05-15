@@ -1,0 +1,9 @@
+{
+  "mcp": {
+    "core-x": {
+      "type": "local",
+      "command": ["npx", "-y", "core-x-agent"],
+      "enabled": true
+    }
+  }
+}
