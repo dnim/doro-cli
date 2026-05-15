@@ -724,6 +724,63 @@ describe('DoroUi', () => {
     expect(getRenderText()).toContain('saved');
   });
 
+  it('should render mode banners with correct short/long labels on different screen widths', () => {
+    ui = new DoroUi(handlers as any);
+    const mockScreen = vi.mocked(blessed.screen).mock.results[0].value;
+    const getRenderText = () => {
+      const setContentCalls = vi
+        .mocked(blessed.box)
+        .mock.results.map((r) => r.value.setContent)
+        .filter(Boolean)
+        .flatMap((m: any) => m.mock.calls.map((c: any) => c[0]));
+      return setContentCalls.join(' ');
+    };
+
+    const baseState = {
+      status: 'running' as const,
+      remainingSeconds: 600,
+      durationSeconds: 1500,
+      isLocked: false,
+      volumeMode: 'normal' as const,
+      hasPrompt: false,
+      promptCountdownSeconds: 0,
+      promptTotalSeconds: 0,
+      promptNextMode: null,
+      updatePromptState: 'none' as const,
+      updateCheckResult: null,
+      editDurationState: 'none' as const,
+      editDurationValue: null,
+      editDurationBlink: false
+    };
+
+    // Test work mode
+    mockScreen.cols = 80;
+    ui.render({ ...baseState, mode: 'work' });
+    expect(getRenderText()).toContain('WORK');
+
+    // Test short mode (wide)
+    mockScreen.cols = 80;
+    ui.render({ ...baseState, mode: 'short' });
+    expect(getRenderText()).toContain('SHORT BREAK');
+
+    // Test short mode (narrow)
+    mockScreen.cols = 12;
+    ui.render({ ...baseState, mode: 'short' });
+    expect(getRenderText()).toContain('SHORT');
+
+    // Test long mode (wide)
+    mockScreen.cols = 80;
+    ui.render({ ...baseState, mode: 'long' });
+    expect(getRenderText()).toContain('LONG BREAK');
+
+    // Test long mode (narrow)
+    mockScreen.cols = 12;
+    ui.render({ ...baseState, mode: 'long' });
+    expect(getRenderText()).toContain('LONG');
+
+    mockScreen.cols = 80; // Restore
+  });
+
   it('should return empty transition status text when terminal is too narrow', () => {
     ui = new DoroUi(handlers as any);
     const mockScreen = vi.mocked(blessed.screen).mock.results[0].value;
