@@ -87,7 +87,7 @@
     "maintained node versions"
   ],
   "lint-staged": {
-    "src/**/*.{ts,tsx}": [
+    "{src,tests}/**/*.{ts,tsx,mts}": [
       "eslint --fix",
       "prettier --write"
     ]
