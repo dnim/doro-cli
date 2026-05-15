@@ -34,12 +34,12 @@ npx backlog task list
 ### 4. Create Task
 Once requirements and ACs are agreed upon, create the task. Pass ACs correctly using multiple `--ac` flags so they are structured natively:
 ```bash
-npx backlog task create -t "<Agreed Title>" --description "<Agreed Description>" --ac "<First AC>" --ac "<Second AC>"
+npx backlog task create "<Agreed Title>" --description "<Agreed Description>" --ac "<First AC>" --ac "<Second AC>"
 ```
 *Note: Do not create the task until the discussion is complete. Ensure you include the related branch in the task description or comments if one is used.*
 
 ### 5. Start Work
 If the user wants to start work immediately:
-1. Update the status using `npx backlog task edit <taskId> --status "In Progress" --assignee "@me"`
-2. Create the branch using branch naming conventions (`tasks/<taskId>-<slug>`).
+1. Create the branch using branch naming conventions (`tasks/<taskId>-<slug>`) from `main` before modifying any files.
+2. Update the status using `npx backlog task edit <taskId> --status "In Progress" --assignee "@me" --notes "Branch: tasks/<taskId>-<slug>"`
 3. Follow `AGENTS.md` conventions to implement the task.
