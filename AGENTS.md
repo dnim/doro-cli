@@ -21,7 +21,7 @@ Agents not using OpenCode: refer to `.opencode/docs/AGENT_WORKFLOW.md`.
 When the user provides feedback regarding the agent's behavior, workflow, or instructions:
 1. **Analyze**: Check current instructions (e.g., `AGENTS.md`), as well as other related configs, settings, skills, and prompts for pi and other agents/harnesses. Analyze what can be improved based on the feedback to ensure it is applied consistently everywhere.
 2. **Suggest & Discuss**: Propose specific text changes to the user and wait for explicit agreement.
-3. **Commit**: Once agreed, edit the relevant instruction files and create a separate, isolated commit on the current working branch using the prefix `feedback: ` (e.g., `feedback: added feedback handling instructions`).
+3. **Commit**: Once agreed, edit the relevant instruction files and create a separate, isolated commit on the current working branch using the prefix `feedback: ` (e.g., `feedback: added feedback handling instructions`). Do not use `git commit --amend` to append to existing commits.
 4. **Resume**: Ensure this meta-work does not affect or disrupt the context of the current active task.
 
 ## Project-Specific Skills
