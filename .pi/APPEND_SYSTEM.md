@@ -18,3 +18,14 @@ Always use Backlog.md to track work:
 3. Wait for explicit approval before implementing.
 
 This applies to: mascots, icons, color changes, layout changes, ASCII art, animations, copy/labels.
+
+## Checks — Partial vs Full
+
+Prefer the **changed-files** variants during development for faster feedback. Always run the **full** suite before requesting commit approval.
+
+| Scope | Lint | Unit tests |
+|---|---|---|
+| **Changed files** (fast) | `npm run lint:changed` | `npm run test:unit:changed` |
+| **Full project** (pre-commit) | `npm run lint` | `npm run test:unit` |
+
+These are also available as pi tools: `lint_changed`, `unit_tests_changed`, `lint`, `unit_tests`.
