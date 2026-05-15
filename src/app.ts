@@ -440,6 +440,7 @@ export class DoroApp {
 
   private saveDurationEdit(): void {
     if (this.editDurationState !== 'editing' || this.editDurationValue === null) {
+      this.clearDurationEdit();
       return;
     }
 
@@ -476,10 +477,14 @@ export class DoroApp {
     }
 
     this.editDurationTimeout = setTimeout(() => {
-      this.editDurationState = 'none';
-      this.editDurationValue = null;
-      this.render();
+      this.clearDurationEdit();
     }, 2000);
+  }
+
+  private clearDurationEdit(): void {
+    this.editDurationState = 'none';
+    this.editDurationValue = null;
+    this.render();
   }
 
   private playModeClip(mode: 'work' | 'short' | 'long'): void {

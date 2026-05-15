@@ -433,6 +433,44 @@ describe('DoroApp', () => {
       expect(playClip).toHaveBeenCalled();
     });
 
+    it('should edit duration and cancel edit if invalid', () => {
+      app.start();
+      (app as any).handleDurationEdit('increaseDuration'); // Start edit
+      expect((app as any).editDurationState).toBe('editing');
+
+      (app as any).editDurationValue = null;
+      (app as any).saveDurationEdit(); // Submit invalid
+
+      // With invalid / null editDurationValue it should cancel
+      expect((app as any).editDurationState).toBe('none');
+    });
+
+    it('should edit duration and apply short mode', () => {
+      app.start();
+      mockTimerStateMachine.getState.mockReturnValue({ mode: 'short' } as any);
+
+      (app as any).handleDurationEdit('increaseDuration'); // Start edit
+      expect((app as any).editDurationState).toBe('editing');
+
+      (app as any).editDurationValue = 5;
+      (app as any).saveDurationEdit(); // Submit
+
+      expect(mockTimerStateMachine.updateConfig).toHaveBeenCalled();
+    });
+
+    it('should edit duration and apply long mode', () => {
+      app.start();
+      mockTimerStateMachine.getState.mockReturnValue({ mode: 'long' } as any);
+
+      (app as any).handleDurationEdit('increaseDuration'); // Start edit
+      expect((app as any).editDurationState).toBe('editing');
+
+      (app as any).editDurationValue = 15;
+      (app as any).saveDurationEdit(); // Submit
+
+      expect(mockTimerStateMachine.updateConfig).toHaveBeenCalled();
+    });
+
     it('should play completion and reset beeps', () => {
       // Test completion beep
       mockTimerStateMachine.getState.mockReturnValue({ status: 'running' } as any);

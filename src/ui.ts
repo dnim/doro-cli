@@ -56,7 +56,7 @@ function stripBlessedTags(s: string): string {
  * Tags are skipped over without counting toward the position.
  * Returns `[left, right]` where left contains the first `n` visible characters.
  */
-function splitAtVisible(s: string, n: number): [string, string] {
+export function splitAtVisible(s: string, n: number): [string, string] {
   if (n <= 0) {
     return ['', s];
   }
@@ -683,7 +683,7 @@ export class DoroUi {
 
     let statusText: string;
     if (isEditingDuration || isSavedDuration) {
-      statusText = ' '; // clear status row while editing
+      statusText = ''; // clear status row while editing
     } else if (hasUpdatePrompt) {
       // Update prompts take priority over timer status
       statusText = getUpdatePromptText(state.updatePromptState, state.updateCheckResult, cols);

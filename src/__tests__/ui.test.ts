@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { DoroUi, getRunningStatusText } from '../ui';
+import { DoroUi, getRunningStatusText, splitAtVisible } from '../ui';
 import blessed from 'blessed';
 import { enableMouse, disableMouse } from '../mouse';
 
@@ -38,6 +38,12 @@ describe('DoroUi', () => {
     onAnyClick: ReturnType<typeof vi.fn>;
   };
   let ui: DoroUi;
+
+  describe('Internal helpers', () => {
+    it('should split ansi string that is shorter than visible length', () => {
+      expect(splitAtVisible('hello', 10)).toEqual(['hello', '']);
+    });
+  });
 
   beforeEach(() => {
     vi.clearAllMocks();
