@@ -19,6 +19,7 @@ Agents not using OpenCode: refer to `.opencode/docs/AGENT_WORKFLOW.md`.
 ## Handling User Feedback
 
 When the user provides feedback regarding the agent's behavior, workflow, or instructions:
+
 1. **Analyze**: Check current instructions (e.g., `AGENTS.md`), as well as other related configs, settings, skills, and prompts for pi and other agents/harnesses. Analyze what can be improved based on the feedback to ensure it is applied consistently everywhere.
 2. **Suggest & Discuss**: Propose specific text changes to the user and wait for explicit agreement.
 3. **Commit**: Once agreed, edit the relevant instruction files and create a separate, isolated commit on the current working branch using the prefix `feedback: ` (e.g., `feedback: added feedback handling instructions`). Do not use `git commit --amend` to append to existing commits.
@@ -49,6 +50,7 @@ This project uses Backlog.md MCP for all task and project management activities.
 - **When to read it**: BEFORE creating tasks, or when you're unsure whether to track work
 
 These guides cover:
+
 - Decision framework for when to create tasks
 - Search-first workflow to avoid duplicates
 - Links to detailed guides for task creation, execution, and finalization
@@ -63,7 +65,7 @@ You MUST read the overview resource to understand the complete workflow. The inf
 When you're working on a task, you should assign it yourself: -a @{your-name}
 
 In addition to the rules above, please consider the following:
-At the end of every task implementation, try to take a moment to see if you can simplify it. 
+At the end of every task implementation, try to take a moment to see if you can simplify it.
 When you are done implementing, you know much more about a task than when you started.
 At this point you can better judge retrospectively what can be the simplest architecture to solve the problem.
 If you can simplify the code, do it.
@@ -75,7 +77,6 @@ If you can simplify the code, do it.
 - Avoid extra layers (services, normalizers, versioning) unless there is an immediate, proven need.
 - Keep behavior consistent across similar stores (defaults, parse errors, locking). Divergence requires a clear reason.
 - Don't add new exported helpers just to compute a path; derive from existing paths or add one shared helper only when reused.
-
 
 ## Commands
 

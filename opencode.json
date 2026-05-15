@@ -41,7 +41,7 @@
       "git branch --list*": "allow",
       "git fetch *": "allow",
       "gh pr checks*": "allow",
-      "gh run view*": "allow", 
+      "gh run view*": "allow",
       "gh run list*": "allow",
       "npm run lint:local": "allow",
       "npm run typecheck": "allow",

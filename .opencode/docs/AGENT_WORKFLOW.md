@@ -89,6 +89,7 @@ Please review and run: `git commit -m "Add dark mode toggle to settings page"`
 ### Commit Message Formatting
 
 **Always format the final commit command for easy copy-paste**:
+
 - Provide the complete command: `git commit -m "commit message"`
 - Use proper conventional commit format when applicable (feat/fix/chore/docs)
 - Example: `git commit -m "fix(update-notifier): stabilize VRT test commands and refresh snapshots"`

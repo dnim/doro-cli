@@ -13,11 +13,15 @@ ordinal: 1000
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
+
 Currently responsive UI hides volume indicators when doro is tiny (16x3). Add compact volume icons and prioritize volume visibility over lock state for ultra-small terminals. Also fix missing sound indicator on medium screens.
+
 <!-- SECTION:DESCRIPTION:END -->
 
 ## Acceptance Criteria
+
 <!-- AC:BEGIN -->
+
 - [ ] #1 Analyze current getRunningStatusText fallback logic in src/ui.ts
 - [ ] #2 Add compact volume icons (✕♪♫ for volume, ⊘○ for lock) to status candidates
 - [ ] #3 Reorder status fallback to prioritize volume indicators in tiny widths
@@ -29,7 +33,9 @@ Currently responsive UI hides volume indicators when doro is tiny (16x3). Add co
 <!-- AC:END -->
 
 ## Definition of Done
+
 <!-- DOD:BEGIN -->
+
 - [ ] #1 code coverage is passing
 - [ ] #2 VRTs added for ui changes
 - [ ] #3 tests/linting/typecheck is green.

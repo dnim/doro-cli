@@ -11,7 +11,9 @@ dependencies: []
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
+
 Allow users to adjust the duration (in minutes) for short breaks, long breaks, and work sessions directly from the UI (including tiny mode).
+
 - Short break: 3-7 mins
 - Long break: 10-18 mins
 - Work: 20-30 mins
@@ -19,7 +21,9 @@ Allow users to adjust the duration (in minutes) for short breaks, long breaks, a
 <!-- SECTION:DESCRIPTION:END -->
 
 ## Definition of Done
+
 <!-- DOD:BEGIN -->
+
 - [ ] #1 code coverage is passing
 - [ ] #2 VRTs added for ui changes
 - [ ] #3 tests/linting/typecheck is green.
