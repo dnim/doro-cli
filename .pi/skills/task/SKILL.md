@@ -35,7 +35,7 @@ Once requirements and ACs are agreed upon, create the task:
 ```bash
 npx backlog task create -t "<Agreed Title>" --description "<Agreed Description and ACs>"
 ```
-*Note: Do not create the task until the discussion is complete.*
+*Note: Do not create the task until the discussion is complete. Ensure you include the related branch in the task description or comments if one is used.*
 
 ### 5. Final Steps
 After the task is created, ask the user if they want to move it to `In Progress` and start implementation immediately (using branch naming conventions as specified in the `backlog-workflow` skill).

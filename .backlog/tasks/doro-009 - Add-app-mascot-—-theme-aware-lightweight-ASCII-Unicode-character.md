@@ -1,10 +1,11 @@
 ---
 id: DORO-009
 title: 'Add app mascot — theme-aware, lightweight ASCII/Unicode character'
-status: To Do
+status: In Progress
 assignee:
   - '@pi'
 created_date: '2026-05-12 15:16'
+updated_date: '2026-05-15 10:00'
 labels: []
 dependencies: []
 priority: medium
@@ -20,6 +21,8 @@ The mascot should:
 - Adapt its appearance (colors/style) to the currently selected color scheme/theme
 - Be small enough to fit naturally in the UI (e.g. splash screen, idle state, or welcome panel)
 - Have personality that matches a focus/pomodoro-style productivity tool
+
+Related branch: `tasks/doro-009-app-mascot`
 <!-- SECTION:DESCRIPTION:END -->
 
 ## Acceptance Criteria
