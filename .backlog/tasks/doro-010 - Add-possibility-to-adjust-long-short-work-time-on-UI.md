@@ -1,8 +1,8 @@
 ---
 id: DORO-010
 title: Add possibility to adjust long/short/work time on UI
-status: To Do
-assignee: []
+status: Done
+assignee: [@sergeykorsik]
 created_date: '2026-05-15 10:29'
 labels: []
 dependencies: []
