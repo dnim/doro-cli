@@ -50,7 +50,7 @@
   },
   "dependencies": {
     "blessed": "npm:@rook2pawn/neo-blessed@2.0.2",
-    "core-x": "1.0.0",
+    "core-x": "1.0.28",
     "env-paths": "4.0.0"
   },
   "devDependencies": {
