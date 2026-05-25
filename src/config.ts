@@ -6,6 +6,15 @@ export const DEFAULT_WORK_MINS = 22;
 export const DEFAULT_SHORT_MINS = 5;
 export const DEFAULT_LONG_MINS = 12;
 
+export const MODE_DURATION_BOUNDS: Record<'work' | 'short' | 'long', { min: number; max: number }> =
+  {
+    work: { min: 20, max: 30 },
+    short: { min: 3, max: 7 },
+    long: { min: 10, max: 18 }
+  };
+
+export const EDIT_SAVE_TIMEOUT_MS = 2000;
+
 export type Settings = {
   volumeMode: 'normal' | 'quiet' | 'muted';
   colorScheme: 'modern' | 'calm';

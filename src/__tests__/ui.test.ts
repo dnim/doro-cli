@@ -546,10 +546,10 @@ describe('DoroUi', () => {
       promptTotalSeconds: 0,
       promptNextMode: null,
       updatePromptState: 'available',
-      updateCheckResult: { isAvailable: true, currentVersion: '1.2.0' },
+      updateCheckResult: { isAvailable: true, currentVersion: '1.2.0' }, // no latestVersion
       editDurationState: 'none',
       editDurationValue: null,
-      editDurationBlink: false // no latestVersion
+      editDurationBlink: false
     });
 
     expect(mockScreen.render).toHaveBeenCalledTimes(1);

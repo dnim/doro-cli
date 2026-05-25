@@ -10,3 +10,7 @@ test-results/
 tests/test-config/
 tests/ci-results/
 .opencode/package-lock.json
+
+# IDE / Agent State
+.antigravitycli/
+.gemini/

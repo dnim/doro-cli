@@ -15,7 +15,9 @@ import {
   loadSettings,
   DEFAULT_WORK_MINS,
   DEFAULT_SHORT_MINS,
-  DEFAULT_LONG_MINS
+  DEFAULT_LONG_MINS,
+  MODE_DURATION_BOUNDS,
+  EDIT_SAVE_TIMEOUT_MS
 } from './config';
 import {
   isAllowedWhenLocked,
@@ -410,22 +412,18 @@ export class DoroApp {
       return;
     }
 
+    const bounds = MODE_DURATION_BOUNDS[state.mode];
+
     if (!justStarted) {
       if (command === 'increaseDuration') {
         this.editDurationValue += 1;
       } else {
         this.editDurationValue -= 1;
       }
-
-      // Clamp bounds
-      if (state.mode === 'short') {
-        this.editDurationValue = Math.max(3, Math.min(7, this.editDurationValue));
-      } else if (state.mode === 'long') {
-        this.editDurationValue = Math.max(10, Math.min(18, this.editDurationValue));
-      } else {
-        this.editDurationValue = Math.max(20, Math.min(30, this.editDurationValue));
-      }
     }
+
+    // Clamp to per-mode bounds (also handles out-of-range initial values)
+    this.editDurationValue = Math.max(bounds.min, Math.min(bounds.max, this.editDurationValue));
 
     this.render();
 
@@ -435,7 +433,7 @@ export class DoroApp {
 
     this.editDurationTimeout = setTimeout(() => {
       this.saveDurationEdit();
-    }, 2000);
+    }, EDIT_SAVE_TIMEOUT_MS);
   }
 
   private saveDurationEdit(): void {
@@ -478,7 +476,7 @@ export class DoroApp {
 
     this.editDurationTimeout = setTimeout(() => {
       this.clearDurationEdit();
-    }, 2000);
+    }, EDIT_SAVE_TIMEOUT_MS);
   }
 
   private clearDurationEdit(): void {
