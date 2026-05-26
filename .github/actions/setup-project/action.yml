@@ -1,5 +1,5 @@
 name: 'Setup Project'
-description: 'Node.js setup and npm environment fixes'
+description: 'Node.js setup'
 inputs:
   node-version:
     description: 'Node.js version to use'
@@ -18,7 +18,3 @@ runs:
         node-version: ${{ inputs.node-version }}
         cache: 'npm'
         registry-url: ${{ inputs.registry-url }}
-
-    - name: Upgrade npm to prevent exit handler crashes
-      run: npm install -g npm@latest
-      shell: bash
