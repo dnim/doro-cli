@@ -17,7 +17,9 @@ jobs:
         with:
           node-version: 24.x
           registry-url: 'https://registry.npmjs.org'
-      - run: npm ci
+      - run: |
+          mkdir -p .npm-cache
+          npm ci --cache .npm-cache --prefer-offline
       - run: npm run build
       - run: npm run typecheck
       - run: npm run test:unit

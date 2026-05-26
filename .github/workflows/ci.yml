@@ -24,7 +24,9 @@ jobs:
           node-version: ${{ matrix.node-version }}
 
       - name: Install Dependencies
-        run: npm ci
+        run: |
+          mkdir -p .npm-cache
+          npm ci --cache .npm-cache --prefer-offline
 
       - name: Lint
         run: npm run lint

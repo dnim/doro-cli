@@ -29,7 +29,9 @@ jobs:
           node-version: 24.x
 
       - name: Install dependencies
-        run: npm ci
+        run: |
+          mkdir -p .npm-cache
+          npm ci --cache .npm-cache --prefer-offline
 
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps chromium
