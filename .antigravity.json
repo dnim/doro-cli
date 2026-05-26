@@ -1,0 +1,6 @@
+{
+  "permissions": {
+    "command(git commit)": "ask",
+    "command(git push)": "ask"
+  }
+}

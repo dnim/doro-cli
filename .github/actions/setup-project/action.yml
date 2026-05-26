@@ -1,0 +1,24 @@
+name: 'Setup Project'
+description: 'Node.js setup and npm environment fixes'
+inputs:
+  node-version:
+    description: 'Node.js version to use'
+    required: true
+    default: '24.x'
+  registry-url:
+    description: 'Registry URL for publishing'
+    required: false
+    default: ''
+runs:
+  using: 'composite'
+  steps:
+    - name: Use Node.js
+      uses: actions/setup-node@v6
+      with:
+        node-version: ${{ inputs.node-version }}
+        cache: 'npm'
+        registry-url: ${{ inputs.registry-url }}
+
+    - name: Upgrade npm to prevent exit handler crashes
+      run: npm install -g npm@latest
+      shell: bash
