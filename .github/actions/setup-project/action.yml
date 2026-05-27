@@ -8,7 +8,7 @@ inputs:
   registry-url:
     description: 'Registry URL for publishing'
     required: false
-    default: ''
+    default: 'https://registry.npmjs.org'
 runs:
   using: 'composite'
   steps:
