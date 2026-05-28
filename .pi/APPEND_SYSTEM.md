@@ -3,7 +3,6 @@
 ## Task & Feature Tracking
 
 Always use Backlog.md to track work:
-
 - Search for an existing task before creating one: `npx backlog task list`
 - Create a task if none exists: `npx backlog task create`
 - Update the task description/ACs to match the final agreed design before coding
@@ -24,9 +23,9 @@ This applies to: mascots, icons, color changes, layout changes, ASCII art, anima
 
 Prefer the **changed-files** variants during development for faster feedback. Always run the **full** suite before requesting commit approval.
 
-| Scope                         | Lint                   | Unit tests                  |
-| ----------------------------- | ---------------------- | --------------------------- |
-| **Changed files** (fast)      | `npm run lint:changed` | `npm run test:unit:changed` |
-| **Full project** (pre-commit) | `npm run lint`         | `npm run test:unit`         |
+| Scope | Lint | Unit tests |
+|---|---|---|
+| **Changed files** (fast) | `npm run lint:changed` | `npm run test:unit:changed` |
+| **Full project** (pre-commit) | `npm run lint` | `npm run test:unit` |
 
 These are also available as pi tools: `lint_changed`, `unit_tests_changed`, `lint`, `unit_tests`.

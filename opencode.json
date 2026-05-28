@@ -27,7 +27,13 @@
       "model": "github-copilot/gemini-3-flash-preview"
     }
   },
-  "mcp": {},
+  "mcp": {
+    "core-x": {
+      "type": "local",
+      "command": ["npx", "core-x"],
+      "enabled": true
+    }
+  },
   "permission": {
     "bash": {
       "*": "ask",
@@ -41,7 +47,7 @@
       "git branch --list*": "allow",
       "git fetch *": "allow",
       "gh pr checks*": "allow",
-      "gh run view*": "allow",
+      "gh run view*": "allow", 
       "gh run list*": "allow",
       "npm run lint:local": "allow",
       "npm run typecheck": "allow",

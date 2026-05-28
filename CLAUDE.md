@@ -1,5 +1,5 @@
-<!-- BACKLOG.MD GUIDELINES START -->
 
+<!-- BACKLOG.MD GUIDELINES START -->
 # Instructions for the usage of Backlog.md CLI Tool
 
 ## Backlog.md: Comprehensive Project Management Tool via CLI
@@ -151,27 +151,27 @@ PR-style summary of what was implemented.
 
 ### How to Modify Each Section
 
-| What You Want to Change | CLI Command to Use                                             |
-| ----------------------- | -------------------------------------------------------------- |
-| Title                   | `backlog task edit 42 -t "New Title"`                          |
-| Status                  | `backlog task edit 42 -s "In Progress"`                        |
-| Assignee                | `backlog task edit 42 -a @sara`                                |
-| Labels                  | `backlog task edit 42 -l backend,api`                          |
-| Description             | `backlog task edit 42 -d "New description"`                    |
-| Add AC                  | `backlog task edit 42 --ac "New criterion"`                    |
-| Add DoD                 | `backlog task edit 42 --dod "Ship notes"`                      |
-| Check AC #1             | `backlog task edit 42 --check-ac 1`                            |
-| Check DoD #1            | `backlog task edit 42 --check-dod 1`                           |
-| Uncheck AC #2           | `backlog task edit 42 --uncheck-ac 2`                          |
-| Uncheck DoD #2          | `backlog task edit 42 --uncheck-dod 2`                         |
-| Remove AC #3            | `backlog task edit 42 --remove-ac 3`                           |
-| Remove DoD #3           | `backlog task edit 42 --remove-dod 3`                          |
-| Add Plan                | `backlog task edit 42 --plan "1. Step one\n2. Step two"`       |
-| Add Notes (replace)     | `backlog task edit 42 --notes "What I did"`                    |
-| Append Notes            | `backlog task edit 42 --append-notes "Another note"`           |
-| Add Final Summary       | `backlog task edit 42 --final-summary "PR-style summary"`      |
+| What You Want to Change | CLI Command to Use                                       |
+|-------------------------|----------------------------------------------------------|
+| Title                   | `backlog task edit 42 -t "New Title"`                    |
+| Status                  | `backlog task edit 42 -s "In Progress"`                  |
+| Assignee                | `backlog task edit 42 -a @sara`                          |
+| Labels                  | `backlog task edit 42 -l backend,api`                    |
+| Description             | `backlog task edit 42 -d "New description"`              |
+| Add AC                  | `backlog task edit 42 --ac "New criterion"`              |
+| Add DoD                 | `backlog task edit 42 --dod "Ship notes"`                |
+| Check AC #1             | `backlog task edit 42 --check-ac 1`                      |
+| Check DoD #1            | `backlog task edit 42 --check-dod 1`                     |
+| Uncheck AC #2           | `backlog task edit 42 --uncheck-ac 2`                    |
+| Uncheck DoD #2          | `backlog task edit 42 --uncheck-dod 2`                   |
+| Remove AC #3            | `backlog task edit 42 --remove-ac 3`                     |
+| Remove DoD #3           | `backlog task edit 42 --remove-dod 3`                    |
+| Add Plan                | `backlog task edit 42 --plan "1. Step one\n2. Step two"` |
+| Add Notes (replace)     | `backlog task edit 42 --notes "What I did"`              |
+| Append Notes            | `backlog task edit 42 --append-notes "Another note"` |
+| Add Final Summary       | `backlog task edit 42 --final-summary "PR-style summary"` |
 | Append Final Summary    | `backlog task edit 42 --append-final-summary "Another detail"` |
-| Clear Final Summary     | `backlog task edit 42 --clear-final-summary`                   |
+| Clear Final Summary     | `backlog task edit 42 --clear-final-summary` |
 
 ---
 
@@ -296,8 +296,8 @@ Bad Example (Implementation Step):
 
 The very first things you must do when you take over a task are:
 
-- set the task in progress
-- assign it to yourself
+* set the task in progress
+* assign it to yourself
 
 ```bash
 # Example
@@ -307,7 +307,6 @@ backlog task edit 42 -s "In Progress" -a @{myself}
 ### 5.2. Review Task References and Documentation
 
 Before planning, check if the task has any attached `references` or `documentation`:
-
 - **References**: Related code files, GitHub issues, or URLs relevant to the implementation
 - **Documentation**: Design docs, API specs, or other materials for understanding context
 
@@ -457,7 +456,6 @@ backlog search "bug" --priority high --plain
 ```
 
 **Key points:**
-
 - Uses fuzzy matching - finds "authentication" when searching "auth"
 - Searches task titles, descriptions, and content
 - Also searches documents and decisions unless filtered with `--type task`
@@ -469,22 +467,22 @@ backlog search "bug" --priority high --plain
 
 ### Viewing and Finding Tasks
 
-| Task          | ✅ DO                           | ❌ DON'T                        |
-| ------------- | ------------------------------- | ------------------------------- |
-| View task     | `backlog task 42 --plain`       | Open and read .md file directly |
-| List tasks    | `backlog task list --plain`     | Browse backlog/tasks folder     |
-| Check status  | `backlog task 42 --plain`       | Look at file content            |
-| Find by topic | `backlog search "auth" --plain` | Manually grep through files     |
+| Task         | ✅ DO                        | ❌ DON'T                         |
+|--------------|-----------------------------|---------------------------------|
+| View task    | `backlog task 42 --plain`   | Open and read .md file directly |
+| List tasks   | `backlog task list --plain` | Browse backlog/tasks folder     |
+| Check status | `backlog task 42 --plain`   | Look at file content            |
+| Find by topic| `backlog search "auth" --plain` | Manually grep through files |
 
 ### Modifying Tasks
 
-| Task              | ✅ DO                                        | ❌ DON'T                          |
-| ----------------- | -------------------------------------------- | --------------------------------- |
-| Check AC          | `backlog task edit 42 --check-ac 1`          | Change `- [ ]` to `- [x]` in file |
-| Add notes         | `backlog task edit 42 --notes "..."`         | Type notes into .md file          |
-| Add final summary | `backlog task edit 42 --final-summary "..."` | Type summary into .md file        |
-| Change status     | `backlog task edit 42 -s Done`               | Edit status in frontmatter        |
-| Add AC            | `backlog task edit 42 --ac "New"`            | Add `- [ ] New` to file           |
+| Task          | ✅ DO                                 | ❌ DON'T                           |
+|---------------|--------------------------------------|-----------------------------------|
+| Check AC      | `backlog task edit 42 --check-ac 1`  | Change `- [ ]` to `- [x]` in file |
+| Add notes     | `backlog task edit 42 --notes "..."` | Type notes into .md file          |
+| Add final summary | `backlog task edit 42 --final-summary "..."` | Type summary into .md file |
+| Change status | `backlog task edit 42 -s Done`       | Edit status in frontmatter        |
+| Add AC        | `backlog task edit 42 --ac "New"`    | Add `- [ ] New` to file           |
 
 ---
 
@@ -492,22 +490,22 @@ backlog search "bug" --priority high --plain
 
 ### Task Creation
 
-| Action             | Command                                                                                                                 |
-| ------------------ | ----------------------------------------------------------------------------------------------------------------------- |
-| Create task        | `backlog task create "Title"`                                                                                           |
-| With description   | `backlog task create "Title" -d "Description"`                                                                          |
-| With AC            | `backlog task create "Title" --ac "Criterion 1" --ac "Criterion 2"`                                                     |
-| With final summary | `backlog task create "Title" --final-summary "PR-style summary"`                                                        |
-| With references    | `backlog task create "Title" --ref src/api.ts --ref https://github.com/issue/123`                                       |
-| With documentation | `backlog task create "Title" --doc https://design-docs.example.com`                                                     |
-| With all options   | `backlog task create "Title" -d "Desc" -a @sara -s "To Do" -l auth --priority high --ref src/api.ts --doc docs/spec.md` |
-| Create draft       | `backlog task create "Title" --draft`                                                                                   |
-| Create subtask     | `backlog task create "Title" -p 42`                                                                                     |
+| Action           | Command                                                                             |
+|------------------|-------------------------------------------------------------------------------------|
+| Create task      | `backlog task create "Title"`                                                       |
+| With description | `backlog task create "Title" -d "Description"`                                      |
+| With AC          | `backlog task create "Title" --ac "Criterion 1" --ac "Criterion 2"`                 |
+| With final summary | `backlog task create "Title" --final-summary "PR-style summary"`                 |
+| With references  | `backlog task create "Title" --ref src/api.ts --ref https://github.com/issue/123`   |
+| With documentation | `backlog task create "Title" --doc https://design-docs.example.com`               |
+| With all options | `backlog task create "Title" -d "Desc" -a @sara -s "To Do" -l auth --priority high --ref src/api.ts --doc docs/spec.md` |
+| Create draft     | `backlog task create "Title" --draft`                                               |
+| Create subtask   | `backlog task create "Title" -p 42`                                                 |
 
 ### Task Modification
 
 | Action           | Command                                     |
-| ---------------- | ------------------------------------------- |
+|------------------|---------------------------------------------|
 | Edit title       | `backlog task edit 42 -t "New Title"`       |
 | Edit description | `backlog task edit 42 -d "New description"` |
 | Change status    | `backlog task edit 42 -s "In Progress"`     |
@@ -518,7 +516,7 @@ backlog search "bug" --priority high --plain
 ### Acceptance Criteria Management
 
 | Action              | Command                                                                     |
-| ------------------- | --------------------------------------------------------------------------- |
+|---------------------|-----------------------------------------------------------------------------|
 | Add AC              | `backlog task edit 42 --ac "New criterion" --ac "Another"`                  |
 | Remove AC #2        | `backlog task edit 42 --remove-ac 2`                                        |
 | Remove multiple ACs | `backlog task edit 42 --remove-ac 2 --remove-ac 4`                          |
@@ -529,16 +527,16 @@ backlog search "bug" --priority high --plain
 
 ### Task Content
 
-| Action               | Command                                                                         |
-| -------------------- | ------------------------------------------------------------------------------- |
-| Add plan             | `backlog task edit 42 --plan "1. Step one\n2. Step two"`                        |
-| Add notes            | `backlog task edit 42 --notes "Implementation details"`                         |
-| Add final summary    | `backlog task edit 42 --final-summary "PR-style summary"`                       |
-| Append final summary | `backlog task edit 42 --append-final-summary "More details"`                    |
-| Clear final summary  | `backlog task edit 42 --clear-final-summary`                                    |
-| Add dependencies     | `backlog task edit 42 --dep task-1 --dep task-2`                                |
-| Add references       | `backlog task edit 42 --ref src/api.ts --ref https://github.com/issue/123`      |
-| Add documentation    | `backlog task edit 42 --doc https://design-docs.example.com --doc docs/spec.md` |
+| Action           | Command                                                  |
+|------------------|----------------------------------------------------------|
+| Add plan         | `backlog task edit 42 --plan "1. Step one\n2. Step two"` |
+| Add notes        | `backlog task edit 42 --notes "Implementation details"`  |
+| Add final summary | `backlog task edit 42 --final-summary "PR-style summary"` |
+| Append final summary | `backlog task edit 42 --append-final-summary "More details"` |
+| Clear final summary | `backlog task edit 42 --clear-final-summary` |
+| Add dependencies | `backlog task edit 42 --dep task-1 --dep task-2`         |
+| Add references   | `backlog task edit 42 --ref src/api.ts --ref https://github.com/issue/123` |
+| Add documentation | `backlog task edit 42 --doc https://design-docs.example.com --doc docs/spec.md` |
 
 ### Multi‑line Input (Description/Plan/Notes/Final Summary)
 
@@ -581,7 +579,6 @@ Descriptions support literal newlines; shell examples may show escaped `\\n`, bu
 - Avoid single‑line summaries unless the change is truly tiny.
 
 **Example (good, not rigid):**
-
 ```
 Added Final Summary support across CLI/MCP/Web/TUI to separate PR summaries from progress notes.
 
@@ -596,23 +593,23 @@ Tests:
 
 ### Task Operations
 
-| Action             | Command                                         |
-| ------------------ | ----------------------------------------------- |
-| View task          | `backlog task 42 --plain`                       |
-| List tasks         | `backlog task list --plain`                     |
-| Search tasks       | `backlog search "topic" --plain`                |
+| Action             | Command                                      |
+|--------------------|----------------------------------------------|
+| View task          | `backlog task 42 --plain`                    |
+| List tasks         | `backlog task list --plain`                  |
+| Search tasks       | `backlog search "topic" --plain`              |
 | Search with filter | `backlog search "api" --status "To Do" --plain` |
-| Filter by status   | `backlog task list -s "In Progress" --plain`    |
-| Filter by assignee | `backlog task list -a @sara --plain`            |
-| Archive task       | `backlog task archive 42`                       |
-| Demote to draft    | `backlog task demote 42`                        |
+| Filter by status   | `backlog task list -s "In Progress" --plain` |
+| Filter by assignee | `backlog task list -a @sara --plain`         |
+| Archive task       | `backlog task archive 42`                    |
+| Demote to draft    | `backlog task demote 42`                     |
 
 ---
 
 ## Common Issues
 
 | Problem              | Solution                                                           |
-| -------------------- | ------------------------------------------------------------------ |
+|----------------------|--------------------------------------------------------------------|
 | Task not found       | Check task ID with `backlog task list --plain`                     |
 | AC won't check       | Use correct index: `backlog task 42 --plain` to see AC numbers     |
 | Changes not saving   | Ensure you're using CLI, not editing files                         |

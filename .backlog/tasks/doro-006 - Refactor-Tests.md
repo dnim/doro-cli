@@ -12,15 +12,11 @@ ordinal: 4000
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-
 Refactor the test suite in `src/__tests__/` to align with AI-first and DAMP (Descriptive and Meaningful Phrases) principles. The goal is to reduce file size, abstract repetitive setup/mocking logic, and preserve the readability of the Arrange, Act, Assert phases.
-
 <!-- SECTION:DESCRIPTION:END -->
 
 ## Acceptance Criteria
-
 <!-- AC:BEGIN -->
-
 - [ ] #1 Create `src/__tests__/utils/factories.ts` with createMockState and createMockConfig factory functions
 - [ ] #2 Create `src/__tests__/utils/mocks.ts` with setupAudioMocks and setupInputMocks helpers
 - [ ] #3 Refactor stateMachine.test.ts and app.test.ts to use createMockState factory
@@ -30,8 +26,6 @@ Refactor the test suite in `src/__tests__/` to align with AI-first and DAMP (Des
 <!-- AC:END -->
 
 ## Definition of Done
-
 <!-- DOD:BEGIN -->
-
 - [ ] #1 code coverage is passing, VRTs added for ui changes, tests/linting/typecheck is green.
 <!-- DOD:END -->

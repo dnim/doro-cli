@@ -13,15 +13,11 @@ ordinal: 2000
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-
 Introduce a theme manager, add two extra default themes, and persist the selection via config. Extends existing color scheme system from 2 to 4 themes.
-
 <!-- SECTION:DESCRIPTION:END -->
 
 ## Acceptance Criteria
-
 <!-- AC:BEGIN -->
-
 - [ ] #1 Create 'src/theme.ts' with registry for 'modern', 'calm', 'vivid', 'monochrome' palettes.
 - [ ] #2 Refactor UI components to use theme tokens from theme manager.
 - [ ] #3 Add '--theme' CLI flag for setting theme at startup.
@@ -32,9 +28,7 @@ Introduce a theme manager, add two extra default themes, and persist the selecti
 <!-- AC:END -->
 
 ## Definition of Done
-
 <!-- DOD:BEGIN -->
-
 - [ ] #1 code coverage is passing
 - [ ] #2 VRTs added for ui changes
 - [ ] #3 tests/linting/typecheck is green.

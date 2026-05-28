@@ -12,16 +12,17 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [24.15.0]
+        node-version: [24.x]
 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v6
 
-      - name: Setup Node and npm
-        uses: ./.github/actions/setup-project
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node-version }}
+          cache: 'npm'
 
       - name: Install Dependencies
         run: npm ci

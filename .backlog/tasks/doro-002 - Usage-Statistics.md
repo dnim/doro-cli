@@ -13,15 +13,11 @@ ordinal: 3000
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-
 This plan covers recording session statistics to a local file with protection against race conditions from concurrent instances. It adds a new --stats command to display the data.
-
 <!-- SECTION:DESCRIPTION:END -->
 
 ## Acceptance Criteria
-
 <!-- AC:BEGIN -->
-
 - [x] #1 Install 'proper-lockfile' dependency to manage concurrent file access.
 - [ ] #2 Create 'src/stats.ts' module with file-locking logic for reading and writing 'stats.json'.
 - [ ] #3 Integrate session recording into 'DoroApp', calling the stats module upon session completion.
@@ -31,9 +27,7 @@ This plan covers recording session statistics to a local file with protection ag
 <!-- AC:END -->
 
 ## Definition of Done
-
 <!-- DOD:BEGIN -->
-
 - [ ] #1 code coverage is passing
 - [ ] #2 VRTs added for ui changes
 - [ ] #3 tests/linting/typecheck is green.

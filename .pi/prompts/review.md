@@ -1,9 +1,7 @@
 ---
 description: Review staged git changes before committing
 ---
-
 Review the staged changes (`git diff --cached`). Check for:
-
 - TypeScript type errors or missing types
 - Logic bugs and edge cases
 - Consistency with doro-cli patterns (TUI state machine, neo-blessed constraints)
