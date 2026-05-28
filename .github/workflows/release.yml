@@ -15,7 +15,7 @@ jobs:
       - name: Setup Node and npm
         uses: ./.github/actions/setup-project
         with:
-          node-version: 24.x
+          node-version: 24.15.0
           registry-url: 'https://registry.npmjs.org'
       - run: |
           mkdir -p .npm-cache

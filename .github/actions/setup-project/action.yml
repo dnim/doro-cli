@@ -4,7 +4,7 @@ inputs:
   node-version:
     description: 'Node.js version to use'
     required: true
-    default: '24.x'
+    default: '24.15.0'
   registry-url:
     description: 'Registry URL for publishing'
     required: false

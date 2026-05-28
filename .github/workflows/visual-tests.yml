@@ -26,7 +26,7 @@ jobs:
       - name: Setup Node and npm
         uses: ./.github/actions/setup-project
         with:
-          node-version: 24.x
+          node-version: 24.15.0
 
       - name: Install dependencies
         run: |
