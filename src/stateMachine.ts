@@ -238,6 +238,25 @@ export class TimerStateMachine {
     return { state: this.getState(), switchedToMode: prompt.nextMode };
   }
 
+  public updateConfig(newConfig: TimerConfig): void {
+    // If we're modifying the duration of the current mode, we should
+    // also update the remaining seconds by the difference between new and old total duration.
+    const oldDuration = getDurationForMode(this.config, this.state.mode);
+    const newDuration = getDurationForMode(newConfig, this.state.mode);
+    const diff = newDuration - oldDuration;
+
+    Object.assign(this.config, newConfig);
+
+    if (diff !== 0) {
+      // Ensure we don't drop below 0 if the limit was shortened significantly
+      const newRemaining = Math.max(0, this.state.remainingSeconds + diff);
+      this.state = {
+        ...this.state,
+        remainingSeconds: newRemaining
+      };
+    }
+  }
+
   public getConfig(): TimerConfig {
     return this.config;
   }

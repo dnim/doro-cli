@@ -34,9 +34,21 @@ describe('input mapping', () => {
     expect(resolveControlCommand(createKeyEvent('N', 'n'))).toBe('updateNo');
   });
 
+  it('maps duration commands correctly', () => {
+    expect(resolveControlCommand(createKeyEvent('+', '+'))).toBe('increaseDuration');
+    expect(resolveControlCommand(createKeyEvent('=', '='))).toBe('increaseDuration');
+    expect(resolveControlCommand(createKeyEvent(undefined, 'up'))).toBe('increaseDuration');
+    expect(resolveControlCommand(createKeyEvent(undefined, 'right'))).toBe('increaseDuration');
+
+    expect(resolveControlCommand(createKeyEvent('-', '-'))).toBe('decreaseDuration');
+    expect(resolveControlCommand(createKeyEvent('_', '_'))).toBe('decreaseDuration');
+    expect(resolveControlCommand(createKeyEvent(undefined, 'down'))).toBe('decreaseDuration');
+    expect(resolveControlCommand(createKeyEvent(undefined, 'left'))).toBe('decreaseDuration');
+  });
+
   it('does not crash when a key event arrives without a character', () => {
     expect(resolveControlCommand(createKeyEvent(undefined, 'q'))).toBe('quit');
-    expect(resolveControlCommand(createKeyEvent(undefined, 'up'))).toBe('none');
+    expect(resolveControlCommand(createKeyEvent(undefined, 'unknown'))).toBe('none');
   });
 
   it('allows only quit, pause, toggle lock, and update check when locked', () => {

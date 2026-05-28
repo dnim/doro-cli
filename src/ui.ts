@@ -16,6 +16,9 @@ type UiRenderState = {
   promptNextMode: TimerMode | null;
   updatePromptState: UpdatePromptState;
   updateCheckResult: UpdateCheckResult | null;
+  editDurationState: 'none' | 'editing' | 'saved';
+  editDurationValue: number | null;
+  editDurationBlink: boolean;
 };
 
 type UiHandlers = {
@@ -53,7 +56,7 @@ function stripBlessedTags(s: string): string {
  * Tags are skipped over without counting toward the position.
  * Returns `[left, right]` where left contains the first `n` visible characters.
  */
-function splitAtVisible(s: string, n: number): [string, string] {
+export function splitAtVisible(s: string, n: number): [string, string] {
   if (n <= 0) {
     return ['', s];
   }
@@ -644,6 +647,9 @@ export class DoroUi {
     const palette = PALETTES[this.colorScheme];
     const isTransition = state.hasPrompt;
     const hasUpdatePrompt = state.updatePromptState !== 'none';
+    const isEditingDuration = state.editDurationState === 'editing';
+    const isSavedDuration = state.editDurationState === 'saved';
+
     const style = isPaused
       ? palette.pause
       : isTransition && state.promptNextMode
@@ -656,24 +662,29 @@ export class DoroUi {
     const progressWidth = Math.round(cols * progressRatio);
     const compactHeight = rows < 10;
 
-    const bannerText = isPaused
-      ? 'PAUSED'
-      : state.hasPrompt
-        ? 'Done'
-        : hasUpdatePrompt && cols <= 16
-          ? 'UPDATE'
-          : state.mode === 'work'
-            ? 'WORK'
-            : state.mode === 'short'
-              ? cols < 14
-                ? 'SHORT'
-                : 'SHORT BREAK'
-              : cols < 13
-                ? 'LONG'
-                : 'LONG BREAK';
+    let bannerText: string;
+    if (isEditingDuration && state.editDurationValue !== null) {
+      bannerText = state.editDurationBlink ? ' ' : `${state.editDurationValue}`;
+    } else if (isSavedDuration) {
+      bannerText = 'saved';
+    } else if (isPaused) {
+      bannerText = 'PAUSED';
+    } else if (state.hasPrompt) {
+      bannerText = 'Done';
+    } else if (hasUpdatePrompt && cols <= 16) {
+      bannerText = 'UPDATE';
+    } else if (state.mode === 'work') {
+      bannerText = 'WORK';
+    } else if (state.mode === 'short') {
+      bannerText = cols < 14 ? 'SHORT' : 'SHORT BREAK';
+    } else {
+      bannerText = cols < 13 ? 'LONG' : 'LONG BREAK';
+    }
 
     let statusText: string;
-    if (hasUpdatePrompt) {
+    if (isEditingDuration || isSavedDuration) {
+      statusText = ''; // clear status row while editing
+    } else if (hasUpdatePrompt) {
       // Update prompts take priority over timer status
       statusText = getUpdatePromptText(state.updatePromptState, state.updateCheckResult, cols);
     } else if (state.hasPrompt && state.promptNextMode) {

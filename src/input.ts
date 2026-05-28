@@ -30,6 +30,8 @@ export type ControlCommand =
   | 'checkUpdate'
   | 'updateYes'
   | 'updateNo'
+  | 'increaseDuration'
+  | 'decreaseDuration'
   | 'testUpdateAvailable'
   | 'testUpdateCopySuccess'
   | 'testUpdateCopyFallback'
@@ -115,6 +117,19 @@ export function resolveControlCommand(event: InputEvent): ControlCommand {
 
   if (event.keyName === 'n' || lowerChar === 'n') {
     return 'updateNo';
+  }
+
+  if (event.keyName === 'up' || event.keyName === 'right' || event.ch === '+' || event.ch === '=') {
+    return 'increaseDuration';
+  }
+
+  if (
+    event.keyName === 'down' ||
+    event.keyName === 'left' ||
+    event.ch === '-' ||
+    event.ch === '_'
+  ) {
+    return 'decreaseDuration';
   }
 
   return 'none';

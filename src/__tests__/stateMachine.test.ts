@@ -307,6 +307,31 @@ describe('TimerStateMachine', () => {
     });
   });
 
+  it('should handle updateConfig with remaining seconds adjustment', () => {
+    const config = createQuickTestConfig({ workSeconds: 10 });
+    const machine = new TimerStateMachine(config);
+    machine.startMode('work');
+
+    const newConfig = { ...config, workSeconds: config.workSeconds + 5 };
+    machine.updateConfig(newConfig);
+
+    const state = machine.getState();
+    expect(state.remainingSeconds).toBe(15);
+  });
+
+  it('should handle updateConfig capping at 0', () => {
+    const config = createQuickTestConfig({ workSeconds: 10 });
+    const machine = new TimerStateMachine(config);
+    machine.startMode('work');
+    machine.tick(1000); // 1 sec
+
+    const newConfig = { ...config, workSeconds: config.workSeconds - 20 };
+    machine.updateConfig(newConfig);
+
+    const state = machine.getState();
+    expect(state.remainingSeconds).toBe(0);
+  });
+
   describe('confirmPromptAndSwitch edge cases', () => {
     it('returns null switchedToMode when no prompt exists', () => {
       // Arrange
