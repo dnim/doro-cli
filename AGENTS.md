@@ -16,6 +16,14 @@ Core workflow rules (Git, Planning, Committing, CI/CD) are injected automaticall
 
 Agents not using OpenCode: refer to `.opencode/docs/AGENT_WORKFLOW.md`.
 
+## Handling User Feedback
+
+When the user provides feedback regarding the agent's behavior, workflow, or instructions:
+1. **Analyze**: Check current instructions (e.g., `AGENTS.md`), as well as other related configs, settings, skills, and prompts for pi and other agents/harnesses. Analyze what can be improved based on the feedback to ensure it is applied consistently everywhere.
+2. **Suggest & Discuss**: Propose specific text changes to the user and wait for explicit agreement.
+3. **Commit**: Once agreed, edit the relevant instruction files and create a separate, isolated commit on the current working branch using the prefix `feedback: ` (e.g., `feedback: added feedback handling instructions`). Do not use `git commit --amend` to append to existing commits.
+4. **Resume**: Ensure this meta-work does not affect or disrupt the context of the current active task.
+
 ## Project-Specific Skills
 
 ### AntiVibe
@@ -120,6 +128,8 @@ The pre-commit hook automatically runs linting and tests on staged files to ensu
 
 ## Git Workflow
 
+- **Commit Approval**: Never commit changes without explicit user approval. Always run tests/lint, present the `git diff` or proposed commit message, and wait for the user to say "go" or "approved" before executing `git commit`.
+- **UI Changes**: If a task includes UI changes, you MUST add or adjust Playwright snapshots (visual regression tests / VRT). Use `npm run test:visual:update -- -g "pattern"` to update specific snapshots quickly during development, and run the full suite before finalizing.
 - **NEVER commit directly to `main`.** Always work on a feature branch. If you are on `main`, create a branch before making any changes.
 - **Backlog auto-commit is disabled.** `npx backlog task create/update` will NOT auto-commit. Stage and commit backlog changes yourself on your feature branch, following the normal commit workflow.
 - **Branching**: Use feature branches when working on tasks (e.g. `tasks/doro-123-feature-name`)
