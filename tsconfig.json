@@ -12,5 +12,5 @@
     "rootDir": "src",
     "types": ["node", "vitest/globals"]
   },
-  "include": ["src"]
+  "include": ["src", ".pi"]
 }
