@@ -31,6 +31,7 @@ export default tseslint.config(
       'dist/**',
       'coverage/**',
       'node_modules/**',
+      '.pi/**',
       'playwright.config.ts',
       'vitest.config.ts',
       '.pi/**'

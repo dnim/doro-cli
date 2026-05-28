@@ -66,7 +66,8 @@ describe('DoroApp', () => {
       toggleLock: vi.fn(),
       togglePause: vi.fn(),
       debugJumpToNearEnd: vi.fn(),
-      resetCurrentAndRun: vi.fn()
+      resetCurrentAndRun: vi.fn(),
+      updateConfig: vi.fn()
       // Add other methods of TimerStateMachine as they are used
     } as unknown as Mocked<TimerStateMachine>;
 
@@ -432,6 +433,53 @@ describe('DoroApp', () => {
       expect(playClip).toHaveBeenCalled();
     });
 
+    it('should bail handleDurationEdit if value is null', () => {
+      app.start();
+      (app as any).handleDurationEdit('increaseDuration'); // Start edit
+      (app as any).editDurationValue = null; // force null for test
+      (app as any).handleDurationEdit('increaseDuration'); // should early return
+      expect((app as any).editDurationValue).toBeNull();
+    });
+
+    it('should edit duration and cancel edit if invalid', () => {
+      app.start();
+      (app as any).handleDurationEdit('increaseDuration'); // Start edit
+      expect((app as any).editDurationState).toBe('editing');
+
+      (app as any).editDurationValue = null;
+      (app as any).saveDurationEdit(); // Submit invalid
+
+      // With invalid / null editDurationValue it should cancel
+      expect((app as any).editDurationState).toBe('none');
+    });
+
+    it('should edit duration and apply short mode', () => {
+      app.start();
+      mockTimerStateMachine.getState.mockReturnValue({ mode: 'short' } as any);
+
+      (app as any).handleDurationEdit('increaseDuration'); // Start edit
+      expect((app as any).editDurationState).toBe('editing');
+
+      (app as any).editDurationValue = 5;
+      (app as any).saveDurationEdit(); // Submit
+
+      expect(mockTimerStateMachine.updateConfig).toHaveBeenCalled();
+    });
+
+    it('should edit duration and apply long mode', () => {
+      app.start();
+      mockTimerStateMachine.getState.mockReturnValue({ mode: 'long' } as any);
+
+      (app as any).handleDurationEdit('increaseDuration'); // Start edit
+      expect((app as any).editDurationState).toBe('editing');
+      (app as any).handleDurationEdit('decreaseDuration'); // Trigger line 424
+
+      (app as any).editDurationValue = 15;
+      (app as any).saveDurationEdit(); // Submit
+
+      expect(mockTimerStateMachine.updateConfig).toHaveBeenCalled();
+    });
+
     it('should play completion and reset beeps', () => {
       // Test completion beep
       mockTimerStateMachine.getState.mockReturnValue({ status: 'running' } as any);
@@ -569,6 +617,189 @@ describe('DoroApp', () => {
   });
 
   describe('additional input handling', () => {
+    it('should enter edit duration mode and toggle blink', () => {
+      // Mock basic state
+      mockTimerStateMachine.getState.mockReturnValue({
+        mode: 'work',
+        status: 'running',
+        remainingSeconds: 1200,
+        isLocked: false,
+        switchPrompt: null,
+        completedWorkSessions: 1
+      });
+      mockTimerStateMachine.getConfig.mockReturnValue({
+        workSeconds: 22 * 60,
+        shortRestSeconds: 5 * 60,
+        longRestSeconds: 12 * 60,
+        longRestEveryWorkSessions: 4,
+        switchConfirmSeconds: 300,
+        audioVolume: 0.5,
+        theme: 'modern',
+        tickSoundEnabled: true,
+        mascotVariant: 'default'
+      } as any);
+
+      const mockRender = vi.spyOn(mockDoroUi, 'render');
+
+      // 1. Initial increase to start editing
+      vi.mocked(resolveControlCommand).mockReturnValue('increaseDuration');
+      (app as any).handleInput({
+        type: 'key',
+        ch: '+',
+        keyName: '+',
+        keyFull: '+',
+        shift: false,
+        ctrl: false
+      });
+
+      expect((app as any).editDurationState).toBe('editing');
+      expect((app as any).editDurationValue).toBe(22);
+      expect(mockRender).toHaveBeenCalled();
+
+      // 2. Second increase to actually change value
+      (app as any).handleInput({
+        type: 'key',
+        ch: '+',
+        keyName: '+',
+        keyFull: '+',
+        shift: false,
+        ctrl: false
+      });
+
+      expect((app as any).editDurationValue).toBe(23);
+
+      // 3. Decrease value
+      vi.mocked(resolveControlCommand).mockReturnValue('decreaseDuration');
+      (app as any).handleInput({
+        type: 'key',
+        ch: '-',
+        keyName: '-',
+        keyFull: '-',
+        shift: false,
+        ctrl: false
+      });
+
+      expect((app as any).editDurationValue).toBe(22);
+
+      // 4. Tick should toggle blink every 3 ticks
+      // Initialize internal counter so first tick doesn't immediately false out
+      (app as any).blinkCounter = 0;
+      (app as any).editDurationBlink = false;
+
+      // Fast forward 250ms ticks to trigger blink toggle
+      vi.useFakeTimers();
+      (app as any).start(); // Need to start the app to get the setInterval
+      vi.advanceTimersByTime(250); // count 1 (blink = false)
+      vi.advanceTimersByTime(250); // count 2 (blink = false)
+      vi.advanceTimersByTime(250); // count 3 - should toggle
+      expect((app as any).editDurationBlink).toBe(true);
+    });
+
+    it('should save duration on timeout', () => {
+      vi.useFakeTimers();
+
+      // Mock state and enter edit mode
+      mockTimerStateMachine.getState.mockReturnValue({
+        mode: 'work',
+        status: 'running',
+        remainingSeconds: 1200,
+        isLocked: false,
+        switchPrompt: null,
+        completedWorkSessions: 1
+      });
+      mockTimerStateMachine.getConfig.mockReturnValue({
+        workSeconds: 22 * 60,
+        shortRestSeconds: 5 * 60,
+        longRestSeconds: 12 * 60,
+        longRestEveryWorkSessions: 4,
+        switchConfirmSeconds: 300,
+        audioVolume: 0.5,
+        theme: 'modern',
+        tickSoundEnabled: true,
+        mascotVariant: 'default'
+      } as any);
+
+      vi.mocked(resolveControlCommand).mockReturnValue('increaseDuration');
+      (app as any).handleInput({ type: 'key', keyName: '+' });
+      (app as any).handleInput({ type: 'key', keyName: '+' }); // value = 23
+
+      expect((app as any).editDurationState).toBe('editing');
+
+      // Fast forward 2 seconds to trigger save timeout
+      vi.advanceTimersByTime(2000);
+
+      expect((app as any).editDurationState).toBe('saved');
+      expect(mockTimerStateMachine.updateConfig).toHaveBeenCalledWith(
+        expect.objectContaining({ workSeconds: 23 * 60 })
+      );
+
+      // Fast forward another 2 seconds to trigger clear timeout
+      vi.advanceTimersByTime(2000);
+
+      expect((app as any).editDurationState).toBe('none');
+      expect((app as any).editDurationValue).toBeNull();
+    });
+
+    it('should clamp duration values', () => {
+      mockTimerStateMachine.getState.mockReturnValue({
+        mode: 'work',
+        status: 'running',
+        remainingSeconds: 1200,
+        isLocked: false,
+        switchPrompt: null,
+        completedWorkSessions: 1
+      });
+      mockTimerStateMachine.getConfig.mockReturnValue({
+        workSeconds: 30 * 60, // max work time
+        shortRestSeconds: 5 * 60,
+        longRestSeconds: 12 * 60,
+        longRestEveryWorkSessions: 4,
+        switchConfirmSeconds: 300,
+        audioVolume: 0.5,
+        theme: 'modern',
+        tickSoundEnabled: true,
+        mascotVariant: 'default'
+      } as any);
+
+      // Start editing
+      vi.mocked(getDurationForMode).mockReturnValue(30 * 60);
+      vi.mocked(resolveControlCommand).mockReturnValue('increaseDuration');
+      (app as any).handleInput({ type: 'key', keyName: '+' }); // Sets initial to 30
+
+      // Try to exceed max
+      (app as any).handleInput({ type: 'key', keyName: '+' });
+      expect((app as any).editDurationValue).toBe(30); // should clamp to 30
+
+      // Reset test state for min clamp
+      mockTimerStateMachine.getState.mockReturnValue({
+        mode: 'short',
+        status: 'running',
+        remainingSeconds: 300,
+        isLocked: false,
+        switchPrompt: null,
+        completedWorkSessions: 1
+      });
+      mockTimerStateMachine.getConfig.mockReturnValue({
+        workSeconds: 22 * 60,
+        shortRestSeconds: 3 * 60, // min short rest time
+        longRestSeconds: 12 * 60,
+        longRestEveryWorkSessions: 4,
+        switchConfirmSeconds: 300,
+        audioVolume: 0.5,
+        theme: 'modern',
+        tickSoundEnabled: true,
+        mascotVariant: 'default'
+      } as any);
+
+      (app as any).editDurationState = 'none';
+      vi.mocked(getDurationForMode).mockReturnValue(3 * 60);
+      vi.mocked(resolveControlCommand).mockReturnValue('decreaseDuration');
+      (app as any).handleInput({ type: 'key', keyName: '-' }); // Start edit mode
+      (app as any).handleInput({ type: 'key', keyName: '-' }); // Try to go below min
+
+      expect((app as any).editDurationValue).toBe(3); // should clamp to 3
+    });
+
     it('should handle quit command', () => {
       const mockShutdown = vi.spyOn(app as any, 'shutdown').mockImplementation(() => {});
       vi.mocked(resolveControlCommand).mockReturnValue('quit');

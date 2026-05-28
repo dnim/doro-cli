@@ -7,7 +7,18 @@ import {
   createWorkStartClip
 } from './audio/synth';
 import { playClip, stopPlayback } from './audio/player';
-import { getDurationForMode } from './constants';
+import { DEFAULT_TIMER_CONFIG, type TimerConfig, getDurationForMode } from './constants';
+import {
+  type Settings,
+  saveSettings,
+  resetSettings,
+  loadSettings,
+  DEFAULT_WORK_MINS,
+  DEFAULT_SHORT_MINS,
+  DEFAULT_LONG_MINS,
+  MODE_DURATION_BOUNDS,
+  EDIT_SAVE_TIMEOUT_MS
+} from './config';
 import {
   isAllowedWhenLocked,
   isPromptConfirmEvent,
@@ -17,7 +28,6 @@ import {
 } from './input';
 import { TimerStateMachine } from './stateMachine';
 import { DoroUi } from './ui';
-import { type Settings, saveSettings, resetSettings, loadSettings } from './config';
 import {
   checkForUpdates,
   copyToClipboard,
@@ -27,6 +37,8 @@ import {
   type UpdateCheckResult,
   type UpdatePromptState
 } from './update';
+
+export type EditDurationState = 'none' | 'editing' | 'saved';
 
 export class DoroApp {
   private readonly machine: TimerStateMachine;
@@ -51,6 +63,15 @@ export class DoroApp {
 
   private lastTickTs = Date.now();
 
+  // Edit duration state
+  private editDurationState: EditDurationState = 'none';
+
+  private editDurationValue: number | null = null;
+
+  private editDurationTimeout: NodeJS.Timeout | null = null;
+
+  private editDurationBlink = false;
+
   // Update-related state
   private updatePromptState: UpdatePromptState = 'none';
 
@@ -59,7 +80,13 @@ export class DoroApp {
   private isCheckingUpdate = false;
 
   public constructor(initialSettings: Settings) {
-    this.machine = new TimerStateMachine();
+    const config: TimerConfig = {
+      ...DEFAULT_TIMER_CONFIG,
+      workSeconds: (initialSettings.workDuration ?? DEFAULT_WORK_MINS) * 60,
+      shortRestSeconds: (initialSettings.shortBreakDuration ?? DEFAULT_SHORT_MINS) * 60,
+      longRestSeconds: (initialSettings.longBreakDuration ?? DEFAULT_LONG_MINS) * 60
+    };
+    this.machine = new TimerStateMachine(config);
     this.volumeMode = initialSettings.volumeMode;
 
     const mult = this.volumeMode === 'quiet' ? 0.25 : 1.0;
@@ -106,6 +133,8 @@ export class DoroApp {
     void this.performStartupUpdateCheck();
   }
 
+  private blinkCounter = 0;
+
   private stepClock(): void {
     if (this.isExiting) {
       return;
@@ -113,6 +142,18 @@ export class DoroApp {
 
     const now = Date.now();
     let state = this.machine.getState();
+
+    // Handle blinking for edit duration (slow down blinking relative to 250ms tick)
+    if (this.editDurationState === 'editing') {
+      this.blinkCounter++;
+      if (this.blinkCounter >= 3) {
+        this.editDurationBlink = !this.editDurationBlink;
+        this.blinkCounter = 0;
+      }
+    } else {
+      this.editDurationBlink = false;
+      this.blinkCounter = 0;
+    }
 
     if (state.status === 'running') {
       const elapsedSeconds = Math.floor((now - this.lastTickTs) / 1000);
@@ -159,6 +200,12 @@ export class DoroApp {
     }
 
     const command = resolveControlCommand(event);
+
+    // If we're editing duration, any command other than duration commands or pause should perhaps cancel or we just let it fall through.
+    if (command === 'increaseDuration' || command === 'decreaseDuration') {
+      this.handleDurationEdit(command);
+      return;
+    }
 
     // Handle test mode commands for VRT deterministic states
     if (process.env.DORO_TEST_MODE === '1') {
@@ -349,6 +396,95 @@ export class DoroApp {
     this.render();
   }
 
+  private handleDurationEdit(command: 'increaseDuration' | 'decreaseDuration'): void {
+    const state = this.machine.getState();
+    const config = this.machine.getConfig();
+
+    let justStarted = false;
+    if (this.editDurationState === 'none' || this.editDurationState === 'saved') {
+      this.editDurationState = 'editing';
+      const durationSecs = getDurationForMode(config, state.mode);
+      this.editDurationValue = Math.floor(durationSecs / 60);
+      justStarted = true;
+    }
+
+    if (this.editDurationValue === null) {
+      return;
+    }
+
+    const bounds = MODE_DURATION_BOUNDS[state.mode];
+
+    if (!justStarted) {
+      if (command === 'increaseDuration') {
+        this.editDurationValue += 1;
+      } else {
+        this.editDurationValue -= 1;
+      }
+    }
+
+    // Clamp to per-mode bounds (also handles out-of-range initial values)
+    this.editDurationValue = Math.max(bounds.min, Math.min(bounds.max, this.editDurationValue));
+
+    this.render();
+
+    if (this.editDurationTimeout) {
+      clearTimeout(this.editDurationTimeout);
+    }
+
+    this.editDurationTimeout = setTimeout(() => {
+      this.saveDurationEdit();
+    }, EDIT_SAVE_TIMEOUT_MS);
+  }
+
+  private saveDurationEdit(): void {
+    if (this.editDurationState !== 'editing' || this.editDurationValue === null) {
+      this.clearDurationEdit();
+      return;
+    }
+
+    const state = this.machine.getState();
+    const config = this.machine.getConfig();
+    const newConfig = { ...config };
+
+    if (state.mode === 'short') {
+      newConfig.shortRestSeconds = this.editDurationValue * 60;
+    } else if (state.mode === 'long') {
+      newConfig.longRestSeconds = this.editDurationValue * 60;
+    } else {
+      newConfig.workSeconds = this.editDurationValue * 60;
+    }
+
+    this.machine.updateConfig(newConfig);
+
+    // Save to settings
+    void (async () => {
+      const currentSettings = await loadSettings();
+      await saveSettings({
+        ...currentSettings,
+        workDuration: Math.floor(newConfig.workSeconds / 60),
+        shortBreakDuration: Math.floor(newConfig.shortRestSeconds / 60),
+        longBreakDuration: Math.floor(newConfig.longRestSeconds / 60)
+      });
+    })();
+
+    this.editDurationState = 'saved';
+    this.render();
+
+    if (this.editDurationTimeout) {
+      clearTimeout(this.editDurationTimeout);
+    }
+
+    this.editDurationTimeout = setTimeout(() => {
+      this.clearDurationEdit();
+    }, EDIT_SAVE_TIMEOUT_MS);
+  }
+
+  private clearDurationEdit(): void {
+    this.editDurationState = 'none';
+    this.editDurationValue = null;
+    this.render();
+  }
+
   private playModeClip(mode: 'work' | 'short' | 'long'): void {
     if (this.volumeMode === 'muted') {
       return;
@@ -409,7 +545,10 @@ export class DoroApp {
       promptTotalSeconds,
       promptNextMode,
       updatePromptState: this.updatePromptState,
-      updateCheckResult: this.updateCheckResult
+      updateCheckResult: this.updateCheckResult,
+      editDurationState: this.editDurationState,
+      editDurationValue: this.editDurationValue,
+      editDurationBlink: this.editDurationBlink
     });
   }
 

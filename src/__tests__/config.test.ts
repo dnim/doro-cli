@@ -39,7 +39,10 @@ describe('config', () => {
       expect(settings).toEqual({
         volumeMode: 'normal',
         colorScheme: 'modern',
-        checkIntervalHours: 24
+        checkIntervalHours: 24,
+        workDuration: 22,
+        shortBreakDuration: 5,
+        longBreakDuration: 12
       });
     });
 
@@ -52,7 +55,10 @@ describe('config', () => {
       expect(settings).toEqual({
         volumeMode: 'quiet',
         colorScheme: 'calm',
-        checkIntervalHours: 24
+        checkIntervalHours: 24,
+        workDuration: 22,
+        shortBreakDuration: 5,
+        longBreakDuration: 12
       });
     });
 
@@ -63,7 +69,10 @@ describe('config', () => {
       expect(settings).toEqual({
         volumeMode: 'normal',
         colorScheme: 'modern',
-        checkIntervalHours: 24
+        checkIntervalHours: 24,
+        workDuration: 22,
+        shortBreakDuration: 5,
+        longBreakDuration: 12
       });
     });
   });
@@ -106,7 +115,10 @@ describe('config', () => {
       expect(settings).toEqual({
         volumeMode: 'normal',
         colorScheme: 'modern',
-        checkIntervalHours: 24
+        checkIntervalHours: 24,
+        workDuration: 22,
+        shortBreakDuration: 5,
+        longBreakDuration: 12
       });
       expect(fs.promises.writeFile).toHaveBeenCalled();
     });

@@ -1,3 +1,5 @@
+import { DEFAULT_WORK_MINS, DEFAULT_SHORT_MINS, DEFAULT_LONG_MINS } from './config';
+
 export type TimerMode = 'work' | 'short' | 'long';
 
 export type TimerStatus = 'running' | 'paused' | 'switchPrompt';
@@ -11,9 +13,9 @@ export type TimerConfig = {
 };
 
 export const DEFAULT_TIMER_CONFIG: TimerConfig = {
-  workSeconds: 22 * 60,
-  shortRestSeconds: 5 * 60,
-  longRestSeconds: 12 * 60,
+  workSeconds: DEFAULT_WORK_MINS * 60,
+  shortRestSeconds: DEFAULT_SHORT_MINS * 60,
+  longRestSeconds: DEFAULT_LONG_MINS * 60,
   longRestEveryWorkSessions: 3,
   switchConfirmSeconds: 60
 };
