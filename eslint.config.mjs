@@ -33,7 +33,8 @@ export default tseslint.config(
       'node_modules/**',
       '.pi/**',
       'playwright.config.ts',
-      'vitest.config.ts'
+      'vitest.config.ts',
+      '.pi/**'
     ]
   }
 );
