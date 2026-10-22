@@ -34,6 +34,15 @@ npm install -g doro-cli
 
 Once installed, just run `doro` in your terminal!
 
+### Windows
+
+```powershell
+npm.cmd install -g doro-cli
+doro.cmd
+```
+
+Use the `.cmd` launchers in PowerShell to avoid script execution policy restrictions.
+
 ## Quick Start (Build from source)
 
 ```bash

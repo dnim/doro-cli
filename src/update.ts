@@ -141,6 +141,10 @@ export async function checkForUpdates(): Promise<UpdateCheckResult> {
  * Gets the update command for the current platform
  */
 export function getUpdateCommand(): string {
+  if (process.platform === 'win32') {
+    return 'npm.cmd install -g doro-cli@latest; if ($?) { doro.cmd }';
+  }
+
   return 'npm install -g doro-cli@latest && doro';
 }
 
