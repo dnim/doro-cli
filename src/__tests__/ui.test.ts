@@ -21,7 +21,7 @@ vi.mock('blessed', () => {
   return {
     default: {
       screen: vi.fn(() => mockScreen),
-      box: vi.fn(() => ({ ...mockBox }))
+      box: vi.fn((options) => ({ ...mockBox, style: { ...options.style } }))
     }
   };
 });
@@ -107,6 +107,70 @@ describe('DoroUi', () => {
       expect(vi.mocked(blessed.box).mock.calls[1][0]).toMatchObject({
         style: { bg: 'brightyellow' }
       });
+    } finally {
+      ui?.destroy();
+      Object.defineProperty(process, 'platform', { value: originalPlatform });
+    }
+  });
+
+  it('should use distinct ANSI colors for Windows short and long breaks', () => {
+    const originalPlatform = process.platform;
+    Object.defineProperty(process, 'platform', { value: 'win32' });
+
+    try {
+      ui = new DoroUi(handlers as any);
+      const root = vi.mocked(blessed.box).mock.results[0].value;
+      const progressFill = vi.mocked(blessed.box).mock.results[1].value;
+      const banner = vi.mocked(blessed.box).mock.results[2].value;
+      const baseState = {
+        status: 'running' as const,
+        remainingSeconds: 600,
+        durationSeconds: 1500,
+        isLocked: false,
+        volumeMode: 'normal' as const,
+        hasPrompt: false,
+        promptCountdownSeconds: 0,
+        promptTotalSeconds: 0,
+        promptNextMode: null,
+        updatePromptState: 'none' as const,
+        updateCheckResult: null,
+        editDurationState: 'none' as const,
+        editDurationValue: null,
+        editDurationBlink: false
+      };
+
+      ui.render({ ...baseState, mode: 'short' });
+      expect(root.style.bg).toBe('cyan');
+      expect(progressFill.style.bg).toBe('brightcyan');
+      expect(banner.setContent).toHaveBeenCalledWith(expect.stringContaining('{bright-cyan-bg}'));
+
+      ui.render({ ...baseState, mode: 'long' });
+      expect(root.style.bg).toBe('blue');
+      expect(progressFill.style.bg).toBe('brightblue');
+      expect(banner.setContent).toHaveBeenLastCalledWith(
+        expect.stringContaining('{bright-blue-bg}')
+      );
+
+      ui.destroy();
+      const previousBoxCount = vi.mocked(blessed.box).mock.results.length;
+      ui = new DoroUi(handlers as any, 'calm');
+      const calmBoxes = vi
+        .mocked(blessed.box)
+        .mock.results.slice(previousBoxCount, previousBoxCount + 3);
+      const calmRoot = calmBoxes[0].value;
+      const calmProgressFill = calmBoxes[1].value;
+      const calmBanner = calmBoxes[2].value;
+
+      ui.render({ ...baseState, mode: 'short' });
+      expect(calmRoot.style.bg).toBe('green');
+      expect(calmProgressFill.style.bg).toBe('brightgreen');
+
+      ui.render({ ...baseState, mode: 'long' });
+      expect(calmRoot.style.bg).toBe('cyan');
+      expect(calmProgressFill.style.bg).toBe('brightcyan');
+      expect(calmBanner.setContent).toHaveBeenLastCalledWith(
+        expect.stringContaining('{bright-cyan-bg}')
+      );
     } finally {
       ui?.destroy();
       Object.defineProperty(process, 'platform', { value: originalPlatform });

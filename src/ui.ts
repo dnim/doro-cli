@@ -80,6 +80,10 @@ export function splitAtVisible(s: string, n: number): [string, string] {
   return [s, ''];
 }
 
+function colorTagName(color: string): string {
+  return color.replace(/^(bright|light)(?=[a-z])/, '$1-');
+}
+
 // Wide format: [key, remaining letters] pairs — key rendered in bold, rest appended.
 // Lock uses uppercase 'L' and Update uses uppercase 'U' to distinguish them from 'l'/'u'.
 const HELP_KEYS_WIDE: [string, string][] = [
@@ -359,12 +363,15 @@ function buildProgressRow(
 
   const bO = bold ? '{bold}' : '';
   const bC = bold ? '{/bold}' : '';
+  const fillTag = colorTagName(fillBg);
+  const baseTag = colorTagName(baseBg);
+  const fgTag = colorTagName(fg);
   let content = '';
   if (p1.length > 0) {
-    content += `{${fillBg}-bg}{${fg}-fg}${bO}${p1}${bC}`;
+    content += `{${fillTag}-bg}{${fgTag}-fg}${bO}${p1}${bC}`;
   }
   if (p2.length > 0) {
-    content += `{${baseBg}-bg}{${fg}-fg}${bO}${p2}${bC}`;
+    content += `{${baseTag}-bg}{${fgTag}-fg}${bO}${p2}${bC}`;
   }
   return content;
 }
@@ -478,23 +485,23 @@ function createWindowsModeStyle(base: string, fill: string): ModeStyle {
   };
 }
 
-const WINDOWS_MODE_STYLE = createWindowsModeStyle('default', 'brightblack');
+const WINDOWS_PAUSED_STYLE = createWindowsModeStyle('default', 'brightblack');
 const WINDOWS_PALETTES: Record<ColorScheme, Palette> = {
   modern: {
     modes: {
       work: createWindowsModeStyle('magenta', 'brightmagenta'),
-      short: WINDOWS_MODE_STYLE,
-      long: WINDOWS_MODE_STYLE
+      short: createWindowsModeStyle('cyan', 'brightcyan'),
+      long: createWindowsModeStyle('blue', 'brightblue')
     },
-    pause: WINDOWS_MODE_STYLE
+    pause: WINDOWS_PAUSED_STYLE
   },
   calm: {
     modes: {
       work: createWindowsModeStyle('yellow', 'brightyellow'),
-      short: WINDOWS_MODE_STYLE,
-      long: WINDOWS_MODE_STYLE
+      short: createWindowsModeStyle('green', 'brightgreen'),
+      long: createWindowsModeStyle('cyan', 'brightcyan')
     },
-    pause: WINDOWS_MODE_STYLE
+    pause: WINDOWS_PAUSED_STYLE
   }
 };
 
