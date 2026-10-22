@@ -216,8 +216,23 @@ describe('update functionality', () => {
   });
 
   describe('getUpdateCommand', () => {
-    it('should return npm install command', () => {
-      expect(getUpdateCommand()).toBe('npm install -g doro-cli@latest && doro');
+    it('should return a shell-compatible update command', () => {
+      expect(getUpdateCommand()).toBe(
+        process.platform === 'win32'
+          ? 'npm.cmd install -g doro-cli@latest; if ($?) { doro.cmd }'
+          : 'npm install -g doro-cli@latest && doro'
+      );
+    });
+
+    it('should return a PowerShell-compatible command on Windows', () => {
+      const originalPlatform = process.platform;
+      Object.defineProperty(process, 'platform', { value: 'win32' });
+
+      try {
+        expect(getUpdateCommand()).toBe('npm.cmd install -g doro-cli@latest; if ($?) { doro.cmd }');
+      } finally {
+        Object.defineProperty(process, 'platform', { value: originalPlatform });
+      }
     });
   });
 
@@ -440,6 +455,7 @@ describe('update functionality', () => {
       const result = await resultPromise;
 
       expect(result.success).toBe(true);
+      expect(result.command).toBe('npm.cmd install -g doro-cli@latest; if ($?) { doro.cmd }');
       expect(mockSpawnLocal).toHaveBeenCalledWith('clip', []);
 
       Object.defineProperty(process, 'platform', { value: originalPlatform });

@@ -34,6 +34,48 @@ npm install -g doro-cli
 
 Once installed, just run `doro` in your terminal!
 
+### Windows
+
+If PowerShell reports that `npm` is not recognized, Node.js is either not installed or its
+installation directory is not on `PATH`.
+
+If you installed Node.js with **nvm-windows**, activate the version you installed (use an
+Administrator PowerShell if `nvm use` reports a permissions error), then close and reopen the
+terminal:
+
+```powershell
+nvm use 22.23.4
+```
+
+Alternatively, install Node.js LTS (version 22 or later) using winget from an Administrator
+PowerShell:
+
+```powershell
+winget install --id OpenJS.NodeJS.LTS --exact
+```
+
+After either option, confirm Node.js and npm are available:
+
+```powershell
+node --version
+npm.cmd --version
+```
+
+Then install and launch doro-cli:
+
+```powershell
+npm.cmd install -g doro-cli
+doro.cmd
+```
+
+Using the `.cmd` launchers avoids PowerShell's script execution policy, which may block the
+`npm.ps1` and `doro.ps1` shims. This does not require changing the system execution policy.
+
+The application generates audio cues using Windows PowerShell. Settings are saved under
+`%LOCALAPPDATA%\doro-cli-nodejs\Config\settings.json`.
+For consistent pastel colors, run it in Windows Terminal, which supports the 256-color palette
+used by the Windows theme.
+
 ## Quick Start (Build from source)
 
 ```bash

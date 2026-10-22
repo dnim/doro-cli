@@ -1,6 +1,7 @@
 import blessed from 'blessed';
 import { MODE_LABELS, MODE_LABELS_SHORT, type TimerMode, type TimerStatus } from './constants';
 import { enableMouse, disableMouse } from './mouse';
+import { getUpdateCommand } from './update';
 import type { UpdateCheckResult, UpdatePromptState } from './update';
 
 type UiRenderState = {
@@ -236,19 +237,28 @@ function getUpdatePromptText(
   }
 
   if (updatePromptState === 'copyFallback') {
-    const candidates = [
-      'Run this command after doro exits: npm install -g doro-cli@latest && doro',
-      'Run after exit: npm install -g doro-cli@latest && doro',
-      'Run: npm install -g doro-cli@latest && doro',
-      'Run: npm i -g doro-cli@latest && doro',
-      'npm i -g doro-cli@latest && doro'
-    ];
+    const updateCommand = getUpdateCommand();
+    const candidates =
+      process.platform === 'win32'
+        ? [
+            `Run this command after doro exits: ${updateCommand}`,
+            `Run after exit: ${updateCommand}`,
+            `Run: ${updateCommand}`,
+            updateCommand
+          ]
+        : [
+            'Run this command after doro exits: npm install -g doro-cli@latest && doro',
+            'Run after exit: npm install -g doro-cli@latest && doro',
+            'Run: npm install -g doro-cli@latest && doro',
+            'Run: npm i -g doro-cli@latest && doro',
+            'npm i -g doro-cli@latest && doro'
+          ];
     for (const c of candidates) {
       if (c.length <= cols) {
         return c;
       }
     }
-    return 'npm i -g doro-cli@latest && doro';
+    return updateCommand;
   }
 
   if (updatePromptState === 'skipped') {
@@ -454,6 +464,41 @@ const PALETTES: Record<ColorScheme, Palette> = {
   }
 };
 
+function createWindowsModeStyle(base: string, fill: string): ModeStyle {
+  const text = '#262626';
+  return {
+    base,
+    fill,
+    text,
+    bannerBg: fill,
+    bannerFg: text,
+    statusBg: base,
+    statusFg: text,
+    promptBg: fill,
+    promptFg: text
+  };
+}
+
+const WINDOWS_PAUSED_STYLE = createWindowsModeStyle('#e4e4e4', '#bcbcbc');
+const WINDOWS_PALETTES: Record<ColorScheme, Palette> = {
+  modern: {
+    modes: {
+      work: createWindowsModeStyle('#ffd7d7', '#ffafaf'),
+      short: createWindowsModeStyle('#d7ffd7', '#afd7af'),
+      long: createWindowsModeStyle('#d7d7ff', '#afafd7')
+    },
+    pause: WINDOWS_PAUSED_STYLE
+  },
+  calm: {
+    modes: {
+      work: createWindowsModeStyle('#ffd7ff', '#ffafff'),
+      short: createWindowsModeStyle('#d7ffff', '#afd7d7'),
+      long: createWindowsModeStyle('#afd7ff', '#afafd7')
+    },
+    pause: WINDOWS_PAUSED_STYLE
+  }
+};
+
 function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
 }
@@ -506,9 +551,11 @@ export class DoroUi {
 
   public constructor(handlers: UiHandlers, initialColorScheme: ColorScheme = 'modern') {
     this.colorScheme = initialColorScheme;
-    const initialStyle = PALETTES[this.colorScheme].modes.work;
+    const palettes = process.platform === 'win32' ? WINDOWS_PALETTES : PALETTES;
+    const initialStyle = palettes[this.colorScheme].modes.work;
 
     this.screen = blessed.screen({
+      terminal: process.platform === 'win32' ? 'xterm-256color' : undefined,
       smartCSR: false,
       fastCSR: false,
       fullUnicode: true,
@@ -644,7 +691,7 @@ export class DoroUi {
     const cols = this.screen.cols;
     const rows = this.screen.rows;
     const isPaused = state.status === 'paused';
-    const palette = PALETTES[this.colorScheme];
+    const palette = (process.platform === 'win32' ? WINDOWS_PALETTES : PALETTES)[this.colorScheme];
     const isTransition = state.hasPrompt;
     const hasUpdatePrompt = state.updatePromptState !== 'none';
     const isEditingDuration = state.editDurationState === 'editing';

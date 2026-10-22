@@ -74,6 +74,24 @@ describe('DoroUi', () => {
     expect(handlers.onAnyClick).toHaveBeenCalledTimes(1);
   });
 
+  it('should request 256-color terminal support on Windows', () => {
+    const originalPlatform = process.platform;
+    Object.defineProperty(process, 'platform', { value: 'win32' });
+
+    try {
+      ui = new DoroUi(handlers as any);
+      expect(blessed.screen).toHaveBeenCalledWith(
+        expect.objectContaining({ terminal: 'xterm-256color' })
+      );
+      expect(vi.mocked(blessed.box).mock.calls[0][0]).toMatchObject({
+        style: { bg: '#ffd7d7' }
+      });
+    } finally {
+      ui?.destroy();
+      Object.defineProperty(process, 'platform', { value: originalPlatform });
+    }
+  });
+
   it('should render work mode state', () => {
     ui = new DoroUi(handlers as any);
     const mockScreen = vi.mocked(blessed.screen).mock.results[0].value;
