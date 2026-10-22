@@ -74,17 +74,38 @@ describe('DoroUi', () => {
     expect(handlers.onAnyClick).toHaveBeenCalledTimes(1);
   });
 
-  it('should request 256-color terminal support on Windows', () => {
+  it('should use an ANSI-safe magenta palette on Windows', () => {
     const originalPlatform = process.platform;
     Object.defineProperty(process, 'platform', { value: 'win32' });
 
     try {
       ui = new DoroUi(handlers as any);
-      expect(blessed.screen).toHaveBeenCalledWith(
-        expect.objectContaining({ terminal: 'xterm-256color' })
-      );
       expect(vi.mocked(blessed.box).mock.calls[0][0]).toMatchObject({
-        style: { bg: '#ffd7d7' }
+        style: { bg: 'magenta' }
+      });
+      expect(vi.mocked(blessed.box).mock.calls[1][0]).toMatchObject({
+        style: { bg: 'brightmagenta' }
+      });
+      expect(vi.mocked(blessed.box).mock.calls[2][0]).toMatchObject({
+        style: { bg: 'default', fg: 'default' }
+      });
+    } finally {
+      ui?.destroy();
+      Object.defineProperty(process, 'platform', { value: originalPlatform });
+    }
+  });
+
+  it('should use an ANSI-safe yellow palette for calm mode on Windows', () => {
+    const originalPlatform = process.platform;
+    Object.defineProperty(process, 'platform', { value: 'win32' });
+
+    try {
+      ui = new DoroUi(handlers as any, 'calm');
+      expect(vi.mocked(blessed.box).mock.calls[0][0]).toMatchObject({
+        style: { bg: 'yellow' }
+      });
+      expect(vi.mocked(blessed.box).mock.calls[1][0]).toMatchObject({
+        style: { bg: 'brightyellow' }
       });
     } finally {
       ui?.destroy();

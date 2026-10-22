@@ -465,37 +465,36 @@ const PALETTES: Record<ColorScheme, Palette> = {
 };
 
 function createWindowsModeStyle(base: string, fill: string): ModeStyle {
-  const text = '#262626';
   return {
     base,
     fill,
-    text,
-    bannerBg: fill,
-    bannerFg: text,
-    statusBg: base,
-    statusFg: text,
-    promptBg: fill,
-    promptFg: text
+    text: 'default',
+    bannerBg: 'default',
+    bannerFg: 'default',
+    statusBg: 'default',
+    statusFg: 'default',
+    promptBg: 'default',
+    promptFg: 'default'
   };
 }
 
-const WINDOWS_PAUSED_STYLE = createWindowsModeStyle('#e4e4e4', '#bcbcbc');
+const WINDOWS_MODE_STYLE = createWindowsModeStyle('default', 'brightblack');
 const WINDOWS_PALETTES: Record<ColorScheme, Palette> = {
   modern: {
     modes: {
-      work: createWindowsModeStyle('#ffd7d7', '#ffafaf'),
-      short: createWindowsModeStyle('#d7ffd7', '#afd7af'),
-      long: createWindowsModeStyle('#d7d7ff', '#afafd7')
+      work: createWindowsModeStyle('magenta', 'brightmagenta'),
+      short: WINDOWS_MODE_STYLE,
+      long: WINDOWS_MODE_STYLE
     },
-    pause: WINDOWS_PAUSED_STYLE
+    pause: WINDOWS_MODE_STYLE
   },
   calm: {
     modes: {
-      work: createWindowsModeStyle('#ffd7ff', '#ffafff'),
-      short: createWindowsModeStyle('#d7ffff', '#afd7d7'),
-      long: createWindowsModeStyle('#afd7ff', '#afafd7')
+      work: createWindowsModeStyle('yellow', 'brightyellow'),
+      short: WINDOWS_MODE_STYLE,
+      long: WINDOWS_MODE_STYLE
     },
-    pause: WINDOWS_PAUSED_STYLE
+    pause: WINDOWS_MODE_STYLE
   }
 };
 
@@ -555,7 +554,6 @@ export class DoroUi {
     const initialStyle = palettes[this.colorScheme].modes.work;
 
     this.screen = blessed.screen({
-      terminal: process.platform === 'win32' ? 'xterm-256color' : undefined,
       smartCSR: false,
       fastCSR: false,
       fullUnicode: true,
