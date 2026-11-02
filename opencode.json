@@ -1,12 +1,7 @@
 {
   "$schema": "https://opencode.ai/config.json",
   "model": "github-copilot/claude-sonnet-4",
-  "instructions": [
-    ".opencode/docs/AGENT_WORKFLOW.md",
-    ".opencode/docs/ARCHITECTURE.md",
-    ".opencode/docs/DEV_COMMANDS.md",
-    ".opencode/docs/DEVELOPMENT_GUIDELINES.md"
-  ],
+  "instructions": [".opencode/docs/ARCHITECTURE.md", ".opencode/docs/DEVELOPMENT_GUIDELINES.md"],
   "agent": {
     "plan": {
       "model": "github-copilot/gpt-5.3-codex"

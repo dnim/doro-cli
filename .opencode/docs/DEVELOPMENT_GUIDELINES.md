@@ -24,7 +24,7 @@
 - **Centralized Setup**: Use utilities from `src/__tests__/utils/mocks.ts` for common mocking patterns.
 - **Event Helpers**: Use `createKeyEvent()`, `createMouseEvent()`, and `createResizeEvent()` for input testing.
 - **Audio Mocks**: Use `createMockChildProcess()` for audio player tests.
-- **Top-Level Mocks**: Keep `jest.mock()` calls at the top level of test files for proper hoisting.
+- **Top-Level Mocks**: Keep `vi.mock()` calls at the top level of test files for proper hoisting.
 
 ### AI-First Considerations
 
