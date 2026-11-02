@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* oxlint-disable typescript/no-explicit-any */
 import { DoroUi, getRunningStatusText, splitAtVisible } from '../ui';
 import blessed from 'blessed';
 import { enableMouse, disableMouse } from '../mouse';

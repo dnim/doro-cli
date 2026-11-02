@@ -1,0 +1,30 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["eslint", "typescript"],
+  "categories": {
+    "correctness": "error"
+  },
+  "options": {
+    "typeAware": true
+  },
+  "ignorePatterns": [
+    "dist/**",
+    "coverage/**",
+    "node_modules/**",
+    ".pi/**",
+    "playwright.config.ts",
+    "vitest.config.ts"
+  ],
+  "rules": {
+    "typescript/no-explicit-any": "error",
+    "typescript/no-non-null-assertion": "error",
+    "typescript/no-require-imports": "error",
+    "typescript/unbound-method": "off",
+    "typescript/no-floating-promises": "off",
+    "typescript/consistent-type-definitions": ["error", "type"],
+    "typescript/no-misused-promises": ["error", { "checksVoidReturn": false }],
+    "eqeqeq": ["error", "always"],
+    "curly": ["error", "all"],
+    "no-console": "warn"
+  }
+}

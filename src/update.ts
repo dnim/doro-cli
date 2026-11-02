@@ -27,7 +27,7 @@ export type ClipboardResult = {
  */
 export function getCurrentVersion(): string {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    // oxlint-disable-next-line typescript/no-require-imports
     const pkg = require('../package.json');
     return pkg.version;
   } catch /* c8 ignore next */ {

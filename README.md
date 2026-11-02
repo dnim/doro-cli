@@ -19,10 +19,10 @@ Focus on your work, not your timer.
 
 Experience doro-cli's responsive design across different terminal sizes:
 
-|                             Tiny                              |                               Small                               |                                Medium                                |                             Large                             |
-| :-----------------------------------------------------------: | :---------------------------------------------------------------: | :-----------------------------------------------------------------: | :----------------------------------------------------------: |
+|                      Tiny                       |                       Small                       |                       Medium                        |                       Large                       |
+| :---------------------------------------------: | :-----------------------------------------------: | :-------------------------------------------------: | :-----------------------------------------------: |
 | ![Tiny Terminal](./assets/screenshots/tiny.png) | ![Small Terminal](./assets/screenshots/small.png) | ![Medium Terminal](./assets/screenshots/medium.png) | ![Large Terminal](./assets/screenshots/large.png) |
-| Minimal view for very small terminals | Compact layout with essential controls | Full interface with comfortable spacing | Spacious layout for wide terminals |
+|      Minimal view for very small terminals      |      Compact layout with essential controls       |       Full interface with comfortable spacing       |        Spacious layout for wide terminals         |
 
 ## Installation
 

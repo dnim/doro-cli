@@ -45,7 +45,7 @@ This document outlines the standard operating procedures for all AI agents worki
 
 1. **Run Pre-commit Checks**: Before requesting approval, the agent MUST run all necessary checks:
    - `npm run typecheck` - Verify TypeScript compilation
-   - `npm run lint:local` - Check code style and formatting
+   - `npm run lint:local && npm run format:check` - Check lint and formatting
    - `npm run test:unit` - Run unit tests with coverage
    - Address any failures before proceeding
 
@@ -89,6 +89,7 @@ Please review and run: `git commit -m "Add dark mode toggle to settings page"`
 ### Commit Message Formatting
 
 **Always format the final commit command for easy copy-paste**:
+
 - Provide the complete command: `git commit -m "commit message"`
 - Use proper conventional commit format when applicable (feat/fix/chore/docs)
 - Example: `git commit -m "fix(update-notifier): stabilize VRT test commands and refresh snapshots"`
