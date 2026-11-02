@@ -15,7 +15,7 @@ on:
 jobs:
   test:
     timeout-minutes: 60
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: write
     steps:
@@ -31,18 +31,26 @@ jobs:
         run: npm ci
 
       - name: Install Playwright Browsers
+        id: playwright_install
         run: npx playwright install --with-deps chromium
 
       - name: Run Visual Tests
+        id: visual_tests
         if: github.event.inputs.update-snapshots != 'true'
         run: npm run test:visual
 
       - name: Update Snapshots (Manual or Failure)
-        if: failure() || github.event.inputs.update-snapshots == 'true'
+        id: update_snapshots
+        if: >-
+          !cancelled() &&
+          steps.playwright_install.outcome == 'success' &&
+          (steps.visual_tests.outcome == 'failure' || github.event.inputs.update-snapshots == 'true')
         run: npm run test:visual:update
 
       - name: Commit Updated Snapshots
-        if: failure() || github.event.inputs.update-snapshots == 'true'
+        if: >-
+          !cancelled() &&
+          steps.update_snapshots.outcome == 'success'
         uses: stefanzweifel/git-auto-commit-action@v7
         with:
           commit_message: 'chore(vis-reg): update baseline snapshots [skip ci]'
