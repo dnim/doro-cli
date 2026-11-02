@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* oxlint-disable typescript/no-explicit-any */
 import { test, expect, Page } from '@playwright/test';
 import { createRequire } from 'module';
 import * as path from 'path';

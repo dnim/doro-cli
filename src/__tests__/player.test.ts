@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* oxlint-disable typescript/no-explicit-any */
 import { createMockChildProcess } from './utils/mocks';
 
 vi.mock('node:child_process', () => ({

@@ -1,5 +1,5 @@
 import { MockInstance, type Mocked } from 'vitest';
-/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-empty-function */
+/* oxlint-disable typescript/no-explicit-any, typescript/no-empty-function */
 vi.mock('env-paths', () => ({
   default: vi.fn().mockReturnValue({ config: '/mock/config/path' })
 }));

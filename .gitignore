@@ -3,8 +3,6 @@ dist/
 .DS_Store
 coverage/
 *.log
-.eslintcache
-
 playwright-report/
 test-results/
 tests/test-config/
