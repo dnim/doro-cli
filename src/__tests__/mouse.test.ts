@@ -48,7 +48,7 @@ describe('Mouse Tracking', () => {
     const mockHandler = vi.fn();
     enableMouse(mockHandler);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // oxlint-disable-next-line typescript/no-explicit-any
     const dataListener = (mockStdinPrependListener.mock.calls[0] as any[])[1];
 
     // Left mouse press: \x1b[<0;10;10M

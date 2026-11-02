@@ -15,4 +15,4 @@ echo "Linting changed files:"
 echo "$FILES"
 echo ""
 
-echo "$FILES" | tr '\n' '\0' | xargs -0 npx eslint
+echo "$FILES" | tr '\n' '\0' | xargs -0 npx oxlint

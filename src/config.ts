@@ -59,9 +59,9 @@ export async function saveSettings(settings: Settings): Promise<void> {
     }
     await fs.promises.writeFile(CONFIG_FILE, JSON.stringify(settings, null, 2), 'utf8');
   } catch (error) {
-    /* eslint-disable no-console */
+    /* oxlint-disable no-console */
     console.error('Failed to save settings:', error);
-    /* eslint-enable no-console */
+    /* oxlint-enable no-console */
   }
 }
 
